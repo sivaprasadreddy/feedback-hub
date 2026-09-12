@@ -5,7 +5,9 @@ import dev.sivalabs.speakup.shared.ResourceNotFoundException;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -21,18 +23,21 @@ class MessageService {
     private final MessageVoteRepository messageVoteRepository;
     private final ReplyVoteRepository replyVoteRepository;
     private final EntityManager entityManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     MessageService(
             MessageRepository messageRepository,
             ReplyRepository replyRepository,
             MessageVoteRepository messageVoteRepository,
             ReplyVoteRepository replyVoteRepository,
-            EntityManager entityManager) {
+            EntityManager entityManager,
+            ApplicationEventPublisher eventPublisher) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
         this.replyVoteRepository = replyVoteRepository;
         this.entityManager = entityManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -42,6 +47,7 @@ class MessageService {
         message.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
         message.setAnonymous(cmd.anonymous());
         messageRepository.save(message);
+        eventPublisher.publishEvent(new MessageCreatedEvent(message.getId(), message.getContent()));
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +132,9 @@ class MessageService {
                         .map(MessageVoteEntity::getVoteType)
                         .map(Enum::name)
                         .orElse(null),
-                message.getStatus() == MessageStatus.DELETED);
+                message.getStatus() == MessageStatus.DELETED,
+                new LinkedHashSet<>(message.getLabels()),
+                message.getSentiment());
     }
 
     @Transactional(readOnly = true)
@@ -152,7 +160,9 @@ class MessageService {
                 currentUserVote,
                 deleted,
                 !deleted && ownedByCurrentUser,
-                !deleted && !ownedByCurrentUser);
+                !deleted && !ownedByCurrentUser,
+                new LinkedHashSet<>(message.getLabels()),
+                message.getSentiment());
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,7 @@
 package dev.sivalabs.speakup.messages;
 
 import java.time.Instant;
+import java.util.Set;
 
 record MessageDto(
         Long id,
@@ -11,4 +12,6 @@ record MessageDto(
         long downvoteCount,
         long replyCount,
         String currentUserVote,
-        boolean deleted) {}
+        boolean deleted,
+        Set<String> labels,
+        MessageSentiment sentiment) {}

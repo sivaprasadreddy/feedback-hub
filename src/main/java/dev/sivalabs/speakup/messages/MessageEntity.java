@@ -2,7 +2,9 @@ package dev.sivalabs.speakup.messages;
 
 import dev.sivalabs.speakup.shared.BaseEntity;
 import dev.sivalabs.speakup.users.UserEntity;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +17,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "messages")
@@ -44,6 +48,15 @@ class MessageEntity extends BaseEntity {
 
     @Column(name = "moderated_at")
     private Instant moderatedAt;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "message_labels", joinColumns = @JoinColumn(name = "message_id"))
+    @Column(name = "label", nullable = false)
+    private Set<String> labels = new LinkedHashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sentiment")
+    private MessageSentiment sentiment;
 
     public Long getId() {
         return id;
@@ -95,5 +108,22 @@ class MessageEntity extends BaseEntity {
 
     public void setModeratedAt(Instant moderatedAt) {
         this.moderatedAt = moderatedAt;
+    }
+
+    public Set<String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Set<String> labels) {
+        this.labels.clear();
+        this.labels.addAll(labels);
+    }
+
+    public MessageSentiment getSentiment() {
+        return sentiment;
+    }
+
+    public void setSentiment(MessageSentiment sentiment) {
+        this.sentiment = sentiment;
     }
 }
