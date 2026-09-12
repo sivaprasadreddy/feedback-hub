@@ -1,0 +1,6 @@
+interface:
+  display_name: "Update Use Case"
+  short_description: "Sync use-case details with current code"
+  default_prompt: "Use $update-usecase to update UC-001 from the current implementation."
+policy:
+  allow_implicit_invocation: false
