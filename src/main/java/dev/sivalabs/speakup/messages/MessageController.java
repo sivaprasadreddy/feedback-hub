@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -129,8 +130,16 @@ class MessageController {
             @PathVariable Long messageId,
             @RequestParam VoteType voteType,
             @RequestParam(defaultValue = "false") boolean returnToHome,
+            @RequestHeader(name = "HX-Request", defaultValue = "false") boolean htmxRequest,
+            Model model,
             RedirectAttributes redirectAttributes) {
-        messageService.voteOnMessage(messageId, AuthUtils.getCurrentUserIdOrThrow(), voteType);
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        messageService.voteOnMessage(messageId, currentUserId, voteType);
+        if (htmxRequest) {
+            model.addAttribute("message", messageService.findMessage(messageId, currentUserId));
+            model.addAttribute("returnToHome", returnToHome);
+            return "fragments/message-votes :: votes(message=${message}, returnToHome=${returnToHome})";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
         return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
@@ -139,8 +148,16 @@ class MessageController {
     String removeMessageVote(
             @PathVariable Long messageId,
             @RequestParam(defaultValue = "false") boolean returnToHome,
+            @RequestHeader(name = "HX-Request", defaultValue = "false") boolean htmxRequest,
+            Model model,
             RedirectAttributes redirectAttributes) {
-        messageService.removeMessageVote(messageId, AuthUtils.getCurrentUserIdOrThrow());
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        messageService.removeMessageVote(messageId, currentUserId);
+        if (htmxRequest) {
+            model.addAttribute("message", messageService.findMessage(messageId, currentUserId));
+            model.addAttribute("returnToHome", returnToHome);
+            return "fragments/message-votes :: votes(message=${message}, returnToHome=${returnToHome})";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
         return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
@@ -150,16 +167,34 @@ class MessageController {
             @PathVariable Long messageId,
             @PathVariable Long replyId,
             @RequestParam VoteType voteType,
+            @RequestHeader(name = "HX-Request", defaultValue = "false") boolean htmxRequest,
+            Model model,
             RedirectAttributes redirectAttributes) {
-        messageService.voteOnReply(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow(), voteType);
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        messageService.voteOnReply(messageId, replyId, currentUserId, voteType);
+        if (htmxRequest) {
+            model.addAttribute("messageId", messageId);
+            model.addAttribute("reply", findReply(messageId, replyId, currentUserId));
+            return "fragments/reply-votes :: votes(messageId=${messageId}, reply=${reply})";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
         return "redirect:/messages/" + messageId;
     }
 
     @PostMapping("/messages/{messageId}/replies/{replyId}/vote/remove")
     String removeReplyVote(
-            @PathVariable Long messageId, @PathVariable Long replyId, RedirectAttributes redirectAttributes) {
-        messageService.removeReplyVote(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
+            @PathVariable Long messageId,
+            @PathVariable Long replyId,
+            @RequestHeader(name = "HX-Request", defaultValue = "false") boolean htmxRequest,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        messageService.removeReplyVote(messageId, replyId, currentUserId);
+        if (htmxRequest) {
+            model.addAttribute("messageId", messageId);
+            model.addAttribute("reply", findReply(messageId, replyId, currentUserId));
+            return "fragments/reply-votes :: votes(messageId=${messageId}, reply=${reply})";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
         return "redirect:/messages/" + messageId;
     }
@@ -216,5 +251,12 @@ class MessageController {
         } catch (NumberFormatException e) {
             throw new BadRequestException("Page number must be a positive integer");
         }
+    }
+
+    private ReplyDto findReply(Long messageId, Long replyId, Long currentUserId) {
+        return messageService.findReplies(messageId, currentUserId).stream()
+                .filter(reply -> reply.id().equals(replyId))
+                .findFirst()
+                .orElseThrow();
     }
 }

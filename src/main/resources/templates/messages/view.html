@@ -35,44 +35,7 @@
                 <button type="submit" class="text-sm font-semibold text-rose-700 hover:text-rose-900">Delete message</button>
             </form>
         </div>
-        <dl class="mt-6 flex flex-wrap items-center gap-6 border-t border-slate-200 pt-4">
-            <div class="flex items-center gap-2">
-                <dt>
-                    <form th:if="${message.votable()}" method="post"
-                          th:action="${message.currentUserVote() == 'UPVOTE'} ? @{/messages/{id}/vote/remove(id=${message.id()})} : @{/messages/{id}/vote(id=${message.id()})}">
-                        <input type="hidden" name="voteType" value="UPVOTE"/>
-                        <button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                th:classappend="${message.currentUserVote() == 'UPVOTE'} ? ' text-emerald-600' : ' text-slate-500'"
-                                th:title="${message.currentUserVote() == 'UPVOTE'} ? 'Remove your upvote' : 'Upvote message'">
-                            <i class="fa-solid fa-thumbs-up" aria-hidden="true"></i>
-                            <span class="sr-only" th:text="${message.currentUserVote() == 'UPVOTE'} ? 'Remove your upvote' : 'Upvote message'">Upvote message</span>
-                        </button>
-                    </form>
-                    <span th:unless="${message.votable()}" class="text-slate-500" title="Upvotes"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span class="sr-only">Upvotes</span></span>
-                </dt>
-                <dd class="text-lg font-bold text-slate-900" th:text="${message.upvoteCount()}">0</dd>
-            </div>
-            <div class="flex items-center gap-2">
-                <dt>
-                    <form th:if="${message.votable()}" method="post"
-                          th:action="${message.currentUserVote() == 'DOWNVOTE'} ? @{/messages/{id}/vote/remove(id=${message.id()})} : @{/messages/{id}/vote(id=${message.id()})}">
-                        <input type="hidden" name="voteType" value="DOWNVOTE"/>
-                        <button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                                th:classappend="${message.currentUserVote() == 'DOWNVOTE'} ? ' text-amber-600' : ' text-slate-500'"
-                                th:title="${message.currentUserVote() == 'DOWNVOTE'} ? 'Remove your downvote' : 'Downvote message'">
-                            <i class="fa-solid fa-thumbs-down" aria-hidden="true"></i>
-                            <span class="sr-only" th:text="${message.currentUserVote() == 'DOWNVOTE'} ? 'Remove your downvote' : 'Downvote message'">Downvote message</span>
-                        </button>
-                    </form>
-                    <span th:unless="${message.votable()}" class="text-slate-500" title="Downvotes"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i><span class="sr-only">Downvotes</span></span>
-                </dt>
-                <dd class="text-lg font-bold text-slate-900" th:text="${message.downvoteCount()}">0</dd>
-            </div>
-            <div class="flex items-center gap-2">
-                <dt class="text-slate-500" title="Replies"><i class="fa-solid fa-comment" aria-hidden="true"></i><span class="sr-only">Replies</span></dt>
-                <dd class="text-lg font-bold text-slate-900" th:text="${message.replyCount()}">0</dd>
-            </div>
-        </dl>
+        <div th:replace="~{fragments/message-votes :: votes(message=${message}, returnToHome=false)}"></div>
     </article>
     <section class="mt-6" aria-labelledby="replies-heading">
         <h2 id="replies-heading" class="text-xl font-bold text-slate-900">Replies</h2>
@@ -96,10 +59,7 @@
                         <button type="submit" class="text-sm font-semibold text-rose-700 hover:text-rose-900">Delete reply</button>
                     </form>
                 </div>
-                <dl class="mt-4 flex flex-wrap gap-6 border-t border-slate-200 pt-3 text-sm">
-                    <div class="flex items-center gap-1"><dt><form th:if="${reply.votable()}" method="post" th:action="${reply.currentUserVote() == 'UPVOTE'} ? @{/messages/{messageId}/replies/{replyId}/vote/remove(messageId=${message.id()},replyId=${reply.id()})} : @{/messages/{messageId}/replies/{replyId}/vote(messageId=${message.id()},replyId=${reply.id()})}"><input type="hidden" name="voteType" value="UPVOTE"/><button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500" th:classappend="${reply.currentUserVote() == 'UPVOTE'} ? ' text-emerald-600' : ' text-slate-500'" th:title="${reply.currentUserVote() == 'UPVOTE'} ? 'Remove your reply upvote' : 'Upvote reply'"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span class="sr-only" th:text="${reply.currentUserVote() == 'UPVOTE'} ? 'Remove your reply upvote' : 'Upvote reply'">Upvote reply</span></button></form><span th:unless="${reply.votable()}" class="text-slate-500" title="Upvotes"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span class="sr-only">Upvotes</span></span></dt> <dd th:text="${reply.upvoteCount()}">0</dd></div>
-                    <div class="flex items-center gap-1"><dt><form th:if="${reply.votable()}" method="post" th:action="${reply.currentUserVote() == 'DOWNVOTE'} ? @{/messages/{messageId}/replies/{replyId}/vote/remove(messageId=${message.id()},replyId=${reply.id()})} : @{/messages/{messageId}/replies/{replyId}/vote(messageId=${message.id()},replyId=${reply.id()})}"><input type="hidden" name="voteType" value="DOWNVOTE"/><button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500" th:classappend="${reply.currentUserVote() == 'DOWNVOTE'} ? ' text-amber-600' : ' text-slate-500'" th:title="${reply.currentUserVote() == 'DOWNVOTE'} ? 'Remove your reply downvote' : 'Downvote reply'"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i><span class="sr-only" th:text="${reply.currentUserVote() == 'DOWNVOTE'} ? 'Remove your reply downvote' : 'Downvote reply'">Downvote reply</span></button></form><span th:unless="${reply.votable()}" class="text-slate-500" title="Downvotes"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i><span class="sr-only">Downvotes</span></span></dt> <dd th:text="${reply.downvoteCount()}">0</dd></div>
-                </dl>
+                <div th:replace="~{fragments/reply-votes :: votes(messageId=${message.id()}, reply=${reply})}"></div>
             </article>
             <p th:if="${#lists.isEmpty(replies)}" class="rounded-xl border border-dashed border-slate-300 p-5 text-center text-slate-500">No replies yet.</p>
         </div>

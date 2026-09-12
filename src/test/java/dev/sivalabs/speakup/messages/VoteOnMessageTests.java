@@ -93,6 +93,39 @@ class VoteOnMessageTests extends BaseIT {
     }
 
     @Test
+    void htmxVoteReturnsOnlyUpdatedVoteControls() throws Exception {
+        var ownerSession = session(login("admin@gmail.com", "secret"));
+        var message = createMessage(ownerSession, "ANONYMOUS");
+        var voterSession = session(login("siva@gmail.com", "secret"));
+
+        var response = mvc.post()
+                .uri("/messages/{messageId}/vote", message.getId())
+                .header("HX-Request", "true")
+                .param("voteType", "UPVOTE")
+                .session(voterSession)
+                .with(csrf())
+                .exchange();
+
+        assertThat(response)
+                .hasStatusOk()
+                .hasViewName("fragments/message-votes :: votes(message=${message}, returnToHome=${returnToHome})")
+                .bodyText()
+                .contains("Remove your upvote", "Downvote message")
+                .doesNotContain("Feedback", "View message");
+        assertThat(response.getMvcResult().getResponse().getContentAsString())
+                .contains("class=\"message-votes", "hx-target=\"closest .message-votes\"", "hx-swap=\"outerHTML\"");
+
+        var removeResponse = mvc.post()
+                .uri("/messages/{messageId}/vote/remove", message.getId())
+                .header("HX-Request", "true")
+                .session(voterSession)
+                .with(csrf())
+                .exchange();
+        assertThat(removeResponse).hasStatusOk().bodyText().contains("Upvote message", "Downvote message");
+        assertMessageVotes(message.getId(), 0, 0, null);
+    }
+
+    @Test
     void userCannotVoteOnOwnMessageEvenWhenAnonymous() {
         var userSession = session(login("siva@gmail.com", "secret"));
         var message = createMessage(userSession, "ANONYMOUS");

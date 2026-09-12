@@ -46,7 +46,11 @@ class BrowseRecentFeedTests extends BaseIT {
                 .contains("Admin", content, "Remove your upvote", "1", "Downvote message", "0", "Replies", "1")
                 .doesNotContain("Your vote");
         assertThat(feed.getMvcResult().getResponse().getContentAsString())
-                .contains("text-emerald-600", "title=\"Remove your upvote\"");
+                .contains(
+                        "text-emerald-600",
+                        "title=\"Remove your upvote\"",
+                        "hx-target=\"closest .message-votes\"",
+                        "name=\"returnToHome\" value=\"true\"");
     }
 
     @Test

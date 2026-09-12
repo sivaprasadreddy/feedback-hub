@@ -87,6 +87,40 @@ class VoteOnReplyTests extends BaseIT {
     }
 
     @Test
+    void htmxVoteReturnsOnlyUpdatedReplyVoteControls() throws Exception {
+        var ownerSession = session(login("admin@gmail.com", "secret"));
+        var message = createMessage(ownerSession);
+        var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
+        var voterSession = session(login("siva@gmail.com", "secret"));
+
+        var response = mvc.post()
+                .uri("/messages/{m}/replies/{r}/vote", message.getId(), reply.getId())
+                .header("HX-Request", "true")
+                .param("voteType", "UPVOTE")
+                .session(voterSession)
+                .with(csrf())
+                .exchange();
+
+        assertThat(response)
+                .hasStatusOk()
+                .hasViewName("fragments/reply-votes :: votes(messageId=${messageId}, reply=${reply})")
+                .bodyText()
+                .contains("Remove your reply upvote", "Downvote reply")
+                .doesNotContain("Replies", "View message");
+        assertThat(response.getMvcResult().getResponse().getContentAsString())
+                .contains("class=\"reply-votes", "hx-target=\"closest .reply-votes\"", "hx-swap=\"outerHTML\"");
+
+        var removeResponse = mvc.post()
+                .uri("/messages/{m}/replies/{r}/vote/remove", message.getId(), reply.getId())
+                .header("HX-Request", "true")
+                .session(voterSession)
+                .with(csrf())
+                .exchange();
+        assertThat(removeResponse).hasStatusOk().bodyText().contains("Upvote reply", "Downvote reply");
+        assertReplyVotes(message.getId(), reply.getId(), 0, 0, null);
+    }
+
+    @Test
     void userCannotVoteOnOwnReplyEvenWhenAnonymous() {
         var userSession = session(login("siva@gmail.com", "secret"));
         var message = createMessage(userSession);
