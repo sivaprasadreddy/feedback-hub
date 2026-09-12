@@ -16,6 +16,28 @@
             <i class="fa-solid fa-user-plus mr-2"></i> Create user
         </a>
     </div>
+    <form method="get" th:action="@{/admin/users}" class="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div>
+            <label for="role-filter" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Role</label>
+            <select id="role-filter" name="role" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700">
+                <option value="">All roles</option>
+                <option th:each="role : ${roles}"
+                        th:value="${role}"
+                        th:text="${role.displayName}"
+                        th:selected="${role == selectedRole}">USER</option>
+            </select>
+        </div>
+        <div>
+            <label for="status-filter" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</label>
+            <select id="status-filter" name="active" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700">
+                <option value="">All statuses</option>
+                <option value="true" th:selected="${selectedActive == true}">Active</option>
+                <option value="false" th:selected="${selectedActive == false}">Inactive</option>
+            </select>
+        </div>
+        <button type="submit" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">Filter</button>
+        <a th:href="@{/admin/users}" class="px-2 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">Clear</a>
+    </form>
     <div class="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">

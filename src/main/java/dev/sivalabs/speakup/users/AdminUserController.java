@@ -22,8 +22,12 @@ class AdminUserController {
     }
 
     @GetMapping
-    String listUsers(Model model) {
-        model.addAttribute("users", userService.findAllUsers());
+    String listUsers(
+            @RequestParam(required = false) Role role, @RequestParam(required = false) Boolean active, Model model) {
+        model.addAttribute("users", userService.findUsers(new UserFilterQuery(role, active)));
+        model.addAttribute("roles", Role.values());
+        model.addAttribute("selectedRole", role);
+        model.addAttribute("selectedActive", active);
         return "admin/users";
     }
 

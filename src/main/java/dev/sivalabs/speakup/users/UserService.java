@@ -36,6 +36,13 @@ class UserService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserDto> findUsers(UserFilterQuery query) {
+        return userRepository.findUsers(query.role(), query.active()).stream()
+                .map(this::toUserDto)
+                .toList();
+    }
+
     @Transactional
     public void createUser(CreateUserCmd cmd) {
         if (userRepository.existsByEmailIgnoreCase(cmd.email())) {

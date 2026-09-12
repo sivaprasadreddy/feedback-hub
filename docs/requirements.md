@@ -11,7 +11,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-001     | Authenticate User           | COMPLETED       |
 | UC-002     | Create User Account         | COMPLETED       |
 | UC-003     | Edit User                   | COMPLETED       |
-| UC-004     | View and Filter Users       | NOT_IMPLEMENTED |
+| UC-004     | View and Filter Users       | COMPLETED       |
 | UC-005     | Create Message              | NOT_IMPLEMENTED |
 | UC-006     | View Message                | NOT_IMPLEMENTED |
 | UC-007     | Edit Own Message            | NOT_IMPLEMENTED |
@@ -73,7 +73,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-004 — View and Filter Users
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-002
 - **Description:** An Admin views the deployment's users and filters them by status or role.
 - **Acceptance Criteria:**
