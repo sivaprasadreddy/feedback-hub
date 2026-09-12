@@ -15,16 +15,19 @@ class MessageService {
     private final MessageRepository messageRepository;
     private final ReplyRepository replyRepository;
     private final MessageVoteRepository messageVoteRepository;
+    private final ReplyVoteRepository replyVoteRepository;
     private final EntityManager entityManager;
 
     MessageService(
             MessageRepository messageRepository,
             ReplyRepository replyRepository,
             MessageVoteRepository messageVoteRepository,
+            ReplyVoteRepository replyVoteRepository,
             EntityManager entityManager) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
+        this.replyVoteRepository = replyVoteRepository;
         this.entityManager = entityManager;
     }
 
@@ -126,11 +129,16 @@ class MessageService {
                             deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
                             reply.getCreatedAt(),
                             reply.getUpdatedAt(),
-                            0,
-                            0,
-                            null,
+                            replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.UPVOTE),
+                            replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.DOWNVOTE),
+                            replyVoteRepository
+                                    .findByReplyIdAndVoterId(reply.getId(), currentUserId)
+                                    .map(ReplyVoteEntity::getVoteType)
+                                    .map(Enum::name)
+                                    .orElse(null),
                             deleted,
-                            !deleted && reply.getCreator().getId().equals(currentUserId));
+                            !deleted && reply.getCreator().getId().equals(currentUserId),
+                            !deleted && !reply.getCreator().getId().equals(currentUserId));
                 })
                 .toList();
     }
@@ -179,6 +187,41 @@ class MessageService {
         messageVoteRepository
                 .findByMessageIdAndVoterId(messageId, currentUserId)
                 .ifPresent(messageVoteRepository::delete);
+    }
+
+    @Transactional
+    public void voteOnReply(Long messageId, Long replyId, Long currentUserId, VoteType voteType) {
+        var reply = getVotableReply(messageId, replyId, currentUserId);
+        var vote = replyVoteRepository
+                .findByReplyIdAndVoterId(replyId, currentUserId)
+                .orElseGet(() -> {
+                    var newVote = new ReplyVoteEntity();
+                    newVote.setReply(reply);
+                    newVote.setVoter(entityManager.getReference(UserEntity.class, currentUserId));
+                    return newVote;
+                });
+        vote.setVoteType(voteType);
+        replyVoteRepository.save(vote);
+    }
+
+    @Transactional
+    public void removeReplyVote(Long messageId, Long replyId, Long currentUserId) {
+        getVotableReply(messageId, replyId, currentUserId);
+        replyVoteRepository.findByReplyIdAndVoterId(replyId, currentUserId).ifPresent(replyVoteRepository::delete);
+    }
+
+    private ReplyEntity getVotableReply(Long messageId, Long replyId, Long currentUserId) {
+        var reply = replyRepository
+                .findById(replyId)
+                .filter(candidate -> candidate.getMessage().getId().equals(messageId))
+                .orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        if (reply.getStatus() == ReplyStatus.DELETED) {
+            throw new AccessDeniedException("Deleted replies cannot be voted on");
+        }
+        if (reply.getCreator().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You cannot vote on your own reply");
+        }
+        return reply;
     }
 
     private MessageEntity getVotableMessage(Long messageId, Long currentUserId) {

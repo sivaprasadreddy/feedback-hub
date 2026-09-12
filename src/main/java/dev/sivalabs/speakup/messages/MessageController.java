@@ -135,6 +135,25 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
+    @PostMapping("/messages/{messageId}/replies/{replyId}/vote")
+    String voteOnReply(
+            @PathVariable Long messageId,
+            @PathVariable Long replyId,
+            @RequestParam VoteType voteType,
+            RedirectAttributes redirectAttributes) {
+        messageService.voteOnReply(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow(), voteType);
+        redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
+    @PostMapping("/messages/{messageId}/replies/{replyId}/vote/remove")
+    String removeReplyVote(
+            @PathVariable Long messageId, @PathVariable Long replyId, RedirectAttributes redirectAttributes) {
+        messageService.removeReplyVote(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
     @GetMapping("/messages/{messageId}/edit")
     String editMessageForm(@PathVariable Long messageId, Model model) {
         model.addAttribute("messageId", messageId);

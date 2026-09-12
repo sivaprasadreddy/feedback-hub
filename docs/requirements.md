@@ -21,7 +21,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-011     | Edit Own Reply              | COMPLETED       |
 | UC-012     | Delete Own Reply            | COMPLETED       |
 | UC-013     | Vote on Message             | COMPLETED       |
-| UC-014     | Vote on Reply               | NOT_IMPLEMENTED |
+| UC-014     | Vote on Reply               | COMPLETED       |
 | UC-015     | Browse Recent Feed          | NOT_IMPLEMENTED |
 | UC-016     | Browse Popular Feed         | NOT_IMPLEMENTED |
 | UC-017     | Navigate Feed Pages         | NOT_IMPLEMENTED |
@@ -198,7 +198,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-014 — Vote on Reply
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-009, UC-010
 - **Description:** An authenticated active user upvotes or downvotes another user's reply and may remove or change that vote.
 - **Acceptance Criteria:**
