@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class ViewUsersTests extends BaseIT {
     @Autowired
@@ -95,18 +94,5 @@ class ViewUsersTests extends BaseIT {
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND);
-    }
-
-    private MvcTestResult login(String email, String password) {
-        return mvc.post()
-                .uri("/login")
-                .param("username", email)
-                .param("password", password)
-                .with(csrf())
-                .exchange();
-    }
-
-    private static MockHttpSession session(MvcTestResult result) {
-        return (MockHttpSession) result.getMvcResult().getRequest().getSession(false);
     }
 }

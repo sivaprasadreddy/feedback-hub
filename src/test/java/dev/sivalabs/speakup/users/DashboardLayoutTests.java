@@ -1,13 +1,10 @@
 package dev.sivalabs.speakup.users;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.speakup.BaseIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class DashboardLayoutTests extends BaseIT {
 
@@ -113,20 +110,5 @@ class DashboardLayoutTests extends BaseIT {
                 .hasViewName("admin/messages")
                 .bodyText()
                 .contains("Manage Messages");
-    }
-
-    private MvcTestResult login(String email, String password) {
-        var result = mvc.post()
-                .uri("/login")
-                .param("username", email)
-                .param("password", password)
-                .with(csrf())
-                .exchange();
-        assertThat(result).hasStatus(HttpStatus.FOUND);
-        return result;
-    }
-
-    private static MockHttpSession session(MvcTestResult result) {
-        return (MockHttpSession) result.getMvcResult().getRequest().getSession(false);
     }
 }

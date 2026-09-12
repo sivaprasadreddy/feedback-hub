@@ -8,8 +8,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class CreateUserTests extends BaseIT {
 
@@ -168,19 +166,5 @@ class CreateUserTests extends BaseIT {
                         .getResponse()
                         .getRedirectedUrl())
                 .contains("/login");
-    }
-
-    private MvcTestResult login(String email, String password) {
-        var result = mvc.post()
-                .uri("/login")
-                .param("username", email)
-                .param("password", password)
-                .with(csrf())
-                .exchange();
-        return result;
-    }
-
-    private static MockHttpSession session(MvcTestResult result) {
-        return (MockHttpSession) result.getMvcResult().getRequest().getSession(false);
     }
 }

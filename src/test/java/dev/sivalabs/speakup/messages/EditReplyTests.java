@@ -177,17 +177,4 @@ class EditReplyTests extends BaseIT {
                 .findFirst()
                 .orElseThrow();
     }
-
-    private MvcTestResult login(String email, String password) {
-        return mvc.post()
-                .uri("/login")
-                .param("username", email)
-                .param("password", password)
-                .with(csrf())
-                .exchange();
-    }
-
-    private static MockHttpSession session(MvcTestResult result) {
-        return (MockHttpSession) result.getMvcResult().getRequest().getSession(false);
-    }
 }

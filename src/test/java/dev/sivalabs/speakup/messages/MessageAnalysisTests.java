@@ -13,12 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
-import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 @RecordApplicationEvents
 @TestPropertySource(properties = "speakup.message-analysis.enabled=true")
@@ -71,18 +69,5 @@ class MessageAnalysisTests extends BaseIT {
                         .exchange())
                 .bodyText()
                 .contains(content, "Happy", "employee benefits", "learning");
-    }
-
-    private MvcTestResult login(String email, String password) {
-        return mvc.post()
-                .uri("/login")
-                .param("username", email)
-                .param("password", password)
-                .with(csrf())
-                .exchange();
-    }
-
-    private static MockHttpSession session(MvcTestResult result) {
-        return (MockHttpSession) result.getMvcResult().getRequest().getSession(false);
     }
 }
