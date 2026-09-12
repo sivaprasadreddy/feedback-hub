@@ -102,6 +102,36 @@ class ModerateReplyTests extends BaseIT {
                 .hasViewName("error/403");
     }
 
+    @Test
+    void adminReplyListIsPaginated() {
+        var message = new MessageEntity();
+        message.setContent("Message with paginated replies");
+        message.setCreatorUserId(2L);
+        messageRepository.save(message);
+        for (int index = 0; index < MessageService.ADMIN_PAGE_SIZE + 1; index++) {
+            var reply = new ReplyEntity();
+            reply.setMessage(message);
+            reply.setContent("Paginated admin reply " + index);
+            reply.setCreatorUserId(2L);
+            replyRepository.save(reply);
+        }
+        var adminSession = session(login("admin@gmail.com", "secret"));
+
+        assertThat(mvc.get().uri("/admin/replies").session(adminSession).exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains("Page 1 of", "page=2");
+        assertThat(mvc.get().uri("/admin/replies?page=2").session(adminSession).exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains("Page 2 of", "page=1");
+        assertThat(mvc.get()
+                        .uri("/admin/replies?page=invalid")
+                        .session(adminSession)
+                        .exchange())
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
     private MessageEntity createMessage(MockHttpSession session) {
         var content = "Message for admin-deleted reply " + UUID.randomUUID();
         mvc.post()

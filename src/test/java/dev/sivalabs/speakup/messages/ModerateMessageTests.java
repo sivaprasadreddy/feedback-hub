@@ -97,6 +97,28 @@ class ModerateMessageTests extends BaseIT {
                 .hasViewName("error/403");
     }
 
+    @Test
+    void adminMessageListIsPaginated() {
+        for (int index = 0; index < MessageService.ADMIN_PAGE_SIZE + 1; index++) {
+            var message = new MessageEntity();
+            message.setContent("Paginated admin message " + index);
+            message.setCreatorUserId(2L);
+            messageRepository.save(message);
+        }
+        var adminSession = session(login("admin@gmail.com", "secret"));
+
+        assertThat(mvc.get().uri("/admin/messages").session(adminSession).exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains("Page 1 of", "page=2");
+        assertThat(mvc.get().uri("/admin/messages?page=2").session(adminSession).exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains("Page 2 of", "page=1");
+        assertThat(mvc.get().uri("/admin/messages?page=0").session(adminSession).exchange())
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
     private String createMessage(MockHttpSession session, String content, String identity) {
         mvc.post()
                 .uri("/messages")

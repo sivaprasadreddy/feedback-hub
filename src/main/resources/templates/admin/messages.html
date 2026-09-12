@@ -24,6 +24,15 @@
         </article>
         <p th:if="${#lists.isEmpty(messages)}" class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No messages to review.</p>
     </div>
+    <nav th:if="${page.hasPreviousPage() || page.hasNextPage()}" aria-label="Message pages" class="mt-6 flex items-center justify-between">
+        <a th:if="${page.hasPreviousPage()}" th:href="@{/admin/messages(page=${page.currentPageNo() - 1})}"
+           class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Previous</a>
+        <span th:unless="${page.hasPreviousPage()}"></span>
+        <span class="text-sm text-slate-600" th:text="|Page ${page.currentPageNo()} of ${page.totalPages()}|">Page 1</span>
+        <a th:if="${page.hasNextPage()}" th:href="@{/admin/messages(page=${page.currentPageNo() + 1})}"
+           class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Next</a>
+        <span th:unless="${page.hasNextPage()}"></span>
+    </nav>
 </div>
 </body>
 </html>

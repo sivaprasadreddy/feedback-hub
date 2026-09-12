@@ -6,9 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     List<MessageEntity> findAllByOrderByCreatedAtDesc();
+
+    Page<MessageEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<MessageEntity> findPageByOrderByCreatedAtDesc(Pageable pageable);
 
@@ -21,6 +24,42 @@ interface MessageRepository extends JpaRepository<MessageEntity, Long> {
                     """, countQuery = "select count(*) from messages", nativeQuery = true)
     Page<MessageEntity> findAllByPopularity(Pageable pageable);
 
+    @Query("""
+            select m.id as messageId,
+                   count(distinct case when v.voteType = dev.sivalabs.speakup.messages.VoteType.UPVOTE then v.id end) as upvotes,
+                   count(distinct case when v.voteType = dev.sivalabs.speakup.messages.VoteType.DOWNVOTE then v.id end) as downvotes,
+                   count(distinct case when r.status = dev.sivalabs.speakup.messages.ReplyStatus.ACTIVE then r.id end) as replies
+            from MessageEntity m
+            left join MessageVoteEntity v on v.message = m
+            left join ReplyEntity r on r.message = m
+            where m.id in :messageIds
+            group by m.id
+            """)
+    List<MessageCountsView> findCountsByMessageIds(@Param("messageIds") List<Long> messageIds);
+
+    @Query("""
+            select m.id as messageId, label as label
+            from MessageEntity m join m.labels label
+            where m.id in :messageIds
+            """)
+    List<MessageLabelView> findLabelsByMessageIds(@Param("messageIds") List<Long> messageIds);
+
     @Override
     Optional<MessageEntity> findById(Long id);
+}
+
+interface MessageCountsView {
+    Long getMessageId();
+
+    long getUpvotes();
+
+    long getDownvotes();
+
+    long getReplies();
+}
+
+interface MessageLabelView {
+    Long getMessageId();
+
+    String getLabel();
 }

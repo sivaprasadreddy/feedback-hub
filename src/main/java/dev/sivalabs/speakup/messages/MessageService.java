@@ -6,6 +6,9 @@ import dev.sivalabs.speakup.users.UsersAPI;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 class MessageService {
     static final int FEED_PAGE_SIZE = 10;
+    static final int ADMIN_PAGE_SIZE = 20;
     static final String DELETED_CONTENT = "This message has been deleted.";
     static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
@@ -51,26 +55,25 @@ class MessageService {
 
     @Transactional(readOnly = true)
     public PagedResult<MessageDto> findRecentMessages(Long currentUserId, int pageNo) {
-        return PagedResult.from(messageRepository.findPageByOrderByCreatedAtDesc(pageRequest(pageNo)))
-                .map(message -> toMessageDto(message, currentUserId));
+        return toMessagePage(messageRepository.findPageByOrderByCreatedAtDesc(feedPageRequest(pageNo)), currentUserId);
     }
 
     @Transactional(readOnly = true)
     public PagedResult<MessageDto> findPopularMessages(Long currentUserId, int pageNo) {
-        return PagedResult.from(messageRepository.findAllByPopularity(pageRequest(pageNo)))
-                .map(message -> toMessageDto(message, currentUserId));
+        return toMessagePage(messageRepository.findAllByPopularity(feedPageRequest(pageNo)), currentUserId);
     }
 
     @Transactional(readOnly = true)
-    public List<AdminMessageDto> findMessagesForAdmin() {
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
+    public PagedResult<AdminMessageDto> findMessagesForAdmin(int pageNo) {
+        var messages = messageRepository.findAllByOrderByCreatedAtDesc(adminPageRequest(pageNo));
+        var userNames = getUserNames(messages.getContent());
+        return PagedResult.from(messages)
                 .map(message -> new AdminMessageDto(
                         message.getId(),
-                        message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
+                        message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
                         message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                         message.getCreatedAt(),
-                        message.getStatus() == MessageStatus.DELETED))
-                .toList();
+                        message.getStatus() == MessageStatus.DELETED));
     }
 
     @Transactional
@@ -87,17 +90,18 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<AdminReplyDto> findRepliesForAdmin() {
-        return replyRepository.findAllByOrderByCreatedAtDesc().stream()
+    public PagedResult<AdminReplyDto> findRepliesForAdmin(int pageNo) {
+        var replies = replyRepository.findAllByOrderByCreatedAtDesc(adminPageRequest(pageNo));
+        var userNames = getReplyUserNames(replies.getContent());
+        return PagedResult.from(replies)
                 .map(reply -> new AdminReplyDto(
                         reply.getId(),
                         reply.getMessage().getId(),
-                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId()),
+                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
                         reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getStatus() == ReplyStatus.DELETED,
-                        reply.isSpam()))
-                .toList();
+                        reply.isSpam()));
     }
 
     @Transactional
@@ -112,8 +116,12 @@ class MessageService {
         reply.setDeletedByAdminAt(Instant.now());
     }
 
-    private PageRequest pageRequest(int pageNo) {
+    private PageRequest feedPageRequest(int pageNo) {
         return PageRequest.of(pageNo - 1, FEED_PAGE_SIZE);
+    }
+
+    private PageRequest adminPageRequest(int pageNo) {
+        return PageRequest.of(pageNo - 1, ADMIN_PAGE_SIZE);
     }
 
     private MessageDto toMessageDto(MessageEntity message, Long currentUserId) {
@@ -135,6 +143,64 @@ class MessageService {
                         && !message.getCreatorUserId().equals(currentUserId),
                 new LinkedHashSet<>(message.getLabels()),
                 message.getSentiment());
+    }
+
+    private PagedResult<MessageDto> toMessagePage(
+            org.springframework.data.domain.Page<MessageEntity> page, Long currentUserId) {
+        var messages = page.getContent();
+        var messageIds = messages.stream().map(MessageEntity::getId).toList();
+        if (messageIds.isEmpty()) {
+            return PagedResult.from(page).map(message -> toMessageDto(message, currentUserId));
+        }
+        var counts = messageRepository.findCountsByMessageIds(messageIds).stream()
+                .collect(Collectors.toMap(MessageCountsView::getMessageId, Function.identity()));
+        var currentVotes = messageVoteRepository.findAllByMessageIdInAndVoterUserId(messageIds, currentUserId).stream()
+                .collect(Collectors.toMap(vote -> vote.getMessage().getId(), MessageVoteEntity::getVoteType));
+        var labels = messageRepository.findLabelsByMessageIds(messageIds).stream()
+                .collect(Collectors.groupingBy(
+                        MessageLabelView::getMessageId,
+                        Collectors.mapping(MessageLabelView::getLabel, Collectors.toCollection(LinkedHashSet::new))));
+        var userNames = getUserNames(messages);
+        return PagedResult.from(page).map(message -> {
+            var messageCounts = counts.get(message.getId());
+            var vote = currentVotes.get(message.getId());
+            return new MessageDto(
+                    message.getId(),
+                    message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
+                    message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
+                    message.getCreatedAt(),
+                    messageCounts == null ? 0 : messageCounts.getUpvotes(),
+                    messageCounts == null ? 0 : messageCounts.getDownvotes(),
+                    messageCounts == null ? 0 : messageCounts.getReplies(),
+                    vote == null ? null : vote.name(),
+                    message.getStatus() == MessageStatus.DELETED,
+                    message.getStatus() != MessageStatus.DELETED
+                            && !message.getCreatorUserId().equals(currentUserId),
+                    labels.getOrDefault(message.getId(), new LinkedHashSet<>()),
+                    message.getSentiment());
+        });
+    }
+
+    private Map<Long, String> getUserNames(List<MessageEntity> messages) {
+        return usersAPI.findNamesByIds(messages.stream()
+                .filter(message -> !message.isAnonymous())
+                .map(MessageEntity::getCreatorUserId)
+                .collect(Collectors.toSet()));
+    }
+
+    private Map<Long, String> getReplyUserNames(List<ReplyEntity> replies) {
+        return usersAPI.findNamesByIds(replies.stream()
+                .filter(reply -> !reply.isAnonymous())
+                .map(ReplyEntity::getCreatorUserId)
+                .collect(Collectors.toSet()));
+    }
+
+    private String getUserName(Long userId, Map<Long, String> userNames) {
+        var userName = userNames.get(userId);
+        if (userName == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        return userName;
     }
 
     @Transactional(readOnly = true)

@@ -2,6 +2,7 @@ package dev.sivalabs.speakup.users;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,11 @@ class UserService {
     @Transactional(readOnly = true)
     Optional<UserDto> findById(Long id) {
         return userRepository.findById(id).map(this::toUserDto);
+    }
+
+    @Transactional(readOnly = true)
+    List<UserDto> findByIds(Set<Long> ids) {
+        return userRepository.findAllById(ids).stream().map(this::toUserDto).toList();
     }
 
     @Transactional(readOnly = true)
