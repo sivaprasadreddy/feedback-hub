@@ -4,6 +4,8 @@ import dev.sivalabs.speakup.shared.BaseEntity;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,6 +33,10 @@ class MessageEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean anonymous;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MessageStatus status = MessageStatus.ACTIVE;
+
     public Long getId() {
         return id;
     }
@@ -57,5 +63,13 @@ class MessageEntity extends BaseEntity {
 
     public void setAnonymous(boolean anonymous) {
         this.anonymous = anonymous;
+    }
+
+    public MessageStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(MessageStatus status) {
+        this.status = status;
     }
 }

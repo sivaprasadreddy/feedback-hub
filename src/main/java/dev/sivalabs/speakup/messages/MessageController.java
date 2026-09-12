@@ -1,5 +1,6 @@
 package dev.sivalabs.speakup.messages;
 
+import dev.sivalabs.speakup.users.AuthUtils;
 import dev.sivalabs.speakup.users.SecurityUser;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -43,6 +45,12 @@ class MessageController {
                 form.content().trim(), currentUser.getId(), form.postingIdentity() == PostingIdentity.ANONYMOUS));
         redirectAttributes.addFlashAttribute("successMessage", "Message posted successfully.");
         return "redirect:/";
+    }
+
+    @GetMapping("/messages/{messageId}")
+    String viewMessage(@PathVariable Long messageId, Model model) {
+        model.addAttribute("message", messageService.findMessage(messageId, AuthUtils.getCurrentUserIdOrThrow()));
+        return "messages/view";
     }
 
     private void populateHome(Model model) {

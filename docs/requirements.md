@@ -13,7 +13,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-003     | Edit User                   | COMPLETED       |
 | UC-004     | View and Filter Users       | COMPLETED       |
 | UC-005     | Create Message              | COMPLETED       |
-| UC-006     | View Message                | NOT_IMPLEMENTED |
+| UC-006     | View Message                | COMPLETED       |
 | UC-007     | Edit Own Message            | NOT_IMPLEMENTED |
 | UC-008     | Delete Own Message          | NOT_IMPLEMENTED |
 | UC-009     | Create Reply                | NOT_IMPLEMENTED |
@@ -98,7 +98,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-006 — View Message
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005
 - **Description:** An authenticated user views a feedback message and its engagement information.
 - **Acceptance Criteria:**

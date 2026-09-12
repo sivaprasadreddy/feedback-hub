@@ -1,5 +1,6 @@
 package dev.sivalabs.speakup.messages;
 
+import dev.sivalabs.speakup.shared.ResourceNotFoundException;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class MessageService {
+    static final String DELETED_CONTENT = "This message has been deleted.";
     private final MessageRepository messageRepository;
     private final EntityManager entityManager;
 
@@ -33,8 +35,26 @@ class MessageService {
                         message.isAnonymous()
                                 ? "Anonymous"
                                 : message.getCreator().getName(),
-                        message.getContent(),
+                        message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                         message.getCreatedAt()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public MessageDetailsDto findMessage(Long messageId, Long currentUserId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var deleted = message.getStatus() == MessageStatus.DELETED;
+        return new MessageDetailsDto(
+                message.getId(),
+                message.isAnonymous() ? "Anonymous" : message.getCreator().getName(),
+                deleted ? DELETED_CONTENT : message.getContent(),
+                message.getCreatedAt(),
+                0,
+                0,
+                0,
+                null,
+                deleted);
     }
 }
