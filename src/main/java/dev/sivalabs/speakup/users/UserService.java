@@ -2,6 +2,7 @@ package dev.sivalabs.speakup.users;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +54,16 @@ class UserService {
     public void updateUser(Long userId, UpdateUserCmd cmd) {
         var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         userRepository.updateUser(user.getId(), cmd.name());
+    }
+
+    @Transactional
+    public void editUser(Long actorId, Long userId, EditUserCmd cmd) {
+        if (actorId.equals(userId)) {
+            throw new AccessDeniedException("You cannot edit your own account");
+        }
+        var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setRole(cmd.role());
+        user.setActive(cmd.active());
     }
 
     private UserDto toUserDto(UserEntity user) {

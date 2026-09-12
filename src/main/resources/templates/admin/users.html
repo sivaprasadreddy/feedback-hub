@@ -25,6 +25,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Role</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Created</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-200">
@@ -38,6 +39,25 @@
                 </td>
                 <td class="px-4 py-3 text-sm text-slate-700"
                     th:text="${user.createdAt() != null ? #temporals.format(user.createdAt(), 'yyyy-MM-dd HH:mm') : ''}">2026-01-01</td>
+                <td class="px-4 py-3 text-sm">
+                    <form th:if="${user.id() != #authentication.principal.id}"
+                          method="post"
+                          th:action="@{/admin/users/{id}/edit(id=${user.id()})}"
+                          class="flex items-center gap-2">
+                        <select name="role" aria-label="Role" class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700">
+                            <option th:each="role : ${T(dev.sivalabs.speakup.users.Role).values()}"
+                                    th:value="${role}"
+                                    th:text="${role.displayName}"
+                                    th:selected="${role == user.role()}">USER</option>
+                        </select>
+                        <select name="active" aria-label="Status" class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700">
+                            <option value="true" th:selected="${user.active()}">Active</option>
+                            <option value="false" th:selected="${!user.active()}">Inactive</option>
+                        </select>
+                        <button type="submit" class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">Save</button>
+                    </form>
+                    <span th:if="${user.id() == #authentication.principal.id}" class="text-xs text-slate-500">Current account</span>
+                </td>
             </tr>
             </tbody>
         </table>

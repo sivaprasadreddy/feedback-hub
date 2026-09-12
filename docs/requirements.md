@@ -10,24 +10,23 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 |------------|-----------------------------|-----------------|
 | UC-001     | Authenticate User           | COMPLETED       |
 | UC-002     | Create User Account         | COMPLETED       |
-| UC-003     | Assign User Role            | NOT_IMPLEMENTED |
-| UC-004     | Activate or Deactivate User | NOT_IMPLEMENTED |
-| UC-005     | View and Filter Users       | NOT_IMPLEMENTED |
-| UC-006     | Create Message              | NOT_IMPLEMENTED |
-| UC-007     | View Message                | NOT_IMPLEMENTED |
-| UC-008     | Edit Own Message            | NOT_IMPLEMENTED |
-| UC-009     | Delete Own Message          | NOT_IMPLEMENTED |
-| UC-010     | Create Reply                | NOT_IMPLEMENTED |
-| UC-011     | View Replies                | NOT_IMPLEMENTED |
-| UC-012     | Edit Own Reply              | NOT_IMPLEMENTED |
-| UC-013     | Delete Own Reply            | NOT_IMPLEMENTED |
-| UC-014     | Vote on Message             | NOT_IMPLEMENTED |
-| UC-015     | Vote on Reply               | NOT_IMPLEMENTED |
-| UC-016     | Browse Recent Feed          | NOT_IMPLEMENTED |
-| UC-017     | Browse Popular Feed         | NOT_IMPLEMENTED |
-| UC-018     | Navigate Feed Pages         | NOT_IMPLEMENTED |
-| UC-019     | Moderate Message            | NOT_IMPLEMENTED |
-| UC-020     | Moderate Reply              | NOT_IMPLEMENTED |
+| UC-003     | Edit User                   | COMPLETED       |
+| UC-004     | View and Filter Users       | NOT_IMPLEMENTED |
+| UC-005     | Create Message              | NOT_IMPLEMENTED |
+| UC-006     | View Message                | NOT_IMPLEMENTED |
+| UC-007     | Edit Own Message            | NOT_IMPLEMENTED |
+| UC-008     | Delete Own Message          | NOT_IMPLEMENTED |
+| UC-009     | Create Reply                | NOT_IMPLEMENTED |
+| UC-010     | View Replies                | NOT_IMPLEMENTED |
+| UC-011     | Edit Own Reply              | NOT_IMPLEMENTED |
+| UC-012     | Delete Own Reply            | NOT_IMPLEMENTED |
+| UC-013     | Vote on Message             | NOT_IMPLEMENTED |
+| UC-014     | Vote on Reply               | NOT_IMPLEMENTED |
+| UC-015     | Browse Recent Feed          | NOT_IMPLEMENTED |
+| UC-016     | Browse Popular Feed         | NOT_IMPLEMENTED |
+| UC-017     | Navigate Feed Pages         | NOT_IMPLEMENTED |
+| UC-018     | Moderate Message            | NOT_IMPLEMENTED |
+| UC-019     | Moderate Reply              | NOT_IMPLEMENTED |
 
 ## Detailed Use Cases
 
@@ -56,30 +55,23 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - On success, the user is available in the user list with a recorded creation date and account status.
   - A regular User cannot access this operation.
 
-### UC-003 — Assign User Role
+### UC-003 — Edit User
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-002
-- **Description:** An Admin assigns or changes an account's role to control whether the account has regular-user or administrative permissions.
+- **Description:** An Admin edits another account's role and active status to control its permissions and access.
 - **Acceptance Criteria:**
-  - Only an authenticated Admin can change another account's role.
+  - Only an authenticated Admin can edit another account.
   - The assigned role must be `ADMIN` or `USER`.
-  - The new role is persisted and used by subsequent authorization checks.
-  - A regular User cannot assign or change roles.
-
-### UC-004 — Activate or Deactivate User
-
-- **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-002
-- **Description:** An Admin changes whether a user account is active. Deactivation blocks future participation without removing the user's existing content.
-- **Acceptance Criteria:**
-  - Only an authenticated Admin can activate or deactivate an account.
+  - The Admin can make the account active or inactive in the same edit operation.
+  - The new role and active status are persisted and used by subsequent authentication and authorization checks.
   - A deactivated user cannot log in, create messages, create replies, or vote.
   - Deactivating a user invalidates or rejects further use of existing authenticated access.
   - Messages, replies, and votes previously created by the user remain available.
   - Reactivating an account restores its ability to authenticate and participate according to its role.
+  - A regular User cannot edit accounts.
 
-### UC-005 — View and Filter Users
+### UC-004 — View and Filter Users
 
 - **Status:** NOT_IMPLEMENTED
 - **Depends On:** UC-001, UC-002
@@ -91,7 +83,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - The list can be filtered by `ADMIN` or `USER` role.
   - A regular User cannot access the user list.
 
-### UC-006 — Create Message
+### UC-005 — Create Message
 
 - **Status:** NOT_IMPLEMENTED
 - **Depends On:** UC-001
@@ -104,10 +96,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - The creator's identity is not exposed through regular-user APIs or UI when the message is anonymous.
   - A newly created message appears in the Recent feed.
 
-### UC-007 — View Message
+### UC-006 — View Message
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006
+- **Depends On:** UC-001, UC-005
 - **Description:** An authenticated user views a feedback message and its engagement information.
 - **Acceptance Criteria:**
   - The view displays the visible author name or `Anonymous`, content, created time, upvote count, downvote count, reply count, and the current user's vote.
@@ -115,10 +107,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Deleted messages display a deletion placeholder rather than their original content.
   - Only authenticated active users can access message details.
 
-### UC-008 — Edit Own Message
+### UC-007 — Edit Own Message
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006
+- **Depends On:** UC-001, UC-005
 - **Description:** A user edits the content of a message they created while preserving its original posting identity.
 - **Acceptance Criteria:**
   - An authenticated active user can edit only their own active message.
@@ -128,10 +120,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Another regular User cannot edit the message.
   - A deleted message cannot be edited.
 
-### UC-009 — Delete Own Message
+### UC-008 — Delete Own Message
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006
+- **Depends On:** UC-001, UC-005
 - **Description:** A user soft-deletes a message they created so that discussion integrity and audit information are retained.
 - **Acceptance Criteria:**
   - An authenticated active user can delete only their own active message.
@@ -140,10 +132,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Replies and audit-relevant associations remain stored.
   - Another regular User cannot delete the message.
 
-### UC-010 — Create Reply
+### UC-009 — Create Reply
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006
+- **Depends On:** UC-001, UC-005
 - **Description:** An authenticated active user adds a single-level reply to an active message either under their identity or anonymously.
 - **Acceptance Criteria:**
   - An authenticated active Admin or User can add a non-empty reply to an active message.
@@ -153,10 +145,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Replies belong directly to a message and cannot be nested beneath other replies.
   - Creating a reply updates the message's displayed reply count.
 
-### UC-011 — View Replies
+### UC-010 — View Replies
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-007, UC-010
+- **Depends On:** UC-001, UC-006, UC-009
 - **Description:** An authenticated user views the single-level discussion replies associated with a message.
 - **Acceptance Criteria:**
   - Replies are displayed beneath their parent message.
@@ -165,10 +157,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Deleted replies display a deletion placeholder rather than their original content.
   - No reply is presented as nested under another reply.
 
-### UC-012 — Edit Own Reply
+### UC-011 — Edit Own Reply
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-010
+- **Depends On:** UC-001, UC-009
 - **Description:** A user edits a reply they created while preserving its original posting identity.
 - **Acceptance Criteria:**
   - An authenticated active user can edit only their own active reply.
@@ -178,10 +170,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Another regular User cannot edit the reply.
   - A deleted reply cannot be edited.
 
-### UC-013 — Delete Own Reply
+### UC-012 — Delete Own Reply
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-010
+- **Depends On:** UC-001, UC-009
 - **Description:** A user soft-deletes a reply they created while retaining its record for discussion integrity and auditing.
 - **Acceptance Criteria:**
   - An authenticated active user can delete only their own active reply.
@@ -190,10 +182,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - The parent message's displayed active reply count is updated consistently.
   - Another regular User cannot delete the reply.
 
-### UC-014 — Vote on Message
+### UC-013 — Vote on Message
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006, UC-007
+- **Depends On:** UC-001, UC-005, UC-006
 - **Description:** An authenticated active user upvotes or downvotes another user's message and may remove or change that vote.
 - **Acceptance Criteria:**
   - A user can place an `UPVOTE` or `DOWNVOTE` on an active message created by another user.
@@ -204,10 +196,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Upvote and downvote counts, and the current user's vote, reflect the persisted result immediately.
   - A user cannot vote on a deleted message.
 
-### UC-015 — Vote on Reply
+### UC-014 — Vote on Reply
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-010, UC-011
+- **Depends On:** UC-001, UC-009, UC-010
 - **Description:** An authenticated active user upvotes or downvotes another user's reply and may remove or change that vote.
 - **Acceptance Criteria:**
   - A user can place an `UPVOTE` or `DOWNVOTE` on an active reply created by another user.
@@ -218,21 +210,21 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Vote counts and the current user's vote reflect the persisted result immediately.
   - A user cannot vote on a deleted reply.
 
-### UC-016 — Browse Recent Feed
+### UC-015 — Browse Recent Feed
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006
+- **Depends On:** UC-001, UC-005
 - **Description:** An authenticated user browses feedback ordered from newest to oldest.
 - **Acceptance Criteria:**
   - Recent is the default feed selection.
   - Messages are ordered by creation timestamp descending.
-  - Each feed item presents the information required by UC-007 without exposing anonymous identities.
+  - Each feed item presents the information required by UC-006 without exposing anonymous identities.
   - Newly created messages appear according to their creation timestamp.
 
-### UC-017 — Browse Popular Feed
+### UC-016 — Browse Popular Feed
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006, UC-014
+- **Depends On:** UC-001, UC-005, UC-013
 - **Description:** An authenticated user browses feedback ranked by its number of upvotes.
 - **Acceptance Criteria:**
   - A user can switch from Recent to Popular.
@@ -241,10 +233,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - Downvotes do not affect the MVP popularity ranking.
   - The ranking uses persisted votes and does not expose anonymous identities.
 
-### UC-018 — Navigate Feed Pages
+### UC-017 — Navigate Feed Pages
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-016, UC-017
+- **Depends On:** UC-015, UC-016
 - **Description:** An authenticated user navigates a large Recent or Popular feed in bounded pages using cursor-based or page/offset pagination.
 - **Acceptance Criteria:**
   - Both Recent and Popular feeds return a bounded number of messages per request.
@@ -253,10 +245,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - A message is not duplicated within a single traversal when the underlying data has not changed.
   - Invalid pagination input is rejected with a clear client error.
 
-### UC-019 — Moderate Message
+### UC-018 — Moderate Message
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-006, UC-007
+- **Depends On:** UC-001, UC-005, UC-006
 - **Description:** An Admin reviews feedback and soft-deletes an inappropriate message regardless of who created it.
 - **Acceptance Criteria:**
   - Only an authenticated Admin can perform an administrative deletion of another user's message.
@@ -265,10 +257,10 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
   - The operation records sufficient information to identify that an administrative moderation action occurred.
   - Moderating anonymous content does not reveal its creator to regular users.
 
-### UC-020 — Moderate Reply
+### UC-019 — Moderate Reply
 
 - **Status:** NOT_IMPLEMENTED
-- **Depends On:** UC-001, UC-010, UC-011
+- **Depends On:** UC-001, UC-009, UC-010
 - **Description:** An Admin reviews discussion replies and soft-deletes an inappropriate reply regardless of who created it.
 - **Acceptance Criteria:**
   - Only an authenticated Admin can perform an administrative deletion of another user's reply.
