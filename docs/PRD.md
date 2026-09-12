@@ -1,6 +1,6 @@
 # SpeakUp PRD
 
-## 1. Product Overview
+# 1. Product Overview
 
 A feedback management application providing its employees with a private space to:
 
@@ -167,7 +167,7 @@ Nested discussions add significant complexity without being necessary for the in
 
 ---
 
-# 7. Anonymous Participation
+# 6. Anonymous Participation
 
 Users can choose whether to publish as themselves or anonymously.
 
@@ -210,7 +210,7 @@ The backend must enforce this rather than merely hiding the name in the frontend
 
 ---
 
-# 8. Voting
+# 7. Voting
 
 Users can vote on:
 
@@ -264,7 +264,7 @@ with a uniqueness constraint ensuring one vote per user/item.
 
 ---
 
-# 9. Popularity
+# 8. Popularity
 
 Messages can be sorted by popularity.
 
@@ -292,7 +292,7 @@ score = weighted_votes + recency
 
 ---
 
-# 10. Message Feed
+# 9. Message Feed
 
 The primary user experience is the feedback feed.
 
@@ -325,7 +325,7 @@ ORDER BY upvote_count DESC,
 
 ---
 
-# 11. Functional Requirements
+# 10. Functional Requirements
 
 ## FR-01 — Authentication
 
@@ -352,7 +352,7 @@ Future:
 
 ---
 
-# 13. User Management
+# 11. User Management
 
 ## FR-02 — Create User
 
@@ -427,7 +427,7 @@ Support basic filtering:
 
 ---
 
-# 14. Message Management
+# 12. Message Management
 
 ## FR-06 — Create Message
 
@@ -538,7 +538,7 @@ This preserves discussion integrity and makes moderation/auditing easier.
 
 ---
 
-# 15. Reply Management
+# 13. Reply Management
 
 ## FR-10 — Create Reply
 
@@ -592,7 +592,7 @@ Soft deletion is recommended.
 
 ---
 
-# 16. Voting Requirements
+# 14. Voting Requirements
 
 ## FR-14 — Vote on Message
 
@@ -625,7 +625,7 @@ This avoids trivial manipulation of popularity.
 
 ---
 
-# 17. Feed Requirements
+# 15. Feed Requirements
 
 ## FR-17 — Recent Feed
 
@@ -677,7 +677,7 @@ GET /api/messages?sort=recent&cursor=...
 
 ---
 
-# 18. Search
+# 16. Search
 
 ### MVP
 
@@ -697,7 +697,7 @@ For PostgreSQL, full-text search can eventually be added without introducing a s
 
 ---
 
-# 19. Categories / Topics
+# 17. Categories / Topics
 
 I would **not make categories mandatory for MVP**.
 
@@ -722,7 +722,7 @@ This will make analytics and filtering more useful.
 
 ---
 
-# 20. Moderation
+# 18. Moderation
 
 This is an important area to consider even if it isn't fully implemented in MVP.
 
@@ -755,7 +755,7 @@ with reasons such as:
 
 ---
 
-# 21. Notifications
+# 19. Notifications
 
 ### MVP
 
@@ -780,7 +780,7 @@ Possible channels:
 
 ---
 
-# 22. Administration Dashboard
+# 20. Administration Dashboard
 
 ## Admin Dashboard
 
@@ -804,7 +804,7 @@ Potential future metrics:
 
 ---
 
-# 23. Main User Journeys
+# 21. Main User Journeys
 
 ## Journey 1 — Employee Creates Feedback
 
@@ -904,7 +904,7 @@ User receives account/invitation
 
 ---
 
-# 24. Suggested UI Structure
+# 22. Suggested UI Structure
 
 ## Employee Application
 
@@ -941,7 +941,7 @@ User receives account/invitation
 
 ---
 
-# 25. Proposed Domain Model
+# 23. Proposed Domain Model
 
 A reasonable MVP domain model:
 
@@ -986,7 +986,7 @@ ContentStatus
 ---
 
 
-# 35. Future AI Capabilities
+# 24. Future AI Capabilities
 
 This application could eventually become considerably more interesting with AI.
 
