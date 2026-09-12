@@ -1,0 +1,6 @@
+interface:
+  display_name: "PRD to Requirements"
+  short_description: "Generate use-case requirements from a PRD"
+  default_prompt: "Use $prd-to-requirements to generate docs/requirements.md from docs/prd.md."
+policy:
+  allow_implicit_invocation: false

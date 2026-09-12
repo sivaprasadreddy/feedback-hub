@@ -1,5 +1,5 @@
 # SpeakUp
-A multi-tenant feedback management platform where organizations provide their employees with a private space to:
+A feedback management platform where an organization can provide their employees with a private space to:
 
 * Express feedback, opinions, suggestions, concerns, or ideas.
 * Participate in discussions through replies.
