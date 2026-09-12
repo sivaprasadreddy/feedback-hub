@@ -19,8 +19,13 @@
         <p class="mt-4 whitespace-pre-wrap text-slate-700"
            th:classappend="${message.deleted()} ? ' italic text-slate-500' : ''"
            th:text="${message.content()}">Message</p>
-        <a th:if="${message.editable()}" th:href="@{/messages/{id}/edit(id=${message.id()})}"
-           class="mt-4 inline-block text-sm font-semibold text-sky-700 hover:text-sky-900">Edit message</a>
+        <div th:if="${message.editable()}" class="mt-4 flex items-center gap-4">
+            <a th:href="@{/messages/{id}/edit(id=${message.id()})}"
+               class="text-sm font-semibold text-sky-700 hover:text-sky-900">Edit message</a>
+            <form method="post" th:action="@{/messages/{id}/delete(id=${message.id()})}">
+                <button type="submit" class="text-sm font-semibold text-rose-700 hover:text-rose-900">Delete message</button>
+            </form>
+        </div>
         <dl class="mt-6 grid grid-cols-2 gap-4 border-t border-slate-200 pt-4 sm:grid-cols-4">
             <div>
                 <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Upvotes</dt>

@@ -15,7 +15,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-005     | Create Message              | COMPLETED       |
 | UC-006     | View Message                | COMPLETED       |
 | UC-007     | Edit Own Message            | COMPLETED       |
-| UC-008     | Delete Own Message          | NOT_IMPLEMENTED |
+| UC-008     | Delete Own Message          | COMPLETED       |
 | UC-009     | Create Reply                | NOT_IMPLEMENTED |
 | UC-010     | View Replies                | NOT_IMPLEMENTED |
 | UC-011     | Edit Own Reply              | NOT_IMPLEMENTED |
@@ -122,7 +122,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-008 — Delete Own Message
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005
 - **Description:** A user soft-deletes a message they created so that discussion integrity and audit information are retained.
 - **Acceptance Criteria:**

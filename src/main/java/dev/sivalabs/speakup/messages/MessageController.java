@@ -77,6 +77,13 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
+    @PostMapping("/messages/{messageId}/delete")
+    String deleteMessage(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
+        messageService.deleteMessage(messageId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Message deleted successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
     private void populateHome(Model model) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
         model.addAttribute("messages", messageService.findRecentMessages());

@@ -72,6 +72,12 @@ class MessageService {
         message.setContent(content);
     }
 
+    @Transactional
+    public void deleteMessage(Long messageId, Long currentUserId) {
+        var message = getEditableMessage(messageId, currentUserId);
+        message.setStatus(MessageStatus.DELETED);
+    }
+
     private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {
         var message = messageRepository
                 .findById(messageId)
