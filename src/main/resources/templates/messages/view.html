@@ -59,6 +59,9 @@
                 <p class="mt-3 whitespace-pre-wrap text-slate-700"
                    th:classappend="${reply.deleted()} ? ' italic text-slate-500' : ''"
                    th:text="${reply.content()}">Reply</p>
+                <a th:if="${reply.editable()}"
+                   th:href="@{/messages/{messageId}/replies/{replyId}/edit(messageId=${message.id()},replyId=${reply.id()})}"
+                   class="mt-3 inline-block text-sm font-semibold text-sky-700 hover:text-sky-900">Edit reply</a>
                 <dl class="mt-4 flex flex-wrap gap-6 border-t border-slate-200 pt-3 text-sm">
                     <div><dt class="inline font-semibold text-slate-500">Upvotes</dt> <dd class="inline" th:text="${reply.upvoteCount()}">0</dd></div>
                     <div><dt class="inline font-semibold text-slate-500">Downvotes</dt> <dd class="inline" th:text="${reply.downvoteCount()}">0</dd></div>

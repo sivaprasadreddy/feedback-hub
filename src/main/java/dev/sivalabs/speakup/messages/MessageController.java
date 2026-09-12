@@ -50,7 +50,7 @@ class MessageController {
     @GetMapping("/messages/{messageId}")
     String viewMessage(@PathVariable Long messageId, Model model) {
         model.addAttribute("message", messageService.findMessage(messageId, AuthUtils.getCurrentUserIdOrThrow()));
-        model.addAttribute("replies", messageService.findReplies(messageId));
+        model.addAttribute("replies", messageService.findReplies(messageId, AuthUtils.getCurrentUserIdOrThrow()));
         model.addAttribute("postingIdentities", PostingIdentity.values());
         if (!model.containsAttribute("replyForm")) {
             model.addAttribute("replyForm", new CreateReplyForm("", null));
@@ -68,7 +68,7 @@ class MessageController {
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("message", messageService.findMessage(messageId, currentUser.getId()));
-            model.addAttribute("replies", messageService.findReplies(messageId));
+            model.addAttribute("replies", messageService.findReplies(messageId, currentUser.getId()));
             model.addAttribute("postingIdentities", PostingIdentity.values());
             return "messages/view";
         }
@@ -78,6 +78,36 @@ class MessageController {
                 currentUser.getId(),
                 form.postingIdentity() == PostingIdentity.ANONYMOUS));
         redirectAttributes.addFlashAttribute("successMessage", "Reply posted successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
+    @GetMapping("/messages/{messageId}/replies/{replyId}/edit")
+    String editReplyForm(@PathVariable Long messageId, @PathVariable Long replyId, Model model) {
+        model.addAttribute("messageId", messageId);
+        model.addAttribute("replyId", replyId);
+        model.addAttribute(
+                "form", messageService.getReplyEditForm(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow()));
+        return "messages/edit-reply";
+    }
+
+    @PostMapping("/messages/{messageId}/replies/{replyId}/edit")
+    String editReply(
+            @PathVariable Long messageId,
+            @PathVariable Long replyId,
+            @Valid @ModelAttribute("form") EditReplyForm form,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        messageService.validateReplyCanBeEdited(messageId, replyId, currentUserId);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("messageId", messageId);
+            model.addAttribute("replyId", replyId);
+            return "messages/edit-reply";
+        }
+        messageService.editReply(
+                messageId, replyId, currentUserId, form.content().trim());
+        redirectAttributes.addFlashAttribute("successMessage", "Reply updated successfully.");
         return "redirect:/messages/" + messageId;
     }
 

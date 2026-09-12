@@ -11,4 +11,5 @@ record ReplyDto(
         long upvoteCount,
         long downvoteCount,
         String currentUserVote,
-        boolean deleted) {}
+        boolean deleted,
+        boolean editable) {}

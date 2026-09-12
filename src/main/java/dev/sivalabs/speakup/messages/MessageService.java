@@ -98,7 +98,7 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReplyDto> findReplies(Long messageId) {
+    public List<ReplyDto> findReplies(Long messageId, Long currentUserId) {
         if (!messageRepository.existsById(messageId)) {
             throw new ResourceNotFoundException("Message not found");
         }
@@ -116,9 +116,41 @@ class MessageService {
                             0,
                             0,
                             null,
-                            deleted);
+                            deleted,
+                            !deleted && reply.getCreator().getId().equals(currentUserId));
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public EditReplyForm getReplyEditForm(Long messageId, Long replyId, Long currentUserId) {
+        var reply = getEditableReply(messageId, replyId, currentUserId);
+        return new EditReplyForm(reply.getContent());
+    }
+
+    @Transactional(readOnly = true)
+    public void validateReplyCanBeEdited(Long messageId, Long replyId, Long currentUserId) {
+        getEditableReply(messageId, replyId, currentUserId);
+    }
+
+    @Transactional
+    public void editReply(Long messageId, Long replyId, Long currentUserId, String content) {
+        var reply = getEditableReply(messageId, replyId, currentUserId);
+        reply.setContent(content);
+    }
+
+    private ReplyEntity getEditableReply(Long messageId, Long replyId, Long currentUserId) {
+        var reply = replyRepository
+                .findById(replyId)
+                .filter(candidate -> candidate.getMessage().getId().equals(messageId))
+                .orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        if (!reply.getCreator().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You can only edit your own replies");
+        }
+        if (reply.getStatus() == ReplyStatus.DELETED) {
+            throw new AccessDeniedException("Deleted replies cannot be edited");
+        }
+        return reply;
     }
 
     private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {
