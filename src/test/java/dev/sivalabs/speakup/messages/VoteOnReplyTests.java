@@ -49,19 +49,41 @@ class VoteOnReplyTests extends BaseIT {
     }
 
     @Test
-    void countsAndCurrentUsersVoteAreRenderedImmediately() {
+    void countsAndCurrentUsersVoteAreRenderedImmediately() throws Exception {
         var ownerSession = session(login("admin@gmail.com", "secret"));
         var message = createMessage(ownerSession);
         var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
         var voterSession = session(login("siva@gmail.com", "secret"));
         vote(voterSession, message.getId(), reply.getId(), "UPVOTE");
 
-        assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
-                        .session(voterSession)
-                        .exchange())
+        var upvoted = mvc.get()
+                .uri("/messages/{id}", message.getId())
+                .session(voterSession)
+                .exchange();
+        assertThat(upvoted)
                 .bodyText()
-                .contains("Upvotes", "1", "Your vote", "UPVOTE", "Remove reply vote");
+                .contains("Remove your reply upvote", "Downvote reply", "1")
+                .doesNotContain("Your vote");
+        assertThat(upvoted.getMvcResult().getResponse().getContentAsString())
+                .contains(
+                        "text-emerald-600",
+                        "title=\"Remove your reply upvote\"",
+                        "action=\"/messages/" + message.getId() + "/replies/" + reply.getId() + "/vote/remove\"");
+
+        vote(voterSession, message.getId(), reply.getId(), "DOWNVOTE");
+        var downvoted = mvc.get()
+                .uri("/messages/{id}", message.getId())
+                .session(voterSession)
+                .exchange();
+        assertThat(downvoted)
+                .bodyText()
+                .contains("Remove your reply downvote", "Upvote reply")
+                .doesNotContain("Your vote");
+        assertThat(downvoted.getMvcResult().getResponse().getContentAsString())
+                .contains(
+                        "text-amber-600",
+                        "title=\"Remove your reply downvote\"",
+                        "action=\"/messages/" + message.getId() + "/replies/" + reply.getId() + "/vote/remove\"");
     }
 
     @Test
@@ -78,7 +100,8 @@ class VoteOnReplyTests extends BaseIT {
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .doesNotContain("Upvote reply", "Downvote reply", "Remove reply vote");
+                .doesNotContain(
+                        "Upvote reply", "Downvote reply", "Remove your reply upvote", "Remove your reply downvote");
         assertThat(replyVoteRepository.findByReplyIdAndVoterId(reply.getId(), 2L))
                 .isEmpty();
     }

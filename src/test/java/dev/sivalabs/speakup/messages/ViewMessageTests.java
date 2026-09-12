@@ -30,7 +30,8 @@ class ViewMessageTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("messages/view")
                 .bodyText()
-                .contains("Siva", content, "Upvotes", "Downvotes", "Replies", "Your vote", "No vote");
+                .contains("Siva", content, "Upvotes", "Downvotes", "Replies")
+                .doesNotContain("Your vote", "No vote");
     }
 
     @Test

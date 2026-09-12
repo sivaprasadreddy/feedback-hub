@@ -47,9 +47,8 @@ class ViewRepliesTests extends BaseIT {
                         "Created",
                         "Updated",
                         "Upvotes",
-                        "Downvotes",
-                        "Your vote",
-                        "No vote")
+                        "Downvotes")
+                .doesNotContain("Your vote", "No vote")
                 .doesNotContain("Admin", "admin@gmail.com");
         var html = result.getMvcResult().getResponse().getContentAsString();
         assertThat(html.indexOf(identifiedContent)).isLessThan(html.indexOf(anonymousContent));

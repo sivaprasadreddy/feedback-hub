@@ -29,7 +29,7 @@ class BrowseRecentFeedTests extends BaseIT {
     }
 
     @Test
-    void feedItemsShowMessageDetailsAndPersistedEngagement() {
+    void feedItemsShowMessageDetailsAndPersistedEngagement() throws Exception {
         var ownerSession = session(login("admin@gmail.com", "secret"));
         var content = createMessage(ownerSession, "Feed details " + UUID.randomUUID(), "IDENTIFIED");
         var message = findMessage(content);
@@ -37,9 +37,26 @@ class BrowseRecentFeedTests extends BaseIT {
         vote(voterSession, message.getId(), "UPVOTE");
         createReply(voterSession, message.getId(), "Feed reply " + UUID.randomUUID());
 
-        assertThat(mvc.get().uri("/").session(voterSession).exchange())
+        var feed = mvc.get().uri("/").session(voterSession).exchange();
+        assertThat(feed)
                 .bodyText()
-                .contains("Admin", content, "Upvotes", "1", "Downvotes", "0", "Replies", "1", "Your vote", "UPVOTE");
+                .contains("Admin", content, "Upvotes, your vote", "1", "Downvotes", "0", "Replies", "1")
+                .doesNotContain("Your vote", "UPVOTE");
+        assertThat(feed.getMvcResult().getResponse().getContentAsString())
+                .contains("text-emerald-600", "title=\"Upvotes — your vote\"");
+    }
+
+    @Test
+    void downvoteIsIndicatedByHighlightedDownvoteIcon() throws Exception {
+        var ownerSession = session(login("admin@gmail.com", "secret"));
+        var content = createMessage(ownerSession, "Downvoted feed item " + UUID.randomUUID(), "IDENTIFIED");
+        var voterSession = session(login("siva@gmail.com", "secret"));
+        vote(voterSession, findMessage(content).getId(), "DOWNVOTE");
+
+        var feed = mvc.get().uri("/").session(voterSession).exchange();
+        assertThat(feed).bodyText().contains("Downvotes, your vote").doesNotContain("Your vote", "DOWNVOTE");
+        assertThat(feed.getMvcResult().getResponse().getContentAsString())
+                .contains("text-amber-600", "title=\"Downvotes — your vote\"");
     }
 
     @Test

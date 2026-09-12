@@ -56,18 +56,40 @@ class VoteOnMessageTests extends BaseIT {
     }
 
     @Test
-    void countsAndCurrentUsersVoteAreRenderedImmediately() {
+    void countsAndCurrentUsersVoteAreRenderedImmediately() throws Exception {
         var ownerSession = session(login("admin@gmail.com", "secret"));
         var message = createMessage(ownerSession, "ANONYMOUS");
         var voterSession = session(login("siva@gmail.com", "secret"));
         vote(voterSession, message.getId(), "UPVOTE");
 
-        assertThat(mvc.get()
-                        .uri("/messages/{messageId}", message.getId())
-                        .session(voterSession)
-                        .exchange())
+        var upvoted = mvc.get()
+                .uri("/messages/{messageId}", message.getId())
+                .session(voterSession)
+                .exchange();
+        assertThat(upvoted)
                 .bodyText()
-                .contains("Upvotes", "UPVOTE", "Remove vote");
+                .contains("Remove your upvote", "Downvote message")
+                .doesNotContain("Your vote");
+        assertThat(upvoted.getMvcResult().getResponse().getContentAsString())
+                .contains(
+                        "text-emerald-600",
+                        "title=\"Remove your upvote\"",
+                        "action=\"/messages/" + message.getId() + "/vote/remove\"");
+
+        vote(voterSession, message.getId(), "DOWNVOTE");
+        var downvoted = mvc.get()
+                .uri("/messages/{messageId}", message.getId())
+                .session(voterSession)
+                .exchange();
+        assertThat(downvoted)
+                .bodyText()
+                .contains("Remove your downvote", "Upvote message")
+                .doesNotContain("Your vote");
+        assertThat(downvoted.getMvcResult().getResponse().getContentAsString())
+                .contains(
+                        "text-amber-600",
+                        "title=\"Remove your downvote\"",
+                        "action=\"/messages/" + message.getId() + "/vote/remove\"");
     }
 
     @Test
@@ -81,7 +103,7 @@ class VoteOnMessageTests extends BaseIT {
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .doesNotContain("Remove vote", ">Upvote</button>", ">Downvote</button>");
+                .doesNotContain("Upvote message", "Downvote message", "Remove your upvote", "Remove your downvote");
         assertThat(messageVoteRepository.findByMessageIdAndVoterId(message.getId(), 2L))
                 .isEmpty();
     }
