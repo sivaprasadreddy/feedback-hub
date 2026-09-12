@@ -38,6 +38,9 @@ class ReplyEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean anonymous;
 
+    @Column(nullable = false)
+    private boolean spam;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReplyStatus status = ReplyStatus.ACTIVE;
@@ -83,6 +86,14 @@ class ReplyEntity extends BaseEntity {
 
     public void setAnonymous(boolean anonymous) {
         this.anonymous = anonymous;
+    }
+
+    public boolean isSpam() {
+        return spam;
+    }
+
+    public void setSpam(boolean spam) {
+        this.spam = spam;
     }
 
     public ReplyStatus getStatus() {

@@ -98,7 +98,8 @@ class MessageService {
                         reply.isAnonymous() ? "Anonymous" : reply.getCreator().getName(),
                         reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
                         reply.getCreatedAt(),
-                        reply.getStatus() == ReplyStatus.DELETED))
+                        reply.getStatus() == ReplyStatus.DELETED,
+                        reply.isSpam()))
                 .toList();
     }
 
@@ -197,6 +198,7 @@ class MessageService {
         reply.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
         reply.setAnonymous(cmd.anonymous());
         replyRepository.save(reply);
+        eventPublisher.publishEvent(new ReplyCreatedEvent(reply.getId(), reply.getContent()));
     }
 
     @Transactional(readOnly = true)
