@@ -12,9 +12,6 @@ public class UserEntity extends BaseEntity {
     @SequenceGenerator(name = "user_id_generator", sequenceName = "user_id_seq")
     private Long id;
 
-    @Column
-    private String tenantId;
-
     @Column(nullable = false)
     private String name;
 
@@ -28,20 +25,15 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false)
+    private boolean active = true;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getName() {
@@ -74,5 +66,13 @@ public class UserEntity extends BaseEntity {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

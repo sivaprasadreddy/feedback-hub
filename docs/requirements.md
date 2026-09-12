@@ -8,7 +8,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 | UseCase ID | Use Case Title              | Status          |
 |------------|-----------------------------|-----------------|
-| UC-001     | Authenticate User           | NOT_IMPLEMENTED |
+| UC-001     | Authenticate User           | COMPLETED       |
 | UC-002     | Create User Account         | NOT_IMPLEMENTED |
 | UC-003     | Assign User Role            | NOT_IMPLEMENTED |
 | UC-004     | Activate or Deactivate User | NOT_IMPLEMENTED |
@@ -33,7 +33,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-001 — Authenticate User
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** None
 - **Description:** A registered user signs in with an email address and password to establish an authenticated session or token. The system identifies the user's role and account status.
 - **Acceptance Criteria:**

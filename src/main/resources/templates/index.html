@@ -2,11 +2,17 @@
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <body>
 <div layout:fragment="content">
     <h1>Welcome</h1>
+    <p sec:authorize="isAuthenticated()">
+        Signed in as
+        <span id="current-user" th:text="${#authentication.principal.name}">User</span>
+        (<span id="current-role" th:text="${#authentication.principal.role}">ROLE_USER</span>)
+    </p>
 </div>
 </body>
 </html>

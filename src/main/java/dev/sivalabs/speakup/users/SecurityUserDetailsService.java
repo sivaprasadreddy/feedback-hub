@@ -24,6 +24,6 @@ class SecurityUserDetailsService implements UserDetailsService {
 
     private SecurityUser toSecurityUser(UserEntity user) {
         return new SecurityUser(
-                user.getId(), user.getTenantId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole());
+                user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole(), user.isActive());
     }
 }

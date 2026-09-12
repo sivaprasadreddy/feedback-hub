@@ -10,19 +10,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class SecurityUser implements UserDetails {
 
     private final Long id;
-    private final String tenantId;
     private final String name;
     private final String email;
     private final String password;
     private final Role role;
+    private final boolean active;
 
-    public SecurityUser(Long id, String tenantId, String name, String email, String password, Role role) {
+    public SecurityUser(Long id, String name, String email, String password, Role role, boolean active) {
         this.id = id;
-        this.tenantId = tenantId;
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.active = active;
     }
 
     @Override
@@ -40,12 +40,13 @@ public class SecurityUser implements UserDetails {
         return email;
     }
 
-    public Long getId() {
-        return id;
+    @Override
+    public boolean isEnabled() {
+        return active;
     }
 
-    public String getTenantId() {
-        return tenantId;
+    public Long getId() {
+        return id;
     }
 
     public String getName() {
