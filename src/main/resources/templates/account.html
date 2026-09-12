@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{dashboard}">
+<head>
+    <title>My Account</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-2xl font-bold text-slate-900">My Account</h1>
+    <dl class="mt-6 max-w-lg divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-sm font-medium text-slate-500">Name</dt>
+            <dd class="col-span-2 text-sm text-slate-900" th:text="${#authentication.principal.name}">User</dd>
+        </div>
+        <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-sm font-medium text-slate-500">Email</dt>
+            <dd class="col-span-2 text-sm text-slate-900" th:text="${#authentication.principal.username}">user@example.com</dd>
+        </div>
+        <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-sm font-medium text-slate-500">Role</dt>
+            <dd class="col-span-2 text-sm text-slate-900" id="current-role" th:text="${#authentication.principal.role}">ROLE_USER</dd>
+        </div>
+    </dl>
+</div>
+</body>
+</html>

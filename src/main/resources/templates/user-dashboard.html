@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{dashboard}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+    <p class="mt-2 text-slate-600">
+        Welcome back,
+        <span id="current-user" th:text="${#authentication.principal.name}">User</span>.
+    </p>
+</div>
+</body>
+</html>

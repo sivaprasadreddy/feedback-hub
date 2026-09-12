@@ -16,6 +16,9 @@ class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("index");
-        registry.addViewController("/admin").setViewName("index");
+        registry.addViewController("/dashboard").setViewName("user-dashboard");
+        registry.addViewController("/account").setViewName("account");
+        registry.addViewController("/admin/users").setViewName("admin/users");
+        registry.addViewController("/admin/messages").setViewName("admin/messages");
     }
 }

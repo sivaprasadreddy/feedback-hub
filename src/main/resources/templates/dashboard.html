@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:hx="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE" th:text="SpeakUp">SpeakUp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/webjars/font-awesome/css/all.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('user-dropdown');
+            const button = document.getElementById('user-menu-button');
+            if (dropdown && button && !button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</head>
+<body class="min-h-screen bg-slate-100">
+<div th:replace="~{fragments/navbar :: topbar(true)}"></div>
+
+<div id="sidebar-overlay" class="fixed inset-0 z-20 hidden bg-slate-900/50 md:hidden" onclick="toggleSidebar()"></div>
+
+<aside id="sidebar"
+       class="fixed bottom-0 left-0 top-16 z-20 flex w-64 -translate-x-full flex-col border-r border-slate-700 bg-slate-800 transition-transform md:translate-x-0">
+    <nav class="flex-1 space-y-1 p-4" aria-label="Dashboard">
+        <a th:href="@{/dashboard}"
+           class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+            <i class="fa-solid fa-gauge-high w-5 text-center"></i>
+            Dashboard
+        </a>
+        <a th:href="@{/account}"
+           class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+            <i class="fa-solid fa-id-card w-5 text-center"></i>
+            My Account
+        </a>
+        <div sec:authorize="hasRole('ADMIN')" class="space-y-1">
+            <p class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Administration</p>
+            <a th:href="@{/admin/users}"
+               class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+                <i class="fa-solid fa-users w-5 text-center"></i>
+                Manage Users
+            </a>
+            <a th:href="@{/admin/messages}"
+               class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
+                <i class="fa-solid fa-comments w-5 text-center"></i>
+                Manage Messages
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<main class="pt-16 md:pl-64">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div th:if="${successMessage}" class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
+            <p class="text-sm font-medium text-green-800" th:text="${successMessage}"></p>
+        </div>
+        <div th:if="${errorMessage}" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+            <p class="text-sm font-medium text-red-800" th:text="${errorMessage}"></p>
+        </div>
+        <div layout:fragment="content"></div>
+    </div>
+</main>
+<script th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+<div layout:fragment="pageScripts"></div>
+</body>
+</html>

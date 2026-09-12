@@ -32,7 +32,11 @@ class AuthenticationTests extends BaseIT {
                 .hasViewName("index")
                 .bodyText()
                 .contains("Siva")
-                .contains("ROLE_USER");
+                .contains("Home")
+                .contains("Dashboard")
+                .contains("Messages will appear here.")
+                .doesNotContain("Manage Users")
+                .doesNotContain("Manage Messages");
     }
 
     @Test
@@ -79,7 +83,7 @@ class AuthenticationTests extends BaseIT {
 
     @Test
     void inactiveUserCannotAuthenticate() {
-        var result = login("inactive@gmail.com", "secret");
+        var result = login("prasad@gmail.com", "secret");
 
         assertThat(result).hasStatus(HttpStatus.FOUND).hasRedirectedUrl("/login?error");
         assertThat(authenticatedUserOrNull(result)).isNull();
@@ -95,7 +99,7 @@ class AuthenticationTests extends BaseIT {
     @Test
     void unauthenticatedRequestsToProtectedFeaturesAreRejected() {
         assertRedirectsToLogin(mvc.get().uri("/").exchange());
-        assertRedirectsToLogin(mvc.get().uri("/admin").exchange());
+        assertRedirectsToLogin(mvc.get().uri("/admin/users").exchange());
     }
 
     private MvcTestResult login(String email, String password) {
