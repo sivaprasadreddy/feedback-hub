@@ -46,7 +46,8 @@ class DashboardLayoutTests extends BaseIT {
                 .bodyText()
                 .contains("My Account")
                 .doesNotContain("Manage Users")
-                .doesNotContain("Manage Messages");
+                .doesNotContain("Manage Messages")
+                .doesNotContain("Total messages", "Total replies", "No. of users");
     }
 
     @Test
@@ -61,7 +62,8 @@ class DashboardLayoutTests extends BaseIT {
                 .bodyText()
                 .contains("My Account")
                 .contains("Manage Users")
-                .contains("Manage Messages");
+                .contains("Manage Messages")
+                .contains("Total messages", "Total replies", "No. of users", "3");
     }
 
     @Test

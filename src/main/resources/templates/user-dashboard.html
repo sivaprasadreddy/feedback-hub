@@ -2,6 +2,7 @@
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{dashboard}">
 <head>
@@ -14,6 +15,20 @@
         Welcome back,
         <span id="current-user" th:text="${#authentication.principal.name}">User</span>.
     </p>
+    <dl sec:authorize="hasRole('ADMIN')" class="mt-8 grid gap-4 sm:grid-cols-3">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500"><i class="fa-solid fa-message text-sky-600" aria-hidden="true"></i> Total messages</dt>
+            <dd class="mt-2 text-3xl font-bold text-slate-900" th:text="${totalMessages}">0</dd>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500"><i class="fa-solid fa-comments text-emerald-600" aria-hidden="true"></i> Total replies</dt>
+            <dd class="mt-2 text-3xl font-bold text-slate-900" th:text="${totalReplies}">0</dd>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500"><i class="fa-solid fa-users text-violet-600" aria-hidden="true"></i> No. of users</dt>
+            <dd class="mt-2 text-3xl font-bold text-slate-900" th:text="${totalUsers}">0</dd>
+        </div>
+    </dl>
 </div>
 </body>
 </html>
