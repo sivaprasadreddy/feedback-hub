@@ -4,6 +4,7 @@ import dev.sivalabs.speakup.shared.ResourceNotFoundException;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,32 @@ class MessageService {
                 0,
                 0,
                 null,
-                deleted);
+                deleted,
+                !deleted && message.getCreator().getId().equals(currentUserId));
+    }
+
+    @Transactional(readOnly = true)
+    public EditMessageForm getEditForm(Long messageId, Long currentUserId) {
+        var message = getEditableMessage(messageId, currentUserId);
+        return new EditMessageForm(message.getContent());
+    }
+
+    @Transactional
+    public void editMessage(Long messageId, Long currentUserId, String content) {
+        var message = getEditableMessage(messageId, currentUserId);
+        message.setContent(content);
+    }
+
+    private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        if (!message.getCreator().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You can only edit your own messages");
+        }
+        if (message.getStatus() == MessageStatus.DELETED) {
+            throw new AccessDeniedException("Deleted messages cannot be edited");
+        }
+        return message;
     }
 }

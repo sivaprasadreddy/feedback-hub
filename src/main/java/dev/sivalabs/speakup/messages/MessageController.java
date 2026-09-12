@@ -53,6 +53,30 @@ class MessageController {
         return "messages/view";
     }
 
+    @GetMapping("/messages/{messageId}/edit")
+    String editMessageForm(@PathVariable Long messageId, Model model) {
+        model.addAttribute("messageId", messageId);
+        model.addAttribute("form", messageService.getEditForm(messageId, AuthUtils.getCurrentUserIdOrThrow()));
+        return "messages/edit";
+    }
+
+    @PostMapping("/messages/{messageId}/edit")
+    String editMessage(
+            @PathVariable Long messageId,
+            @Valid @ModelAttribute("form") EditMessageForm form,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("messageId", messageId);
+            return "messages/edit";
+        }
+        messageService.editMessage(
+                messageId, AuthUtils.getCurrentUserIdOrThrow(), form.content().trim());
+        redirectAttributes.addFlashAttribute("successMessage", "Message updated successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
     private void populateHome(Model model) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
         model.addAttribute("messages", messageService.findRecentMessages());

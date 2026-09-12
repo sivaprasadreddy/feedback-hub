@@ -14,7 +14,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-004     | View and Filter Users       | COMPLETED       |
 | UC-005     | Create Message              | COMPLETED       |
 | UC-006     | View Message                | COMPLETED       |
-| UC-007     | Edit Own Message            | NOT_IMPLEMENTED |
+| UC-007     | Edit Own Message            | COMPLETED       |
 | UC-008     | Delete Own Message          | NOT_IMPLEMENTED |
 | UC-009     | Create Reply                | NOT_IMPLEMENTED |
 | UC-010     | View Replies                | NOT_IMPLEMENTED |
@@ -109,7 +109,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-007 — Edit Own Message
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005
 - **Description:** A user edits the content of a message they created while preserving its original posting identity.
 - **Acceptance Criteria:**

@@ -11,4 +11,5 @@ record MessageDetailsDto(
         long downvoteCount,
         long replyCount,
         String currentUserVote,
-        boolean deleted) {}
+        boolean deleted,
+        boolean editable) {}
