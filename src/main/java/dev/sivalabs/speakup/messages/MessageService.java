@@ -271,12 +271,14 @@ class MessageService {
         if (!messageRepository.existsById(messageId)) {
             throw new ResourceNotFoundException("Message not found");
         }
-        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
+        var replies = replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId);
+        var userNames = getReplyUserNames(replies);
+        return replies.stream()
                 .map(reply -> {
                     var deleted = reply.getStatus() == ReplyStatus.DELETED;
                     return new ReplyDto(
                             reply.getId(),
-                            reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId()),
+                            reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
                             deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
                             reply.getCreatedAt(),
                             reply.getUpdatedAt(),
