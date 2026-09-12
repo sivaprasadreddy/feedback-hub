@@ -19,7 +19,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-009     | Create Reply                | COMPLETED       |
 | UC-010     | View Replies                | COMPLETED       |
 | UC-011     | Edit Own Reply              | COMPLETED       |
-| UC-012     | Delete Own Reply            | NOT_IMPLEMENTED |
+| UC-012     | Delete Own Reply            | COMPLETED       |
 | UC-013     | Vote on Message             | NOT_IMPLEMENTED |
 | UC-014     | Vote on Reply               | NOT_IMPLEMENTED |
 | UC-015     | Browse Recent Feed          | NOT_IMPLEMENTED |
@@ -172,7 +172,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-012 — Delete Own Reply
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-009
 - **Description:** A user soft-deletes a reply they created while retaining its record for discussion integrity and auditing.
 - **Acceptance Criteria:**

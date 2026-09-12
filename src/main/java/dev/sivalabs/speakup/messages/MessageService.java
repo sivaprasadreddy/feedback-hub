@@ -139,6 +139,12 @@ class MessageService {
         reply.setContent(content);
     }
 
+    @Transactional
+    public void deleteReply(Long messageId, Long replyId, Long currentUserId) {
+        var reply = getEditableReply(messageId, replyId, currentUserId);
+        reply.setStatus(ReplyStatus.DELETED);
+    }
+
     private ReplyEntity getEditableReply(Long messageId, Long replyId, Long currentUserId) {
         var reply = replyRepository
                 .findById(replyId)

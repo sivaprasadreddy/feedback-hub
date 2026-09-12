@@ -111,6 +111,14 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
+    @PostMapping("/messages/{messageId}/replies/{replyId}/delete")
+    String deleteReply(
+            @PathVariable Long messageId, @PathVariable Long replyId, RedirectAttributes redirectAttributes) {
+        messageService.deleteReply(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
     @GetMapping("/messages/{messageId}/edit")
     String editMessageForm(@PathVariable Long messageId, Model model) {
         model.addAttribute("messageId", messageId);
