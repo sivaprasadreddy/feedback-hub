@@ -50,7 +50,33 @@ class MessageController {
     @GetMapping("/messages/{messageId}")
     String viewMessage(@PathVariable Long messageId, Model model) {
         model.addAttribute("message", messageService.findMessage(messageId, AuthUtils.getCurrentUserIdOrThrow()));
+        model.addAttribute("postingIdentities", PostingIdentity.values());
+        if (!model.containsAttribute("replyForm")) {
+            model.addAttribute("replyForm", new CreateReplyForm("", null));
+        }
         return "messages/view";
+    }
+
+    @PostMapping("/messages/{messageId}/replies")
+    String createReply(
+            @PathVariable Long messageId,
+            @Valid @ModelAttribute("replyForm") CreateReplyForm form,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal SecurityUser currentUser,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("message", messageService.findMessage(messageId, currentUser.getId()));
+            model.addAttribute("postingIdentities", PostingIdentity.values());
+            return "messages/view";
+        }
+        messageService.createReply(new CreateReplyCmd(
+                messageId,
+                form.content().trim(),
+                currentUser.getId(),
+                form.postingIdentity() == PostingIdentity.ANONYMOUS));
+        redirectAttributes.addFlashAttribute("successMessage", "Reply posted successfully.");
+        return "redirect:/messages/" + messageId;
     }
 
     @GetMapping("/messages/{messageId}/edit")

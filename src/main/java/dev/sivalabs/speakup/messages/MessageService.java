@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 class MessageService {
     static final String DELETED_CONTENT = "This message has been deleted.";
     private final MessageRepository messageRepository;
+    private final ReplyRepository replyRepository;
     private final EntityManager entityManager;
 
-    MessageService(MessageRepository messageRepository, EntityManager entityManager) {
+    MessageService(MessageRepository messageRepository, ReplyRepository replyRepository, EntityManager entityManager) {
         this.messageRepository = messageRepository;
+        this.replyRepository = replyRepository;
         this.entityManager = entityManager;
     }
 
@@ -54,7 +56,7 @@ class MessageService {
                 message.getCreatedAt(),
                 0,
                 0,
-                0,
+                replyRepository.countByMessageId(messageId),
                 null,
                 deleted,
                 !deleted && message.getCreator().getId().equals(currentUserId));
@@ -76,6 +78,22 @@ class MessageService {
     public void deleteMessage(Long messageId, Long currentUserId) {
         var message = getEditableMessage(messageId, currentUserId);
         message.setStatus(MessageStatus.DELETED);
+    }
+
+    @Transactional
+    public void createReply(CreateReplyCmd cmd) {
+        var message = messageRepository
+                .findById(cmd.messageId())
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        if (message.getStatus() == MessageStatus.DELETED) {
+            throw new AccessDeniedException("Deleted messages cannot be replied to");
+        }
+        var reply = new ReplyEntity();
+        reply.setMessage(message);
+        reply.setContent(cmd.content());
+        reply.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
+        reply.setAnonymous(cmd.anonymous());
+        replyRepository.save(reply);
     }
 
     private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {

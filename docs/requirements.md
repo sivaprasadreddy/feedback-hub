@@ -16,7 +16,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-006     | View Message                | COMPLETED       |
 | UC-007     | Edit Own Message            | COMPLETED       |
 | UC-008     | Delete Own Message          | COMPLETED       |
-| UC-009     | Create Reply                | NOT_IMPLEMENTED |
+| UC-009     | Create Reply                | COMPLETED       |
 | UC-010     | View Replies                | NOT_IMPLEMENTED |
 | UC-011     | Edit Own Reply              | NOT_IMPLEMENTED |
 | UC-012     | Delete Own Reply            | NOT_IMPLEMENTED |
@@ -134,7 +134,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-009 — Create Reply
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005
 - **Description:** An authenticated active user adds a single-level reply to an active message either under their identity or anonymously.
 - **Acceptance Criteria:**
