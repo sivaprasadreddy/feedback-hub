@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserService {
+class UserService {
     static final String INITIAL_PASSWORD = "secret123";
 
     private final UserRepository userRepository;
@@ -25,7 +25,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserDto> findById(Long id) {
+    Optional<UserDto> findById(Long id) {
         return userRepository.findById(id).map(this::toUserDto);
     }
 

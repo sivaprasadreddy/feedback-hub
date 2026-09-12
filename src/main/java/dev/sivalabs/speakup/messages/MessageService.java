@@ -2,7 +2,7 @@ package dev.sivalabs.speakup.messages;
 
 import dev.sivalabs.speakup.shared.PagedResult;
 import dev.sivalabs.speakup.shared.ResourceNotFoundException;
-import dev.sivalabs.speakup.users.UserService;
+import dev.sivalabs.speakup.users.UsersAPI;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -21,7 +21,7 @@ class MessageService {
     private final ReplyRepository replyRepository;
     private final MessageVoteRepository messageVoteRepository;
     private final ReplyVoteRepository replyVoteRepository;
-    private final UserService userService;
+    private final UsersAPI usersAPI;
     private final ApplicationEventPublisher eventPublisher;
 
     MessageService(
@@ -29,13 +29,13 @@ class MessageService {
             ReplyRepository replyRepository,
             MessageVoteRepository messageVoteRepository,
             ReplyVoteRepository replyVoteRepository,
-            UserService userService,
+            UsersAPI usersAPI,
             ApplicationEventPublisher eventPublisher) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
         this.replyVoteRepository = replyVoteRepository;
-        this.userService = userService;
+        this.usersAPI = usersAPI;
         this.eventPublisher = eventPublisher;
     }
 
@@ -350,9 +350,6 @@ class MessageService {
     }
 
     private String getUserName(Long userId) {
-        return userService
-                .findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
-                .name();
+        return usersAPI.findNameById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }
