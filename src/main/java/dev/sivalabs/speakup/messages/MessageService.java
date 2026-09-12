@@ -83,6 +83,31 @@ class MessageService {
         message.setModeratedAt(Instant.now());
     }
 
+    @Transactional(readOnly = true)
+    public List<AdminReplyDto> findRepliesForModeration() {
+        return replyRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(reply -> new AdminReplyDto(
+                        reply.getId(),
+                        reply.getMessage().getId(),
+                        reply.isAnonymous() ? "Anonymous" : reply.getCreator().getName(),
+                        reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
+                        reply.getCreatedAt(),
+                        reply.getStatus() == ReplyStatus.DELETED))
+                .toList();
+    }
+
+    @Transactional
+    public void moderateReply(Long replyId, Long moderatorId) {
+        var reply =
+                replyRepository.findById(replyId).orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        if (reply.getStatus() == ReplyStatus.DELETED) {
+            throw new AccessDeniedException("Deleted replies cannot be moderated");
+        }
+        reply.setStatus(ReplyStatus.DELETED);
+        reply.setModerator(entityManager.getReference(UserEntity.class, moderatorId));
+        reply.setModeratedAt(Instant.now());
+    }
+
     private PageRequest pageRequest(int pageNo) {
         return PageRequest.of(pageNo - 1, FEED_PAGE_SIZE);
     }

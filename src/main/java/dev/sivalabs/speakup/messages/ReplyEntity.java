@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.time.Instant;
 
 @Entity
 @Table(name = "replies")
@@ -40,6 +41,13 @@ class ReplyEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReplyStatus status = ReplyStatus.ACTIVE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moderated_by_user_id")
+    private UserEntity moderator;
+
+    @Column(name = "moderated_at")
+    private Instant moderatedAt;
 
     public Long getId() {
         return id;
@@ -83,5 +91,21 @@ class ReplyEntity extends BaseEntity {
 
     public void setStatus(ReplyStatus status) {
         this.status = status;
+    }
+
+    public UserEntity getModerator() {
+        return moderator;
+    }
+
+    public void setModerator(UserEntity moderator) {
+        this.moderator = moderator;
+    }
+
+    public Instant getModeratedAt() {
+        return moderatedAt;
+    }
+
+    public void setModeratedAt(Instant moderatedAt) {
+        this.moderatedAt = moderatedAt;
     }
 }

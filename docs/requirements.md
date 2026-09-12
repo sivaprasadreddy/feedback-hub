@@ -26,7 +26,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-016     | Browse Popular Feed         | COMPLETED       |
 | UC-017     | Navigate Feed Pages         | COMPLETED       |
 | UC-018     | Moderate Message            | COMPLETED       |
-| UC-019     | Moderate Reply              | NOT_IMPLEMENTED |
+| UC-019     | Moderate Reply              | COMPLETED       |
 
 ## Detailed Use Cases
 
@@ -259,7 +259,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-019 — Moderate Reply
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-009, UC-010
 - **Description:** An Admin reviews discussion replies and soft-deletes an inappropriate reply regardless of who created it.
 - **Acceptance Criteria:**

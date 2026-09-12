@@ -11,6 +11,9 @@ interface ReplyRepository extends JpaRepository<ReplyEntity, Long> {
     @EntityGraph(attributePaths = {"message", "creator"})
     List<ReplyEntity> findAllByMessageIdOrderByCreatedAtAsc(Long messageId);
 
+    @EntityGraph(attributePaths = {"message", "creator"})
+    List<ReplyEntity> findAllByOrderByCreatedAtDesc();
+
     @Override
     @EntityGraph(attributePaths = {"message", "creator"})
     Optional<ReplyEntity> findById(Long id);
