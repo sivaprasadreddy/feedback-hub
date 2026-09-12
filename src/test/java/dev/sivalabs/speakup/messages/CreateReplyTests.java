@@ -79,7 +79,8 @@ class CreateReplyTests extends BaseIT {
                 .hasViewName("messages/view")
                 .bodyText()
                 .contains("Reply is required", "Choose how to reply");
-        assertThat(replyRepository.countByMessageId(message.getId())).isZero();
+        assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
+                .isZero();
     }
 
     @Test
@@ -92,7 +93,8 @@ class CreateReplyTests extends BaseIT {
         assertThat(createReply(userSession, message.getId(), "Not allowed", "IDENTIFIED"))
                 .hasStatusOk()
                 .hasViewName("error/403");
-        assertThat(replyRepository.countByMessageId(message.getId())).isZero();
+        assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
+                .isZero();
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())
                         .session(userSession)
@@ -140,7 +142,7 @@ class CreateReplyTests extends BaseIT {
     }
 
     private ReplyEntity findReply(Long messageId, String content) {
-        return replyRepository.findAllByMessageId(messageId).stream()
+        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
                 .filter(reply -> reply.getContent().equals(content))
                 .findFirst()
                 .orElseThrow();

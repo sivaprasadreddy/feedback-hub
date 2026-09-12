@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 class MessageService {
     static final String DELETED_CONTENT = "This message has been deleted.";
+    static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
     private final ReplyRepository replyRepository;
     private final EntityManager entityManager;
@@ -56,7 +57,7 @@ class MessageService {
                 message.getCreatedAt(),
                 0,
                 0,
-                replyRepository.countByMessageId(messageId),
+                replyRepository.countByMessageIdAndStatus(messageId, ReplyStatus.ACTIVE),
                 null,
                 deleted,
                 !deleted && message.getCreator().getId().equals(currentUserId));
@@ -94,6 +95,30 @@ class MessageService {
         reply.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
         reply.setAnonymous(cmd.anonymous());
         replyRepository.save(reply);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReplyDto> findReplies(Long messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new ResourceNotFoundException("Message not found");
+        }
+        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
+                .map(reply -> {
+                    var deleted = reply.getStatus() == ReplyStatus.DELETED;
+                    return new ReplyDto(
+                            reply.getId(),
+                            reply.isAnonymous()
+                                    ? "Anonymous"
+                                    : reply.getCreator().getName(),
+                            deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
+                            reply.getCreatedAt(),
+                            reply.getUpdatedAt(),
+                            0,
+                            0,
+                            null,
+                            deleted);
+                })
+                .toList();
     }
 
     private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {

@@ -50,6 +50,7 @@ class MessageController {
     @GetMapping("/messages/{messageId}")
     String viewMessage(@PathVariable Long messageId, Model model) {
         model.addAttribute("message", messageService.findMessage(messageId, AuthUtils.getCurrentUserIdOrThrow()));
+        model.addAttribute("replies", messageService.findReplies(messageId));
         model.addAttribute("postingIdentities", PostingIdentity.values());
         if (!model.containsAttribute("replyForm")) {
             model.addAttribute("replyForm", new CreateReplyForm("", null));
@@ -67,6 +68,7 @@ class MessageController {
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("message", messageService.findMessage(messageId, currentUser.getId()));
+            model.addAttribute("replies", messageService.findReplies(messageId));
             model.addAttribute("postingIdentities", PostingIdentity.values());
             return "messages/view";
         }

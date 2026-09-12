@@ -17,7 +17,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-007     | Edit Own Message            | COMPLETED       |
 | UC-008     | Delete Own Message          | COMPLETED       |
 | UC-009     | Create Reply                | COMPLETED       |
-| UC-010     | View Replies                | NOT_IMPLEMENTED |
+| UC-010     | View Replies                | COMPLETED       |
 | UC-011     | Edit Own Reply              | NOT_IMPLEMENTED |
 | UC-012     | Delete Own Reply            | NOT_IMPLEMENTED |
 | UC-013     | Vote on Message             | NOT_IMPLEMENTED |
@@ -147,7 +147,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-010 — View Replies
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-006, UC-009
 - **Description:** An authenticated user views the single-level discussion replies associated with a message.
 - **Acceptance Criteria:**

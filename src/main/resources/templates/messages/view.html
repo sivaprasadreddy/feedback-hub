@@ -45,6 +45,29 @@
             </div>
         </dl>
     </article>
+    <section class="mt-6" aria-labelledby="replies-heading">
+        <h2 id="replies-heading" class="text-xl font-bold text-slate-900">Replies</h2>
+        <div class="mt-4 space-y-4">
+            <article th:each="reply : ${replies}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="font-semibold text-slate-900" th:text="${reply.visibleAuthor()}">Author</p>
+                    <div class="text-right text-xs text-slate-500">
+                        Created <time th:text="${reply.createdAt() != null ? #temporals.format(reply.createdAt(), 'yyyy-MM-dd HH:mm') : ''}">Created</time>
+                        · Updated <time th:text="${reply.updatedAt() != null ? #temporals.format(reply.updatedAt(), 'yyyy-MM-dd HH:mm') : ''}">Updated</time>
+                    </div>
+                </div>
+                <p class="mt-3 whitespace-pre-wrap text-slate-700"
+                   th:classappend="${reply.deleted()} ? ' italic text-slate-500' : ''"
+                   th:text="${reply.content()}">Reply</p>
+                <dl class="mt-4 flex flex-wrap gap-6 border-t border-slate-200 pt-3 text-sm">
+                    <div><dt class="inline font-semibold text-slate-500">Upvotes</dt> <dd class="inline" th:text="${reply.upvoteCount()}">0</dd></div>
+                    <div><dt class="inline font-semibold text-slate-500">Downvotes</dt> <dd class="inline" th:text="${reply.downvoteCount()}">0</dd></div>
+                    <div><dt class="inline font-semibold text-slate-500">Your vote</dt> <dd class="inline" th:text="${reply.currentUserVote() != null ? reply.currentUserVote() : 'No vote'}">No vote</dd></div>
+                </dl>
+            </article>
+            <p th:if="${#lists.isEmpty(replies)}" class="rounded-xl border border-dashed border-slate-300 p-5 text-center text-slate-500">No replies yet.</p>
+        </div>
+    </section>
     <form th:if="${!message.deleted()}" method="post" th:action="@{/messages/{id}/replies(id=${message.id()})}"
           th:object="${replyForm}" class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div>
