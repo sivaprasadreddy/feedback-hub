@@ -23,11 +23,11 @@ class MessageController {
     }
 
     @GetMapping("/")
-    String home(Model model) {
+    String home(@RequestParam(defaultValue = "RECENT") FeedType feed, Model model) {
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new CreateMessageForm("", null));
         }
-        populateHome(model);
+        populateHome(model, feed);
         return "index";
     }
 
@@ -39,7 +39,7 @@ class MessageController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            populateHome(model);
+            populateHome(model, FeedType.RECENT);
             return "index";
         }
         messageService.createMessage(new CreateMessageCmd(
@@ -185,8 +185,14 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
-    private void populateHome(Model model) {
+    private void populateHome(Model model, FeedType feed) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
-        model.addAttribute("messages", messageService.findRecentMessages(AuthUtils.getCurrentUserIdOrThrow()));
+        model.addAttribute("selectedFeed", feed);
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        model.addAttribute(
+                "messages",
+                feed == FeedType.POPULAR
+                        ? messageService.findPopularMessages(currentUserId)
+                        : messageService.findRecentMessages(currentUserId));
     }
 }

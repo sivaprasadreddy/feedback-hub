@@ -42,7 +42,16 @@ class MessageService {
 
     @Transactional(readOnly = true)
     public List<MessageDto> findRecentMessages(Long currentUserId) {
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
+        return toMessageDtos(messageRepository.findAllByOrderByCreatedAtDesc(), currentUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MessageDto> findPopularMessages(Long currentUserId) {
+        return toMessageDtos(messageRepository.findAllByPopularity(), currentUserId);
+    }
+
+    private List<MessageDto> toMessageDtos(List<MessageEntity> messages, Long currentUserId) {
+        return messages.stream()
                 .map(message -> new MessageDto(
                         message.getId(),
                         message.isAnonymous()

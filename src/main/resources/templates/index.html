@@ -40,8 +40,16 @@
         <button type="submit" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">Post message</button>
     </form>
 
-    <section class="mt-8" aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-xl font-bold text-slate-900">Recent</h2>
+    <section class="mt-8" aria-labelledby="feed-heading">
+        <div class="flex items-center justify-between gap-4">
+            <h2 id="feed-heading" class="text-xl font-bold text-slate-900" th:text="${selectedFeed.name() == 'POPULAR' ? 'Popular' : 'Recent'}">Recent</h2>
+            <nav aria-label="Choose feedback feed" class="flex items-center gap-2">
+                <a th:href="@{/(feed='RECENT')}" th:aria-current="${selectedFeed.name() == 'RECENT' ? 'page' : null}"
+                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'RECENT' ? ' bg-sky-600 text-white' : ' bg-white text-slate-700 hover:bg-slate-50'}">Recent</a>
+                <a th:href="@{/(feed='POPULAR')}" th:aria-current="${selectedFeed.name() == 'POPULAR' ? 'page' : null}"
+                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'POPULAR' ? ' bg-sky-600 text-white' : ' bg-white text-slate-700 hover:bg-slate-50'}">Popular</a>
+            </nav>
+        </div>
         <div class="mt-4 space-y-4">
             <article th:each="message : ${messages}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-4">
