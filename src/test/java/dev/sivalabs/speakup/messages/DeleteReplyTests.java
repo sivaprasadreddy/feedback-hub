@@ -61,7 +61,7 @@ class DeleteReplyTests extends BaseIT {
         var otherUserSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(deleteReply(otherUserSession, message.getId(), reply.getId()))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(replyRepository.findById(reply.getId()).orElseThrow().getStatus())
                 .isEqualTo(ReplyStatus.ACTIVE);
@@ -78,7 +78,7 @@ class DeleteReplyTests extends BaseIT {
         replyRepository.saveAndFlush(reply);
 
         assertThat(deleteReply(userSession, message.getId(), reply.getId()))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
     }
 

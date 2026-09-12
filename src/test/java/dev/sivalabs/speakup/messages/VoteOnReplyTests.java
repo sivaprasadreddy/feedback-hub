@@ -127,7 +127,7 @@ class VoteOnReplyTests extends BaseIT {
         var reply = createReply(userSession, message.getId(), "ANONYMOUS");
 
         assertThat(vote(userSession, message.getId(), reply.getId(), "UPVOTE"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())
@@ -150,10 +150,10 @@ class VoteOnReplyTests extends BaseIT {
         var voterSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(vote(voterSession, message.getId(), reply.getId(), "DOWNVOTE"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(removeVote(voterSession, message.getId(), reply.getId()))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(replyVoteRepository.findByReplyIdAndVoterUserId(reply.getId(), 2L))
                 .isEmpty();
@@ -168,7 +168,7 @@ class VoteOnReplyTests extends BaseIT {
         var voterSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(vote(voterSession, otherMessage.getId(), reply.getId(), "UPVOTE"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.NOT_FOUND)
                 .hasViewName("error/404");
         assertThat(mvc.post()
                         .uri("/messages/{m}/replies/{r}/vote", message.getId(), reply.getId())

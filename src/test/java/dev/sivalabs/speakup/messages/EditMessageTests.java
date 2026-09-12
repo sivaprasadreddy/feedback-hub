@@ -85,10 +85,10 @@ class EditMessageTests extends BaseIT {
                         .uri("/messages/{id}/edit", message.getId())
                         .session(otherUserSession)
                         .exchange())
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(editMessage(otherUserSession, message.getId(), "Unauthorized change"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(messageRepository.findById(message.getId()).orElseThrow().getContent())
                 .isEqualTo(content);
@@ -107,10 +107,10 @@ class EditMessageTests extends BaseIT {
                         .uri("/messages/{id}/edit", message.getId())
                         .session(userSession)
                         .exchange())
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(editMessage(userSession, message.getId(), "Cannot update"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())

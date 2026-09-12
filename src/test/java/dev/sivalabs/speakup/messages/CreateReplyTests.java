@@ -91,7 +91,7 @@ class CreateReplyTests extends BaseIT {
         messageRepository.saveAndFlush(message);
 
         assertThat(createReply(userSession, message.getId(), "Not allowed", "IDENTIFIED"))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
                 .isZero();

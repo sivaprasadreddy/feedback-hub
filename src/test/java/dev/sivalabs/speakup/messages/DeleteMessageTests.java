@@ -58,7 +58,7 @@ class DeleteMessageTests extends BaseIT {
         var otherUserSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(deleteMessage(otherUserSession, message.getId()))
-                .hasStatusOk()
+                .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(messageRepository.findById(message.getId()).orElseThrow().getStatus())
                 .isEqualTo(MessageStatus.ACTIVE);
@@ -73,7 +73,9 @@ class DeleteMessageTests extends BaseIT {
         message.setStatus(MessageStatus.DELETED);
         messageRepository.saveAndFlush(message);
 
-        assertThat(deleteMessage(userSession, message.getId())).hasStatusOk().hasViewName("error/403");
+        assertThat(deleteMessage(userSession, message.getId()))
+                .hasStatus(HttpStatus.FORBIDDEN)
+                .hasViewName("error/403");
     }
 
     @Test

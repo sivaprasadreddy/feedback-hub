@@ -97,7 +97,9 @@ class ModerateReplyTests extends BaseIT {
                 .bodyText()
                 .contains(content, "Delete reply", "View discussion");
         deleteAsAdmin(adminSession, reply.getId());
-        assertThat(deleteAsAdmin(adminSession, reply.getId())).hasStatusOk().hasViewName("error/403");
+        assertThat(deleteAsAdmin(adminSession, reply.getId()))
+                .hasStatus(HttpStatus.FORBIDDEN)
+                .hasViewName("error/403");
     }
 
     private MessageEntity createMessage(MockHttpSession session) {

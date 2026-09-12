@@ -89,7 +89,9 @@ class EditUserTests extends BaseIT {
     void adminCannotEditOwnAccount() {
         var adminSession = session(login("admin@gmail.com", "secret"));
 
-        assertThat(editUser(adminSession, 1L, "ROLE_USER", false)).hasStatusOk().hasViewName("error/403");
+        assertThat(editUser(adminSession, 1L, "ROLE_USER", false))
+                .hasStatus(HttpStatus.FORBIDDEN)
+                .hasViewName("error/403");
     }
 
     @Test

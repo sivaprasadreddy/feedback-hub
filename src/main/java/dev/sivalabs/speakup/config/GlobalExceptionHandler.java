@@ -26,6 +26,7 @@ class GlobalExceptionHandler {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("message", e.getMessage());
         modelAndView.addObject("exception", e);
+        modelAndView.setStatus(HttpStatus.NOT_FOUND);
         modelAndView.setViewName("error/404");
         return modelAndView;
     }
@@ -35,6 +36,7 @@ class GlobalExceptionHandler {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("message", e.getMessage());
         modelAndView.addObject("exception", e);
+        modelAndView.setStatus(HttpStatus.FORBIDDEN);
         modelAndView.setViewName("error/403");
         return modelAndView;
     }
@@ -44,6 +46,7 @@ class GlobalExceptionHandler {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("message", e.getMessage());
         modelAndView.addObject("exception", e);
+        modelAndView.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         modelAndView.setViewName("error/500");
         return modelAndView;
     }
