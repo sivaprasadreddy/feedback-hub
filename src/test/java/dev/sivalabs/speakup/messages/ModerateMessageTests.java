@@ -22,36 +22,36 @@ class ModerateMessageTests extends BaseIT {
     ReplyRepository replyRepository;
 
     @Test
-    void adminCanModerateAnotherUsersMessageWithAuditAndAssociationsPreserved() {
+    void adminCanDeleteAnotherUsersMessageWithAuditAndAssociationsPreserved() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Moderated message " + UUID.randomUUID(), "IDENTIFIED");
+        var content = createMessage(userSession, "Admin-deleted message " + UUID.randomUUID(), "IDENTIFIED");
         var message = findMessage(content);
         createReply(userSession, message.getId(), "Preserved reply " + UUID.randomUUID());
         var adminSession = session(login("admin@gmail.com", "secret"));
 
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/moderate", message.getId())
+                        .uri("/admin/messages/{id}/delete", message.getId())
                         .session(adminSession)
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/admin/messages");
 
-        var moderated = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(moderated.getStatus()).isEqualTo(MessageStatus.DELETED);
-        assertThat(moderated.getModerator().getId()).isEqualTo(1L);
-        assertThat(moderated.getModeratedAt()).isNotNull();
+        var deleted = messageRepository.findById(message.getId()).orElseThrow();
+        assertThat(deleted.getStatus()).isEqualTo(MessageStatus.DELETED);
+        assertThat(deleted.getDeletedByAdmin().getId()).isEqualTo(1L);
+        assertThat(deleted.getDeletedByAdminAt()).isNotNull();
         assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
                 .isOne();
     }
 
     @Test
-    void moderatedAnonymousMessageShowsPlaceholderWithoutExposingCreator() {
+    void adminDeletedAnonymousMessageShowsPlaceholderWithoutExposingCreator() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Anonymous moderated " + UUID.randomUUID(), "ANONYMOUS");
+        var content = createMessage(userSession, "Anonymous admin deletion " + UUID.randomUUID(), "ANONYMOUS");
         var message = findMessage(content);
         var adminSession = session(login("admin@gmail.com", "secret"));
-        moderate(adminSession, message.getId());
+        deleteAsAdmin(adminSession, message.getId());
 
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())
@@ -63,15 +63,15 @@ class ModerateMessageTests extends BaseIT {
     }
 
     @Test
-    void regularAndUnauthenticatedUsersCannotAdministrativelyModerate() {
+    void regularAndUnauthenticatedUsersCannotAdministrativelyDelete() {
         var ownerSession = session(login("admin@gmail.com", "secret"));
-        var content = createMessage(ownerSession, "Protected from user moderation " + UUID.randomUUID(), "IDENTIFIED");
+        var content = createMessage(ownerSession, "Protected from user deletion " + UUID.randomUUID(), "IDENTIFIED");
         var message = findMessage(content);
         var userSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(moderate(userSession, message.getId())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(deleteAsAdmin(userSession, message.getId())).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/moderate", message.getId())
+                        .uri("/admin/messages/{id}/delete", message.getId())
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND);
@@ -80,7 +80,7 @@ class ModerateMessageTests extends BaseIT {
     }
 
     @Test
-    void adminCanReviewMessagesAndCannotModerateDeletedMessageAgain() {
+    void adminCanReviewMessagesAndCannotDeleteDeletedMessageAgain() {
         var userSession = session(login("siva@gmail.com", "secret"));
         var content = createMessage(userSession, "Review target " + UUID.randomUUID(), "IDENTIFIED");
         var message = findMessage(content);
@@ -90,9 +90,9 @@ class ModerateMessageTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("admin/messages")
                 .bodyText()
-                .contains(content, "Moderate message");
-        moderate(adminSession, message.getId());
-        assertThat(moderate(adminSession, message.getId())).hasStatusOk().hasViewName("error/403");
+                .contains(content, "Delete message");
+        deleteAsAdmin(adminSession, message.getId());
+        assertThat(deleteAsAdmin(adminSession, message.getId())).hasStatusOk().hasViewName("error/403");
     }
 
     private String createMessage(MockHttpSession session, String content, String identity) {
@@ -125,9 +125,9 @@ class ModerateMessageTests extends BaseIT {
                 .orElseThrow();
     }
 
-    private MvcTestResult moderate(MockHttpSession session, Long messageId) {
+    private MvcTestResult deleteAsAdmin(MockHttpSession session, Long messageId) {
         return mvc.post()
-                .uri("/admin/messages/{id}/moderate", messageId)
+                .uri("/admin/messages/{id}/delete", messageId)
                 .session(session)
                 .with(csrf())
                 .exchange();

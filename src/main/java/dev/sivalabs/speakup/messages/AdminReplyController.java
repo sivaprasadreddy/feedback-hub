@@ -20,14 +20,14 @@ class AdminReplyController {
 
     @GetMapping
     String listReplies(Model model) {
-        model.addAttribute("replies", messageService.findRepliesForModeration());
+        model.addAttribute("replies", messageService.findRepliesForAdmin());
         return "admin/replies";
     }
 
-    @PostMapping("/{replyId}/moderate")
-    String moderateReply(@PathVariable Long replyId, RedirectAttributes redirectAttributes) {
-        messageService.moderateReply(replyId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Reply moderated successfully.");
+    @PostMapping("/{replyId}/delete")
+    String deleteReply(@PathVariable Long replyId, RedirectAttributes redirectAttributes) {
+        messageService.deleteReplyAsAdmin(replyId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
         return "redirect:/admin/replies";
     }
 }

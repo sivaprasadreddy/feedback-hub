@@ -63,7 +63,7 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<AdminMessageDto> findMessagesForModeration() {
+    public List<AdminMessageDto> findMessagesForAdmin() {
         return messageRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(message -> new AdminMessageDto(
                         message.getId(),
@@ -77,20 +77,20 @@ class MessageService {
     }
 
     @Transactional
-    public void moderateMessage(Long messageId, Long moderatorId) {
+    public void deleteMessageAsAdmin(Long messageId, Long adminId) {
         var message = messageRepository
                 .findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         if (message.getStatus() == MessageStatus.DELETED) {
-            throw new AccessDeniedException("Deleted messages cannot be moderated");
+            throw new AccessDeniedException("Message has already been deleted");
         }
         message.setStatus(MessageStatus.DELETED);
-        message.setModerator(entityManager.getReference(UserEntity.class, moderatorId));
-        message.setModeratedAt(Instant.now());
+        message.setDeletedByAdmin(entityManager.getReference(UserEntity.class, adminId));
+        message.setDeletedByAdminAt(Instant.now());
     }
 
     @Transactional(readOnly = true)
-    public List<AdminReplyDto> findRepliesForModeration() {
+    public List<AdminReplyDto> findRepliesForAdmin() {
         return replyRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(reply -> new AdminReplyDto(
                         reply.getId(),
@@ -103,15 +103,15 @@ class MessageService {
     }
 
     @Transactional
-    public void moderateReply(Long replyId, Long moderatorId) {
+    public void deleteReplyAsAdmin(Long replyId, Long adminId) {
         var reply =
                 replyRepository.findById(replyId).orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
         if (reply.getStatus() == ReplyStatus.DELETED) {
-            throw new AccessDeniedException("Deleted replies cannot be moderated");
+            throw new AccessDeniedException("Reply has already been deleted");
         }
         reply.setStatus(ReplyStatus.DELETED);
-        reply.setModerator(entityManager.getReference(UserEntity.class, moderatorId));
-        reply.setModeratedAt(Instant.now());
+        reply.setDeletedByAdmin(entityManager.getReference(UserEntity.class, adminId));
+        reply.setDeletedByAdminAt(Instant.now());
     }
 
     private PageRequest pageRequest(int pageNo) {

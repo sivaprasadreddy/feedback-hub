@@ -43,11 +43,11 @@ class ReplyEntity extends BaseEntity {
     private ReplyStatus status = ReplyStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "moderated_by_user_id")
-    private UserEntity moderator;
+    @JoinColumn(name = "deleted_by_admin_user_id")
+    private UserEntity deletedByAdmin;
 
-    @Column(name = "moderated_at")
-    private Instant moderatedAt;
+    @Column(name = "deleted_by_admin_at")
+    private Instant deletedByAdminAt;
 
     public Long getId() {
         return id;
@@ -93,19 +93,19 @@ class ReplyEntity extends BaseEntity {
         this.status = status;
     }
 
-    public UserEntity getModerator() {
-        return moderator;
+    public UserEntity getDeletedByAdmin() {
+        return deletedByAdmin;
     }
 
-    public void setModerator(UserEntity moderator) {
-        this.moderator = moderator;
+    public void setDeletedByAdmin(UserEntity deletedByAdmin) {
+        this.deletedByAdmin = deletedByAdmin;
     }
 
-    public Instant getModeratedAt() {
-        return moderatedAt;
+    public Instant getDeletedByAdminAt() {
+        return deletedByAdminAt;
     }
 
-    public void setModeratedAt(Instant moderatedAt) {
-        this.moderatedAt = moderatedAt;
+    public void setDeletedByAdminAt(Instant deletedByAdminAt) {
+        this.deletedByAdminAt = deletedByAdminAt;
     }
 }

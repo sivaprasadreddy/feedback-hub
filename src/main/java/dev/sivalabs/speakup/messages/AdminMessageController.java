@@ -20,14 +20,14 @@ class AdminMessageController {
 
     @GetMapping
     String listMessages(Model model) {
-        model.addAttribute("messages", messageService.findMessagesForModeration());
+        model.addAttribute("messages", messageService.findMessagesForAdmin());
         return "admin/messages";
     }
 
-    @PostMapping("/{messageId}/moderate")
-    String moderateMessage(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
-        messageService.moderateMessage(messageId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Message moderated successfully.");
+    @PostMapping("/{messageId}/delete")
+    String deleteMessage(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
+        messageService.deleteMessageAsAdmin(messageId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Message deleted successfully.");
         return "redirect:/admin/messages";
     }
 }
