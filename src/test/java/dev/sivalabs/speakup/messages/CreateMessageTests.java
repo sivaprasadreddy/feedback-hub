@@ -41,7 +41,7 @@ class CreateMessageTests extends BaseIT {
                 .filter(message -> message.getContent().equals(content))
                 .findFirst()
                 .orElseThrow();
-        assertThat(stored.getCreator().getId()).isEqualTo(1L);
+        assertThat(stored.getCreatorUserId()).isEqualTo(1L);
         assertThat(stored.isAnonymous()).isTrue();
 
         var regularUserFeed = mvc.get()

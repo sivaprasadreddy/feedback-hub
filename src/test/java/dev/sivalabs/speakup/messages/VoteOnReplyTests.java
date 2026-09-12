@@ -136,7 +136,7 @@ class VoteOnReplyTests extends BaseIT {
                 .bodyText()
                 .doesNotContain(
                         "Upvote reply", "Downvote reply", "Remove your reply upvote", "Remove your reply downvote");
-        assertThat(replyVoteRepository.findByReplyIdAndVoterId(reply.getId(), 2L))
+        assertThat(replyVoteRepository.findByReplyIdAndVoterUserId(reply.getId(), 2L))
                 .isEmpty();
     }
 
@@ -155,7 +155,7 @@ class VoteOnReplyTests extends BaseIT {
         assertThat(removeVote(voterSession, message.getId(), reply.getId()))
                 .hasStatusOk()
                 .hasViewName("error/403");
-        assertThat(replyVoteRepository.findByReplyIdAndVoterId(reply.getId(), 2L))
+        assertThat(replyVoteRepository.findByReplyIdAndVoterUserId(reply.getId(), 2L))
                 .isEmpty();
     }
 

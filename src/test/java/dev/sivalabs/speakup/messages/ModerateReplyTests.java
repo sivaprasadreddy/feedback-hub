@@ -38,7 +38,7 @@ class ModerateReplyTests extends BaseIT {
         assertThat(deleted.getStatus()).isEqualTo(ReplyStatus.DELETED);
         assertThat(deleted.getContent()).isEqualTo(content);
         assertThat(deleted.getMessage().getId()).isEqualTo(message.getId());
-        assertThat(deleted.getDeletedByAdmin().getId()).isEqualTo(1L);
+        assertThat(deleted.getDeletedByAdminUserId()).isEqualTo(1L);
         assertThat(deleted.getDeletedByAdminAt()).isNotNull();
         assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
                 .isZero();

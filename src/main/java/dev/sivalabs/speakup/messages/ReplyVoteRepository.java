@@ -4,7 +4,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 interface ReplyVoteRepository extends JpaRepository<ReplyVoteEntity, Long> {
-    Optional<ReplyVoteEntity> findByReplyIdAndVoterId(Long replyId, Long voterId);
+    Optional<ReplyVoteEntity> findByReplyIdAndVoterUserId(Long replyId, Long voterUserId);
 
     long countByReplyIdAndVoteType(Long replyId, VoteType voteType);
 }

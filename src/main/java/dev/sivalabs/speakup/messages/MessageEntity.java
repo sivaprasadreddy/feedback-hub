@@ -1,7 +1,6 @@
 package dev.sivalabs.speakup.messages;
 
 import dev.sivalabs.speakup.shared.BaseEntity;
-import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,7 +12,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -31,9 +29,8 @@ class MessageEntity extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by_user_id", nullable = false)
-    private UserEntity creator;
+    @Column(name = "created_by_user_id", nullable = false)
+    private Long creatorUserId;
 
     @Column(nullable = false)
     private boolean anonymous;
@@ -42,9 +39,8 @@ class MessageEntity extends BaseEntity {
     @Column(nullable = false)
     private MessageStatus status = MessageStatus.ACTIVE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deleted_by_admin_user_id")
-    private UserEntity deletedByAdmin;
+    @Column(name = "deleted_by_admin_user_id")
+    private Long deletedByAdminUserId;
 
     @Column(name = "deleted_by_admin_at")
     private Instant deletedByAdminAt;
@@ -70,12 +66,12 @@ class MessageEntity extends BaseEntity {
         this.content = content;
     }
 
-    public UserEntity getCreator() {
-        return creator;
+    public Long getCreatorUserId() {
+        return creatorUserId;
     }
 
-    public void setCreator(UserEntity creator) {
-        this.creator = creator;
+    public void setCreatorUserId(Long creatorUserId) {
+        this.creatorUserId = creatorUserId;
     }
 
     public boolean isAnonymous() {
@@ -94,12 +90,12 @@ class MessageEntity extends BaseEntity {
         this.status = status;
     }
 
-    public UserEntity getDeletedByAdmin() {
-        return deletedByAdmin;
+    public Long getDeletedByAdminUserId() {
+        return deletedByAdminUserId;
     }
 
-    public void setDeletedByAdmin(UserEntity deletedByAdmin) {
-        this.deletedByAdmin = deletedByAdmin;
+    public void setDeletedByAdminUserId(Long deletedByAdminUserId) {
+        this.deletedByAdminUserId = deletedByAdminUserId;
     }
 
     public Instant getDeletedByAdminAt() {

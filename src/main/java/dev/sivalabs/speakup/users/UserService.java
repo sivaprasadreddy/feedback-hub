@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-class UserService {
+public class UserService {
     static final String INITIAL_PASSWORD = "secret123";
 
     private final UserRepository userRepository;
@@ -20,7 +20,7 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserEntity> findByEmail(String email) {
+    Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email);
     }
 

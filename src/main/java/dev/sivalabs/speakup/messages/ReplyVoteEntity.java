@@ -1,7 +1,6 @@
 package dev.sivalabs.speakup.messages;
 
 import dev.sivalabs.speakup.shared.BaseEntity;
-import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -29,9 +28,8 @@ class ReplyVoteEntity extends BaseEntity {
     @SequenceGenerator(name = "reply_vote_id_generator", sequenceName = "reply_vote_id_seq")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity voter;
+    @Column(name = "user_id", nullable = false)
+    private Long voterUserId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "reply_id", nullable = false)
@@ -45,12 +43,12 @@ class ReplyVoteEntity extends BaseEntity {
         return id;
     }
 
-    public UserEntity getVoter() {
-        return voter;
+    public Long getVoterUserId() {
+        return voterUserId;
     }
 
-    public void setVoter(UserEntity voter) {
-        this.voter = voter;
+    public void setVoterUserId(Long voterUserId) {
+        this.voterUserId = voterUserId;
     }
 
     public ReplyEntity getReply() {

@@ -8,13 +8,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface ReplyRepository extends JpaRepository<ReplyEntity, Long> {
     long countByMessageIdAndStatus(Long messageId, ReplyStatus status);
 
-    @EntityGraph(attributePaths = {"message", "creator"})
+    @EntityGraph(attributePaths = "message")
     List<ReplyEntity> findAllByMessageIdOrderByCreatedAtAsc(Long messageId);
 
-    @EntityGraph(attributePaths = {"message", "creator"})
+    @EntityGraph(attributePaths = "message")
     List<ReplyEntity> findAllByOrderByCreatedAtDesc();
 
     @Override
-    @EntityGraph(attributePaths = {"message", "creator"})
+    @EntityGraph(attributePaths = "message")
     Optional<ReplyEntity> findById(Long id);
 }

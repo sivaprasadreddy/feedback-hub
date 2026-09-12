@@ -31,7 +31,7 @@ class CreateReplyTests extends BaseIT {
 
         var reply = findReply(message.getId(), replyContent);
         assertThat(reply.getMessage().getId()).isEqualTo(message.getId());
-        assertThat(reply.getCreator().getId()).isEqualTo(2L);
+        assertThat(reply.getCreatorUserId()).isEqualTo(2L);
         assertThat(reply.isAnonymous()).isFalse();
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())
@@ -52,7 +52,7 @@ class CreateReplyTests extends BaseIT {
                 .hasStatus(HttpStatus.FOUND);
 
         var reply = findReply(message.getId(), replyContent);
-        assertThat(reply.getCreator().getId()).isEqualTo(1L);
+        assertThat(reply.getCreatorUserId()).isEqualTo(1L);
         assertThat(reply.isAnonymous()).isTrue();
         assertThat(mvc.get()
                         .uri("/messages/{id}", message.getId())

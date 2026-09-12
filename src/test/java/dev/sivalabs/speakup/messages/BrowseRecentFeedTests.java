@@ -76,13 +76,13 @@ class BrowseRecentFeedTests extends BaseIT {
         assertThat(voteFromHome(voterSession, messageId, "UPVOTE", false))
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/");
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(messageId, 2L))
                 .get()
                 .extracting(MessageVoteEntity::getVoteType)
                 .isEqualTo(VoteType.UPVOTE);
 
         voteFromHome(voterSession, messageId, "DOWNVOTE", false);
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(messageId, 2L))
                 .get()
                 .extracting(MessageVoteEntity::getVoteType)
                 .isEqualTo(VoteType.DOWNVOTE);
@@ -90,7 +90,7 @@ class BrowseRecentFeedTests extends BaseIT {
         assertThat(voteFromHome(voterSession, messageId, "DOWNVOTE", true))
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/");
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(messageId, 2L))
                 .isEmpty();
     }
 

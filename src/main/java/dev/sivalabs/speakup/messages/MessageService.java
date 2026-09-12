@@ -2,8 +2,7 @@ package dev.sivalabs.speakup.messages;
 
 import dev.sivalabs.speakup.shared.PagedResult;
 import dev.sivalabs.speakup.shared.ResourceNotFoundException;
-import dev.sivalabs.speakup.users.UserEntity;
-import jakarta.persistence.EntityManager;
+import dev.sivalabs.speakup.users.UserService;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,7 +21,7 @@ class MessageService {
     private final ReplyRepository replyRepository;
     private final MessageVoteRepository messageVoteRepository;
     private final ReplyVoteRepository replyVoteRepository;
-    private final EntityManager entityManager;
+    private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
 
     MessageService(
@@ -30,13 +29,13 @@ class MessageService {
             ReplyRepository replyRepository,
             MessageVoteRepository messageVoteRepository,
             ReplyVoteRepository replyVoteRepository,
-            EntityManager entityManager,
+            UserService userService,
             ApplicationEventPublisher eventPublisher) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
         this.replyVoteRepository = replyVoteRepository;
-        this.entityManager = entityManager;
+        this.userService = userService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -44,7 +43,7 @@ class MessageService {
     public void createMessage(CreateMessageCmd cmd) {
         var message = new MessageEntity();
         message.setContent(cmd.content());
-        message.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
+        message.setCreatorUserId(cmd.creatorId());
         message.setAnonymous(cmd.anonymous());
         messageRepository.save(message);
         eventPublisher.publishEvent(new MessageCreatedEvent(message.getId(), message.getContent()));
@@ -67,9 +66,7 @@ class MessageService {
         return messageRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(message -> new AdminMessageDto(
                         message.getId(),
-                        message.isAnonymous()
-                                ? "Anonymous"
-                                : message.getCreator().getName(),
+                        message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                         message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                         message.getCreatedAt(),
                         message.getStatus() == MessageStatus.DELETED))
@@ -85,7 +82,7 @@ class MessageService {
             throw new AccessDeniedException("Message has already been deleted");
         }
         message.setStatus(MessageStatus.DELETED);
-        message.setDeletedByAdmin(entityManager.getReference(UserEntity.class, adminId));
+        message.setDeletedByAdminUserId(adminId);
         message.setDeletedByAdminAt(Instant.now());
     }
 
@@ -95,7 +92,7 @@ class MessageService {
                 .map(reply -> new AdminReplyDto(
                         reply.getId(),
                         reply.getMessage().getId(),
-                        reply.isAnonymous() ? "Anonymous" : reply.getCreator().getName(),
+                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId()),
                         reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getStatus() == ReplyStatus.DELETED,
@@ -111,7 +108,7 @@ class MessageService {
             throw new AccessDeniedException("Reply has already been deleted");
         }
         reply.setStatus(ReplyStatus.DELETED);
-        reply.setDeletedByAdmin(entityManager.getReference(UserEntity.class, adminId));
+        reply.setDeletedByAdminUserId(adminId);
         reply.setDeletedByAdminAt(Instant.now());
     }
 
@@ -122,20 +119,20 @@ class MessageService {
     private MessageDto toMessageDto(MessageEntity message, Long currentUserId) {
         return new MessageDto(
                 message.getId(),
-                message.isAnonymous() ? "Anonymous" : message.getCreator().getName(),
+                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                 message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
                 messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.UPVOTE),
                 messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.DOWNVOTE),
                 replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE),
                 messageVoteRepository
-                        .findByMessageIdAndVoterId(message.getId(), currentUserId)
+                        .findByMessageIdAndVoterUserId(message.getId(), currentUserId)
                         .map(MessageVoteEntity::getVoteType)
                         .map(Enum::name)
                         .orElse(null),
                 message.getStatus() == MessageStatus.DELETED,
                 message.getStatus() != MessageStatus.DELETED
-                        && !message.getCreator().getId().equals(currentUserId),
+                        && !message.getCreatorUserId().equals(currentUserId),
                 new LinkedHashSet<>(message.getLabels()),
                 message.getSentiment());
     }
@@ -146,15 +143,15 @@ class MessageService {
                 .findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         var deleted = message.getStatus() == MessageStatus.DELETED;
-        var ownedByCurrentUser = message.getCreator().getId().equals(currentUserId);
+        var ownedByCurrentUser = message.getCreatorUserId().equals(currentUserId);
         var currentUserVote = messageVoteRepository
-                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .findByMessageIdAndVoterUserId(messageId, currentUserId)
                 .map(MessageVoteEntity::getVoteType)
                 .map(Enum::name)
                 .orElse(null);
         return new MessageDetailsDto(
                 message.getId(),
-                message.isAnonymous() ? "Anonymous" : message.getCreator().getName(),
+                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                 deleted ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
                 messageVoteRepository.countByMessageIdAndVoteType(messageId, VoteType.UPVOTE),
@@ -197,7 +194,7 @@ class MessageService {
         var reply = new ReplyEntity();
         reply.setMessage(message);
         reply.setContent(cmd.content());
-        reply.setCreator(entityManager.getReference(UserEntity.class, cmd.creatorId()));
+        reply.setCreatorUserId(cmd.creatorId());
         reply.setAnonymous(cmd.anonymous());
         replyRepository.save(reply);
         eventPublisher.publishEvent(new ReplyCreatedEvent(reply.getId(), reply.getContent()));
@@ -213,22 +210,20 @@ class MessageService {
                     var deleted = reply.getStatus() == ReplyStatus.DELETED;
                     return new ReplyDto(
                             reply.getId(),
-                            reply.isAnonymous()
-                                    ? "Anonymous"
-                                    : reply.getCreator().getName(),
+                            reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId()),
                             deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
                             reply.getCreatedAt(),
                             reply.getUpdatedAt(),
                             replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.UPVOTE),
                             replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.DOWNVOTE),
                             replyVoteRepository
-                                    .findByReplyIdAndVoterId(reply.getId(), currentUserId)
+                                    .findByReplyIdAndVoterUserId(reply.getId(), currentUserId)
                                     .map(ReplyVoteEntity::getVoteType)
                                     .map(Enum::name)
                                     .orElse(null),
                             deleted,
-                            !deleted && reply.getCreator().getId().equals(currentUserId),
-                            !deleted && !reply.getCreator().getId().equals(currentUserId));
+                            !deleted && reply.getCreatorUserId().equals(currentUserId),
+                            !deleted && !reply.getCreatorUserId().equals(currentUserId));
                 })
                 .toList();
     }
@@ -260,11 +255,11 @@ class MessageService {
     public void voteOnMessage(Long messageId, Long currentUserId, VoteType voteType) {
         var message = getVotableMessage(messageId, currentUserId);
         var vote = messageVoteRepository
-                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .findByMessageIdAndVoterUserId(messageId, currentUserId)
                 .orElseGet(() -> {
                     var newVote = new MessageVoteEntity();
                     newVote.setMessage(message);
-                    newVote.setVoter(entityManager.getReference(UserEntity.class, currentUserId));
+                    newVote.setVoterUserId(currentUserId);
                     return newVote;
                 });
         vote.setVoteType(voteType);
@@ -275,7 +270,7 @@ class MessageService {
     public void removeMessageVote(Long messageId, Long currentUserId) {
         getVotableMessage(messageId, currentUserId);
         messageVoteRepository
-                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .findByMessageIdAndVoterUserId(messageId, currentUserId)
                 .ifPresent(messageVoteRepository::delete);
     }
 
@@ -283,11 +278,11 @@ class MessageService {
     public void voteOnReply(Long messageId, Long replyId, Long currentUserId, VoteType voteType) {
         var reply = getVotableReply(messageId, replyId, currentUserId);
         var vote = replyVoteRepository
-                .findByReplyIdAndVoterId(replyId, currentUserId)
+                .findByReplyIdAndVoterUserId(replyId, currentUserId)
                 .orElseGet(() -> {
                     var newVote = new ReplyVoteEntity();
                     newVote.setReply(reply);
-                    newVote.setVoter(entityManager.getReference(UserEntity.class, currentUserId));
+                    newVote.setVoterUserId(currentUserId);
                     return newVote;
                 });
         vote.setVoteType(voteType);
@@ -297,7 +292,7 @@ class MessageService {
     @Transactional
     public void removeReplyVote(Long messageId, Long replyId, Long currentUserId) {
         getVotableReply(messageId, replyId, currentUserId);
-        replyVoteRepository.findByReplyIdAndVoterId(replyId, currentUserId).ifPresent(replyVoteRepository::delete);
+        replyVoteRepository.findByReplyIdAndVoterUserId(replyId, currentUserId).ifPresent(replyVoteRepository::delete);
     }
 
     private ReplyEntity getVotableReply(Long messageId, Long replyId, Long currentUserId) {
@@ -308,7 +303,7 @@ class MessageService {
         if (reply.getStatus() == ReplyStatus.DELETED) {
             throw new AccessDeniedException("Deleted replies cannot be voted on");
         }
-        if (reply.getCreator().getId().equals(currentUserId)) {
+        if (reply.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You cannot vote on your own reply");
         }
         return reply;
@@ -321,7 +316,7 @@ class MessageService {
         if (message.getStatus() == MessageStatus.DELETED) {
             throw new AccessDeniedException("Deleted messages cannot be voted on");
         }
-        if (message.getCreator().getId().equals(currentUserId)) {
+        if (message.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You cannot vote on your own message");
         }
         return message;
@@ -332,7 +327,7 @@ class MessageService {
                 .findById(replyId)
                 .filter(candidate -> candidate.getMessage().getId().equals(messageId))
                 .orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
-        if (!reply.getCreator().getId().equals(currentUserId)) {
+        if (!reply.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You can only edit your own replies");
         }
         if (reply.getStatus() == ReplyStatus.DELETED) {
@@ -345,12 +340,19 @@ class MessageService {
         var message = messageRepository
                 .findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
-        if (!message.getCreator().getId().equals(currentUserId)) {
+        if (!message.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You can only edit your own messages");
         }
         if (message.getStatus() == MessageStatus.DELETED) {
             throw new AccessDeniedException("Deleted messages cannot be edited");
         }
         return message;
+    }
+
+    private String getUserName(Long userId) {
+        return userService
+                .findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+                .name();
     }
 }

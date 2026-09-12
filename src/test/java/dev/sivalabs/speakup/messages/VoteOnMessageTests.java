@@ -51,7 +51,7 @@ class VoteOnMessageTests extends BaseIT {
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/messages/" + message.getId());
         assertMessageVotes(message.getId(), 0, 0, null);
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(message.getId(), 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(message.getId(), 2L))
                 .isEmpty();
     }
 
@@ -137,7 +137,7 @@ class VoteOnMessageTests extends BaseIT {
                         .exchange())
                 .bodyText()
                 .doesNotContain("Upvote message", "Downvote message", "Remove your upvote", "Remove your downvote");
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(message.getId(), 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(message.getId(), 2L))
                 .isEmpty();
     }
 
@@ -153,7 +153,7 @@ class VoteOnMessageTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("error/403");
         assertThat(removeVote(voterSession, message.getId())).hasStatusOk().hasViewName("error/403");
-        assertThat(messageVoteRepository.findByMessageIdAndVoterId(message.getId(), 2L))
+        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(message.getId(), 2L))
                 .isEmpty();
     }
 

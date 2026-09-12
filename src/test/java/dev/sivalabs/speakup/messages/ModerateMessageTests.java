@@ -39,7 +39,7 @@ class ModerateMessageTests extends BaseIT {
 
         var deleted = messageRepository.findById(message.getId()).orElseThrow();
         assertThat(deleted.getStatus()).isEqualTo(MessageStatus.DELETED);
-        assertThat(deleted.getDeletedByAdmin().getId()).isEqualTo(1L);
+        assertThat(deleted.getDeletedByAdminUserId()).isEqualTo(1L);
         assertThat(deleted.getDeletedByAdminAt()).isNotNull();
         assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
                 .isOne();
