@@ -1,0 +1,58 @@
+package dev.sivalabs.speakup.users;
+
+import java.util.Collection;
+import java.util.Set;
+import org.jspecify.annotations.NonNull;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+public class SecurityUser implements UserDetails {
+
+    private final Long id;
+    private final String tenantId;
+    private final String name;
+    private final String email;
+    private final String password;
+    private final Role role;
+
+    public SecurityUser(Long id, String tenantId, String name, String email, String password, Role role) {
+        this.id = id;
+        this.tenantId = tenantId;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    @Override
+    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
+        return Set.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public @NonNull String getUsername() {
+        return email;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+}
