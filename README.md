@@ -1,6 +1,9 @@
 # SpeakUp
 A feedback management platform where an organization can provide their employees with a private space to:
 
+[![Build](https://github.com/sivaprasadreddy/SpeakUp/actions/workflows/ci.yml/badge.svg)](https://github.com/sivaprasadreddy/SpeakUp/actions/workflows/ci.yml)
+
+## Core Features
 * Express feedback, opinions, suggestions, concerns, or ideas.
 * Participate in discussions through replies.
 * Post or reply using their identity or anonymously.

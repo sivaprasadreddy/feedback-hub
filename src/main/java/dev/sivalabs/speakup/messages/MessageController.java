@@ -126,17 +126,23 @@ class MessageController {
 
     @PostMapping("/messages/{messageId}/vote")
     String voteOnMessage(
-            @PathVariable Long messageId, @RequestParam VoteType voteType, RedirectAttributes redirectAttributes) {
+            @PathVariable Long messageId,
+            @RequestParam VoteType voteType,
+            @RequestParam(defaultValue = "false") boolean returnToHome,
+            RedirectAttributes redirectAttributes) {
         messageService.voteOnMessage(messageId, AuthUtils.getCurrentUserIdOrThrow(), voteType);
         redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
-        return "redirect:/messages/" + messageId;
+        return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
 
     @PostMapping("/messages/{messageId}/vote/remove")
-    String removeMessageVote(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
+    String removeMessageVote(
+            @PathVariable Long messageId,
+            @RequestParam(defaultValue = "false") boolean returnToHome,
+            RedirectAttributes redirectAttributes) {
         messageService.removeMessageVote(messageId, AuthUtils.getCurrentUserIdOrThrow());
         redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
-        return "redirect:/messages/" + messageId;
+        return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
 
     @PostMapping("/messages/{messageId}/replies/{replyId}/vote")

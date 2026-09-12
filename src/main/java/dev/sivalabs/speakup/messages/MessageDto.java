@@ -13,5 +13,6 @@ record MessageDto(
         long replyCount,
         String currentUserVote,
         boolean deleted,
+        boolean votable,
         Set<String> labels,
         MessageSentiment sentiment) {}

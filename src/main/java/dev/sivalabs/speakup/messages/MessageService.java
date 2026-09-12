@@ -134,6 +134,8 @@ class MessageService {
                         .map(Enum::name)
                         .orElse(null),
                 message.getStatus() == MessageStatus.DELETED,
+                message.getStatus() != MessageStatus.DELETED
+                        && !message.getCreator().getId().equals(currentUserId),
                 new LinkedHashSet<>(message.getLabels()),
                 message.getSentiment());
     }

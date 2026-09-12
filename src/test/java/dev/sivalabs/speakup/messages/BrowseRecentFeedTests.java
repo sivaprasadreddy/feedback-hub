@@ -10,10 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class BrowseRecentFeedTests extends BaseIT {
     @Autowired
     MessageRepository messageRepository;
+
+    @Autowired
+    MessageVoteRepository messageVoteRepository;
 
     @Test
     void recentIsDefaultAndMessagesAreOrderedNewestFirst() throws Exception {
@@ -39,10 +43,10 @@ class BrowseRecentFeedTests extends BaseIT {
         var feed = mvc.get().uri("/").session(voterSession).exchange();
         assertThat(feed)
                 .bodyText()
-                .contains("Admin", content, "Upvotes, your vote", "1", "Downvotes", "0", "Replies", "1")
-                .doesNotContain("Your vote", "UPVOTE");
+                .contains("Admin", content, "Remove your upvote", "1", "Downvote message", "0", "Replies", "1")
+                .doesNotContain("Your vote");
         assertThat(feed.getMvcResult().getResponse().getContentAsString())
-                .contains("text-emerald-600", "title=\"Upvotes — your vote\"");
+                .contains("text-emerald-600", "title=\"Remove your upvote\"");
     }
 
     @Test
@@ -53,9 +57,37 @@ class BrowseRecentFeedTests extends BaseIT {
         vote(voterSession, findMessage(content).getId(), "DOWNVOTE");
 
         var feed = mvc.get().uri("/").session(voterSession).exchange();
-        assertThat(feed).bodyText().contains("Downvotes, your vote").doesNotContain("Your vote", "DOWNVOTE");
+        assertThat(feed).bodyText().contains("Remove your downvote").doesNotContain("Your vote");
         assertThat(feed.getMvcResult().getResponse().getContentAsString())
-                .contains("text-amber-600", "title=\"Downvotes — your vote\"");
+                .contains("text-amber-600", "title=\"Remove your downvote\"");
+    }
+
+    @Test
+    void userCanVoteSwitchAndRemoveVoteFromHomePage() throws Exception {
+        var ownerSession = session(login("admin@gmail.com", "secret"));
+        var content = createMessage(ownerSession, "Home voting " + UUID.randomUUID(), "IDENTIFIED");
+        var messageId = findMessage(content).getId();
+        var voterSession = session(login("siva@gmail.com", "secret"));
+
+        assertThat(voteFromHome(voterSession, messageId, "UPVOTE", false))
+                .hasStatus(HttpStatus.FOUND)
+                .hasRedirectedUrl("/");
+        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+                .get()
+                .extracting(MessageVoteEntity::getVoteType)
+                .isEqualTo(VoteType.UPVOTE);
+
+        voteFromHome(voterSession, messageId, "DOWNVOTE", false);
+        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+                .get()
+                .extracting(MessageVoteEntity::getVoteType)
+                .isEqualTo(VoteType.DOWNVOTE);
+
+        assertThat(voteFromHome(voterSession, messageId, "DOWNVOTE", true))
+                .hasStatus(HttpStatus.FOUND)
+                .hasRedirectedUrl("/");
+        assertThat(messageVoteRepository.findByMessageIdAndVoterId(messageId, 2L))
+                .isEmpty();
     }
 
     @Test
@@ -106,6 +138,16 @@ class BrowseRecentFeedTests extends BaseIT {
                 .session(session)
                 .with(csrf())
                 .exchange();
+    }
+
+    private MvcTestResult voteFromHome(MockHttpSession session, Long messageId, String voteType, boolean remove) {
+        var request = mvc.post()
+                .uri(remove ? "/messages/{id}/vote/remove" : "/messages/{id}/vote", messageId)
+                .param("voteType", voteType)
+                .param("returnToHome", "true")
+                .session(session)
+                .with(csrf());
+        return request.exchange();
     }
 
     private void createReply(MockHttpSession session, Long messageId, String content) {
