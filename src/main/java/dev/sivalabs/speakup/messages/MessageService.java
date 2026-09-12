@@ -4,6 +4,7 @@ import dev.sivalabs.speakup.shared.PagedResult;
 import dev.sivalabs.speakup.shared.ResourceNotFoundException;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.EntityManager;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -53,6 +54,33 @@ class MessageService {
     public PagedResult<MessageDto> findPopularMessages(Long currentUserId, int pageNo) {
         return PagedResult.from(messageRepository.findAllByPopularity(pageRequest(pageNo)))
                 .map(message -> toMessageDto(message, currentUserId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminMessageDto> findMessagesForModeration() {
+        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(message -> new AdminMessageDto(
+                        message.getId(),
+                        message.isAnonymous()
+                                ? "Anonymous"
+                                : message.getCreator().getName(),
+                        message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
+                        message.getCreatedAt(),
+                        message.getStatus() == MessageStatus.DELETED))
+                .toList();
+    }
+
+    @Transactional
+    public void moderateMessage(Long messageId, Long moderatorId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        if (message.getStatus() == MessageStatus.DELETED) {
+            throw new AccessDeniedException("Deleted messages cannot be moderated");
+        }
+        message.setStatus(MessageStatus.DELETED);
+        message.setModerator(entityManager.getReference(UserEntity.class, moderatorId));
+        message.setModeratedAt(Instant.now());
     }
 
     private PageRequest pageRequest(int pageNo) {

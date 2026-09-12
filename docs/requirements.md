@@ -25,7 +25,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-015     | Browse Recent Feed          | COMPLETED       |
 | UC-016     | Browse Popular Feed         | COMPLETED       |
 | UC-017     | Navigate Feed Pages         | COMPLETED       |
-| UC-018     | Moderate Message            | NOT_IMPLEMENTED |
+| UC-018     | Moderate Message            | COMPLETED       |
 | UC-019     | Moderate Reply              | NOT_IMPLEMENTED |
 
 ## Detailed Use Cases
@@ -247,7 +247,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-018 — Moderate Message
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005, UC-006
 - **Description:** An Admin reviews feedback and soft-deletes an inappropriate message regardless of who created it.
 - **Acceptance Criteria:**
