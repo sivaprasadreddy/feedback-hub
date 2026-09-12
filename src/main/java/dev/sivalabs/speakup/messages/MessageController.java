@@ -187,6 +187,6 @@ class MessageController {
 
     private void populateHome(Model model) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
-        model.addAttribute("messages", messageService.findRecentMessages());
+        model.addAttribute("messages", messageService.findRecentMessages(AuthUtils.getCurrentUserIdOrThrow()));
     }
 }

@@ -41,7 +41,7 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<MessageDto> findRecentMessages() {
+    public List<MessageDto> findRecentMessages(Long currentUserId) {
         return messageRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(message -> new MessageDto(
                         message.getId(),
@@ -49,7 +49,16 @@ class MessageService {
                                 ? "Anonymous"
                                 : message.getCreator().getName(),
                         message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
-                        message.getCreatedAt()))
+                        message.getCreatedAt(),
+                        messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.UPVOTE),
+                        messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.DOWNVOTE),
+                        replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE),
+                        messageVoteRepository
+                                .findByMessageIdAndVoterId(message.getId(), currentUserId)
+                                .map(MessageVoteEntity::getVoteType)
+                                .map(Enum::name)
+                                .orElse(null),
+                        message.getStatus() == MessageStatus.DELETED))
                 .toList();
     }
 

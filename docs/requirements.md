@@ -22,7 +22,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-012     | Delete Own Reply            | COMPLETED       |
 | UC-013     | Vote on Message             | COMPLETED       |
 | UC-014     | Vote on Reply               | COMPLETED       |
-| UC-015     | Browse Recent Feed          | NOT_IMPLEMENTED |
+| UC-015     | Browse Recent Feed          | COMPLETED       |
 | UC-016     | Browse Popular Feed         | NOT_IMPLEMENTED |
 | UC-017     | Navigate Feed Pages         | NOT_IMPLEMENTED |
 | UC-018     | Moderate Message            | NOT_IMPLEMENTED |
@@ -212,7 +212,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-015 — Browse Recent Feed
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001, UC-005
 - **Description:** An authenticated user browses feedback ordered from newest to oldest.
 - **Acceptance Criteria:**
