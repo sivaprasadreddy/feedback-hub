@@ -32,9 +32,9 @@ class AuthenticationTests extends BaseIT {
                 .hasViewName("index")
                 .bodyText()
                 .contains("Siva")
-                .contains("Home")
+                .contains("Feedback")
                 .contains("Dashboard")
-                .contains("Messages will appear here.")
+                .contains("Recent")
                 .doesNotContain("Manage Users")
                 .doesNotContain("Manage Messages");
     }

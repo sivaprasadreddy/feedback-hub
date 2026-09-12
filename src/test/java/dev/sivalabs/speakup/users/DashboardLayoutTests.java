@@ -20,8 +20,8 @@ class DashboardLayoutTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("index")
                 .bodyText()
-                .contains("Home")
-                .contains("Messages will appear here.")
+                .contains("Feedback")
+                .contains("Recent")
                 .contains("Dashboard");
 
         var dashboard = mvc.get().uri("/dashboard").session(session).exchange();
