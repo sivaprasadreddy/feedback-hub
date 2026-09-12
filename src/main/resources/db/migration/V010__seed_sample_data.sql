@@ -1,108 +1,137 @@
 -- All seeded users have the password 'secret'.
-insert into users(email, password, name, role, active, created_at)
-select 'user' || lpad(user_no::text, 2, '0') || '@speakup.local',
-       '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi',
-       'Seed User ' || lpad(user_no::text, 2, '0'),
-       'ROLE_USER',
-       true,
-       CURRENT_TIMESTAMP - ((16 - user_no) * interval '1 day')
-from generate_series(1, 15) as seed_users(user_no);
+insert into users(id, email, password, name, role, active, created_at) values
+(101, 'ananya.sharma@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Ananya Sharma', 'ROLE_USER', true, '2026-01-05 09:00:00'),
+(102, 'arjun.mehta@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Arjun Mehta', 'ROLE_USER', true, '2026-01-05 09:15:00'),
+(103, 'divya.nair@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Divya Nair', 'ROLE_USER', true, '2026-01-06 10:00:00'),
+(104, 'farhan.khan@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Farhan Khan', 'ROLE_USER', true, '2026-01-06 10:30:00'),
+(105, 'isha.patel@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Isha Patel', 'ROLE_USER', true, '2026-01-07 11:00:00'),
+(106, 'kabir.singh@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Kabir Singh', 'ROLE_USER', true, '2026-01-07 11:20:00'),
+(107, 'lakshmi.iyer@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Lakshmi Iyer', 'ROLE_USER', true, '2026-01-08 09:45:00'),
+(108, 'manish.gupta@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Manish Gupta', 'ROLE_USER', true, '2026-01-08 14:00:00'),
+(109, 'meera.reddy@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Meera Reddy', 'ROLE_USER', true, '2026-01-09 09:30:00'),
+(110, 'neha.verma@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Neha Verma', 'ROLE_USER', true, '2026-01-09 15:00:00'),
+(111, 'omkar.joshi@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Omkar Joshi', 'ROLE_USER', true, '2026-01-12 10:00:00'),
+(112, 'priya.rao@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Priya Rao', 'ROLE_USER', true, '2026-01-12 10:30:00'),
+(113, 'rahul.das@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Rahul Das', 'ROLE_USER', true, '2026-01-13 09:00:00'),
+(114, 'sneha.kulkarni@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Sneha Kulkarni', 'ROLE_USER', true, '2026-01-13 13:00:00'),
+(115, 'vikram.menon@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Vikram Menon', 'ROLE_USER', true, '2026-01-14 16:00:00');
 
-insert into messages(content, created_by_user_id, anonymous, created_at)
-select 'Seed feedback message ' || lpad(message_no::text, 2, '0')
-           || ': ' || case message_no % 5
-               when 0 then 'Could we simplify the release process and publish a short checklist?'
-               when 1 then 'The team meetings would be more useful with an agenda shared in advance.'
-               when 2 then 'Please consider adding more quiet spaces for focused work.'
-               when 3 then 'A monthly demo session could help everyone understand current projects.'
-               else 'The onboarding guide would benefit from clearer examples and ownership details.'
-           end,
-       (select id
-        from users
-        where email = 'user' || lpad((((message_no - 1) % 15) + 1)::text, 2, '0') || '@speakup.local'),
-       message_no % 4 = 0,
-       CURRENT_TIMESTAMP - ((25 - message_no) * interval '3 hours')
-from generate_series(1, 25) as seed_messages(message_no);
+insert into messages(id, content, created_by_user_id, anonymous, created_at) values
+(201, 'The mentoring programme made my first quarter welcoming and productive.', 101, false, '2026-01-19 09:15:00'),
+(202, 'Please publish meeting agendas one day in advance so everyone can prepare.', 102, false, '2026-01-22 14:10:00'),
+(203, 'The fourth-floor focus area needs quiet hours after lunch.', 103, true, '2026-01-28 13:35:00'),
+(204, 'A monthly cross-team demo would help us reuse good ideas.', 104, false, '2026-02-03 10:20:00'),
+(205, 'The onboarding guide needs setup examples for every supported platform.', 105, false, '2026-02-09 11:45:00'),
+(206, 'The healthier lunch choices and clear allergen labels are excellent.', 106, false, '2026-02-14 12:30:00'),
+(207, 'Too many release approvals regularly delay Friday deployments.', 107, true, '2026-02-20 16:40:00'),
+(208, 'Could we offer an annual learning budget for books and courses?', 108, false, '2026-02-26 09:50:00'),
+(209, 'The customer support rotation needs clear holiday coverage guidance.', 109, false, '2026-03-04 15:25:00'),
+(210, 'Hybrid meetings need better microphones for remote colleagues.', 110, true, '2026-03-10 10:05:00'),
+(211, 'The engineering town hall answered difficult questions openly.', 111, false, '2026-03-16 17:10:00'),
+(212, 'Can we reserve one meeting-free afternoon each sprint?', 112, false, '2026-03-23 09:30:00'),
+(213, 'Production alert ownership and escalation need to be clearer.', 113, true, '2026-03-29 07:55:00'),
+(214, 'The new parental leave policy gives families meaningful support.', 114, false, '2026-04-02 12:15:00'),
+(215, 'Quarterly goals changed twice without explanation, leaving us disappointed.', 115, false, '2026-04-08 16:25:00'),
+(216, 'Please add secure bicycle parking before the monsoon season.', 101, false, '2026-04-14 08:40:00'),
+(217, 'A rotating reviewer schedule could improve pull request turnaround.', 102, false, '2026-04-20 11:35:00'),
+(218, 'The April wellness day helped the team return with more energy.', 103, false, '2026-04-27 09:10:00'),
+(219, 'Company presentations need captions and recordings for accessibility.', 104, true, '2026-05-04 14:45:00'),
+(220, 'Expense reimbursements need faster processing and clearer status updates.', 105, false, '2026-05-11 10:55:00'),
+(221, 'A searchable directory of internal experts would help teams collaborate.', 106, false, '2026-05-18 13:20:00'),
+(222, 'The west wing is uncomfortably cold during morning hours.', 107, true, '2026-05-25 09:05:00'),
+(223, 'Monthly awards should recognise support work as well as features.', 108, false, '2026-06-01 15:15:00'),
+(224, 'The practical security workshop was our most useful training this year.', 109, false, '2026-06-08 11:10:00'),
+(225, 'Please publish a simple checklist for the mid-year review process.', 110, false, '2026-06-15 09:20:00');
 
-with seed_messages as (
-    select id,
-           created_at,
-           row_number() over (order by created_at, id) as message_no
-    from messages
-    where content like 'Seed feedback message %'
-), seed_users as (
-    select id,
-           row_number() over (order by email) as user_no
-    from users
-    where email like 'user%@speakup.local'
-)
-insert into replies(message_id, content, created_by_user_id, anonymous, created_at)
-select message.id,
-       'Seed reply ' || reply.reply_no || ' for message ' || lpad(message.message_no::text, 2, '0')
-           || ': ' || case reply.reply_no
-               when 1 then 'This sounds useful and is worth discussing further.'
-               when 2 then 'I agree; a small first step could validate the idea.'
-               when 3 then 'Could we collect a few examples before deciding?'
-               else 'I can help document the outcome if this moves forward.'
-           end,
-       author.id,
-       (message.message_no + reply.reply_no) % 5 = 0,
-       message.created_at + (reply.reply_no * interval '20 minutes')
-from seed_messages message
-cross join lateral generate_series(1, 2 + ((message.message_no - 1) % 3)::integer) as reply(reply_no)
-join seed_users author
-  on author.user_no = ((message.message_no + reply.reply_no - 1) % 15) + 1;
+insert into replies(id, message_id, content, created_by_user_id, anonymous, created_at) values
+(301, 201, 'My mentor also helped me understand our systems quickly.', 102, false, '2026-01-19 10:05:00'),
+(302, 201, 'A mentor handbook could make the experience consistent.', 103, false, '2026-01-19 11:20:00'),
+(303, 202, 'A standard agenda template would make this easy.', 104, false, '2026-01-22 15:00:00'),
+(304, 202, 'Calendar reminders could prompt meeting organisers.', 105, true, '2026-01-22 16:15:00'),
+(305, 203, 'Quiet hours from 2 PM to 4 PM would work well.', 106, false, '2026-01-28 14:10:00'),
+(306, 203, 'Clear signs and phone booths would reduce interruptions.', 107, false, '2026-01-28 15:05:00'),
+(307, 204, 'Recorded demos would help colleagues in other time zones.', 108, false, '2026-02-03 11:00:00'),
+(308, 204, 'Our team can volunteer for the first session.', 109, false, '2026-02-03 12:20:00'),
+(309, 205, 'Please include troubleshooting for common port conflicts.', 110, false, '2026-02-09 12:30:00'),
+(310, 205, 'Verified setup scripts would prevent documentation drift.', 111, false, '2026-02-09 14:00:00'),
+(311, 206, 'The allergen labels are much clearer now.', 112, false, '2026-02-14 13:05:00'),
+(312, 206, 'Please keep the rotating regional dishes.', 113, false, '2026-02-14 13:40:00'),
+(313, 207, 'One release owner could replace sequential approvals.', 114, false, '2026-02-20 17:05:00'),
+(314, 207, 'We should measure lead time before and after the change.', 115, false, '2026-02-20 17:45:00'),
+(315, 208, 'A flexible budget would support different roles.', 101, false, '2026-02-26 10:25:00'),
+(316, 208, 'Managers could approve requests within an annual limit.', 103, false, '2026-02-26 11:15:00'),
+(317, 209, 'A calendar with primary and backup contacts would help.', 102, false, '2026-03-04 16:00:00'),
+(318, 209, 'Please document how to swap a support week.', 104, false, '2026-03-04 16:35:00'),
+(319, 210, 'The large conference room is especially difficult to hear.', 105, false, '2026-03-10 10:40:00'),
+(320, 210, 'We could test one ceiling microphone first.', 106, false, '2026-03-10 11:25:00'),
+(321, 211, 'Please publish unanswered questions afterward.', 107, false, '2026-03-16 17:40:00'),
+(322, 211, 'Live voting focused the discussion on employee concerns.', 108, false, '2026-03-16 18:05:00'),
+(323, 212, 'Wednesday afternoons could work for our team.', 109, false, '2026-03-23 10:10:00'),
+(324, 212, 'Teams should choose another block when coverage requires it.', 110, false, '2026-03-23 10:45:00'),
+(325, 213, 'The incident commander should own additional paging.', 111, false, '2026-03-29 08:20:00'),
+(326, 213, 'Quarterly noisy-alert reviews would prevent repeats.', 112, false, '2026-03-29 09:00:00'),
+(327, 214, 'The phased return option is especially helpful.', 113, false, '2026-04-02 13:00:00'),
+(328, 214, 'A concise FAQ would help managers apply the policy.', 115, false, '2026-04-02 14:15:00'),
+(329, 215, 'Leaders should explain changed and removed priorities.', 101, false, '2026-04-08 17:05:00'),
+(330, 215, 'A written change log would keep teams aligned.', 102, false, '2026-04-08 17:35:00'),
+(331, 216, 'Covered parking near the south entrance would help.', 103, false, '2026-04-14 09:15:00'),
+(332, 216, 'Please include charging points if space permits.', 104, false, '2026-04-14 10:00:00'),
+(333, 217, 'A daily reviewer assignment could ensure a first response.', 105, false, '2026-04-20 12:05:00'),
+(334, 217, 'Smaller pull requests would also be easier to review.', 106, false, '2026-04-20 13:30:00'),
+(335, 218, 'I appreciated the absence of meetings and email expectations.', 107, false, '2026-04-27 09:50:00'),
+(336, 218, 'The next wellness day should follow a busy release.', 108, false, '2026-04-27 10:30:00'),
+(337, 219, 'Captions help with unfamiliar technical terminology.', 109, false, '2026-05-04 15:20:00'),
+(338, 219, 'Recordings should include searchable transcripts.', 110, false, '2026-05-04 16:00:00'),
+(339, 220, 'A tracking page would reduce support requests.', 111, false, '2026-05-11 11:30:00'),
+(340, 220, 'Finance should publish expected turnaround times.', 112, false, '2026-05-11 12:10:00'),
+(341, 221, 'Profiles could list domains, languages, and mentoring.', 113, false, '2026-05-18 14:00:00'),
+(342, 221, 'People should maintain their own expertise profiles.', 114, false, '2026-05-18 14:40:00'),
+(343, 222, 'Sensors confirm the west wing is colder before noon.', 115, false, '2026-05-25 09:45:00'),
+(344, 222, 'Facilities could adjust only the morning schedule.', 101, false, '2026-05-25 10:20:00'),
+(345, 223, 'Incident prevention deserves visible recognition too.', 102, false, '2026-06-01 15:50:00'),
+(346, 223, 'Nominations could focus on impact, not delivery type.', 103, false, '2026-06-01 16:30:00'),
+(347, 224, 'The phishing example made reporting easy to remember.', 104, false, '2026-06-08 11:45:00'),
+(348, 224, 'A follow-up exercise would reinforce the material.', 105, false, '2026-06-08 12:25:00'),
+(349, 225, 'The checklist should include preparation and feedback dates.', 106, false, '2026-06-15 10:00:00'),
+(350, 225, 'Please add links to the goal-setting examples.', 107, false, '2026-06-15 10:40:00');
 
-with seed_messages as (
-    select id,
-           created_by_user_id,
-           row_number() over (order by created_at, id) as message_no
-    from messages
-    where content like 'Seed feedback message %'
-), seed_users as (
-    select id,
-           row_number() over (order by email) as user_no
-    from users
-    where email like 'user%@speakup.local'
-)
-insert into message_votes(user_id, message_id, vote_type, created_at)
-select voter.id,
-       message.id,
-       case when voter.vote_no <= 3 then 'UPVOTE' else 'DOWNVOTE' end,
-       CURRENT_TIMESTAMP
-from seed_messages message
-cross join lateral (
-    select candidate.id,
-           row_number() over (order by ((candidate.user_no + message.message_no) % 15)) as vote_no
-    from seed_users candidate
-    where candidate.id <> message.created_by_user_id
-    order by ((candidate.user_no + message.message_no) % 15)
-    limit 4
-) voter;
+insert into message_votes(id, user_id, message_id, vote_type, created_at) values
+(401, 103, 201, 'UPVOTE', '2026-01-19 12:00:00'),
+(402, 104, 202, 'UPVOTE', '2026-01-22 17:00:00'),
+(403, 105, 203, 'UPVOTE', '2026-01-28 16:00:00'),
+(404, 106, 204, 'UPVOTE', '2026-02-03 13:00:00'),
+(405, 107, 205, 'DOWNVOTE', '2026-02-09 15:00:00'),
+(406, 108, 206, 'UPVOTE', '2026-02-14 14:00:00'),
+(407, 109, 207, 'UPVOTE', '2026-02-20 18:00:00'),
+(408, 110, 208, 'UPVOTE', '2026-02-26 12:00:00'),
+(409, 111, 209, 'UPVOTE', '2026-03-04 17:00:00'),
+(410, 112, 210, 'UPVOTE', '2026-03-10 12:00:00'),
+(411, 113, 211, 'DOWNVOTE', '2026-03-16 18:30:00'),
+(412, 114, 212, 'UPVOTE', '2026-03-23 11:00:00'),
+(413, 115, 213, 'UPVOTE', '2026-03-29 10:00:00'),
+(414, 101, 214, 'UPVOTE', '2026-04-02 15:00:00'),
+(415, 102, 215, 'DOWNVOTE', '2026-04-08 18:00:00');
 
-with seed_replies as (
-    select id,
-           created_by_user_id,
-           row_number() over (order by created_at, id) as reply_no
-    from replies
-    where content like 'Seed reply %'
-), seed_users as (
-    select id,
-           row_number() over (order by email) as user_no
-    from users
-    where email like 'user%@speakup.local'
-)
-insert into reply_votes(user_id, reply_id, vote_type, created_at)
-select voter.id,
-       reply.id,
-       case when voter.vote_no <= 2 then 'UPVOTE' else 'DOWNVOTE' end,
-       CURRENT_TIMESTAMP
-from seed_replies reply
-cross join lateral (
-    select candidate.id,
-           row_number() over (order by ((candidate.user_no + reply.reply_no) % 15)) as vote_no
-    from seed_users candidate
-    where candidate.id <> reply.created_by_user_id
-    order by ((candidate.user_no + reply.reply_no) % 15)
-    limit 3
-) voter;
+insert into reply_votes(id, user_id, reply_id, vote_type, created_at) values
+(501, 104, 301, 'UPVOTE', '2026-01-19 12:10:00'),
+(502, 105, 303, 'UPVOTE', '2026-01-22 17:10:00'),
+(503, 108, 305, 'UPVOTE', '2026-01-28 16:10:00'),
+(504, 110, 307, 'UPVOTE', '2026-02-03 13:10:00'),
+(505, 112, 309, 'DOWNVOTE', '2026-02-09 15:10:00'),
+(506, 114, 311, 'UPVOTE', '2026-02-14 14:10:00'),
+(507, 101, 313, 'UPVOTE', '2026-02-20 18:10:00'),
+(508, 102, 315, 'UPVOTE', '2026-02-26 12:10:00'),
+(509, 105, 317, 'DOWNVOTE', '2026-03-04 17:10:00'),
+(510, 107, 319, 'UPVOTE', '2026-03-10 12:10:00'),
+(511, 109, 321, 'UPVOTE', '2026-03-16 18:40:00'),
+(512, 111, 323, 'DOWNVOTE', '2026-03-23 11:10:00'),
+(513, 113, 325, 'UPVOTE', '2026-03-29 10:10:00'),
+(514, 115, 327, 'UPVOTE', '2026-04-02 15:10:00'),
+(515, 103, 329, 'UPVOTE', '2026-04-08 18:10:00');
+
+-- Move each sequence beyond its explicit seed IDs for future inserts.
+select setval('user_id_seq', 115);
+select setval('message_id_seq', 225);
+select setval('reply_id_seq', 350);
+select setval('message_vote_id_seq', 415);
+select setval('reply_vote_id_seq', 515);
