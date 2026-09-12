@@ -24,7 +24,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UC-014     | Vote on Reply               | COMPLETED       |
 | UC-015     | Browse Recent Feed          | COMPLETED       |
 | UC-016     | Browse Popular Feed         | COMPLETED       |
-| UC-017     | Navigate Feed Pages         | NOT_IMPLEMENTED |
+| UC-017     | Navigate Feed Pages         | COMPLETED       |
 | UC-018     | Moderate Message            | NOT_IMPLEMENTED |
 | UC-019     | Moderate Reply              | NOT_IMPLEMENTED |
 
@@ -235,7 +235,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-017 — Navigate Feed Pages
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-015, UC-016
 - **Description:** An authenticated user navigates a large Recent or Popular feed in bounded pages using cursor-based or page/offset pagination.
 - **Acceptance Criteria:**

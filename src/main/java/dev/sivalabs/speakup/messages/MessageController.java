@@ -1,5 +1,6 @@
 package dev.sivalabs.speakup.messages;
 
+import dev.sivalabs.speakup.shared.BadRequestException;
 import dev.sivalabs.speakup.users.AuthUtils;
 import dev.sivalabs.speakup.users.SecurityUser;
 import jakarta.validation.Valid;
@@ -23,11 +24,14 @@ class MessageController {
     }
 
     @GetMapping("/")
-    String home(@RequestParam(defaultValue = "RECENT") FeedType feed, Model model) {
+    String home(
+            @RequestParam(defaultValue = "RECENT") FeedType feed,
+            @RequestParam(defaultValue = "1") String page,
+            Model model) {
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new CreateMessageForm("", null));
         }
-        populateHome(model, feed);
+        populateHome(model, feed, parsePage(page));
         return "index";
     }
 
@@ -39,7 +43,7 @@ class MessageController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            populateHome(model, FeedType.RECENT);
+            populateHome(model, FeedType.RECENT, 1);
             return "index";
         }
         messageService.createMessage(new CreateMessageCmd(
@@ -185,14 +189,26 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
-    private void populateHome(Model model, FeedType feed) {
+    private void populateHome(Model model, FeedType feed, int pageNo) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
         model.addAttribute("selectedFeed", feed);
         var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
-        model.addAttribute(
-                "messages",
-                feed == FeedType.POPULAR
-                        ? messageService.findPopularMessages(currentUserId)
-                        : messageService.findRecentMessages(currentUserId));
+        var page = feed == FeedType.POPULAR
+                ? messageService.findPopularMessages(currentUserId, pageNo)
+                : messageService.findRecentMessages(currentUserId, pageNo);
+        model.addAttribute("page", page);
+        model.addAttribute("messages", page.data());
+    }
+
+    private int parsePage(String page) {
+        try {
+            var pageNo = Integer.parseInt(page);
+            if (pageNo < 1) {
+                throw new BadRequestException("Page number must be at least 1");
+            }
+            return pageNo;
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Page number must be a positive integer");
+        }
     }
 }

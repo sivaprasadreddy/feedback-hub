@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head><title>Bad Request</title></head>
+<body>
+<div layout:fragment="content" class="flex min-h-[60vh] flex-col items-center justify-center text-center">
+    <h1 class="mb-4 text-4xl font-bold text-gray-900">400 - Bad Request</h1>
+    <p class="mb-8 text-lg text-gray-600" th:text="${message}">The request was invalid.</p>
+    <a th:href="@{/}" class="rounded-md bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700">Go to Homepage</a>
+</div>
+</body>
+</html>

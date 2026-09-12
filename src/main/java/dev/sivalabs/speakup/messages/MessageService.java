@@ -1,15 +1,18 @@
 package dev.sivalabs.speakup.messages;
 
+import dev.sivalabs.speakup.shared.PagedResult;
 import dev.sivalabs.speakup.shared.ResourceNotFoundException;
 import dev.sivalabs.speakup.users.UserEntity;
 import jakarta.persistence.EntityManager;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class MessageService {
+    static final int FEED_PAGE_SIZE = 10;
     static final String DELETED_CONTENT = "This message has been deleted.";
     static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
@@ -41,34 +44,36 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public List<MessageDto> findRecentMessages(Long currentUserId) {
-        return toMessageDtos(messageRepository.findAllByOrderByCreatedAtDesc(), currentUserId);
+    public PagedResult<MessageDto> findRecentMessages(Long currentUserId, int pageNo) {
+        return PagedResult.from(messageRepository.findPageByOrderByCreatedAtDesc(pageRequest(pageNo)))
+                .map(message -> toMessageDto(message, currentUserId));
     }
 
     @Transactional(readOnly = true)
-    public List<MessageDto> findPopularMessages(Long currentUserId) {
-        return toMessageDtos(messageRepository.findAllByPopularity(), currentUserId);
+    public PagedResult<MessageDto> findPopularMessages(Long currentUserId, int pageNo) {
+        return PagedResult.from(messageRepository.findAllByPopularity(pageRequest(pageNo)))
+                .map(message -> toMessageDto(message, currentUserId));
     }
 
-    private List<MessageDto> toMessageDtos(List<MessageEntity> messages, Long currentUserId) {
-        return messages.stream()
-                .map(message -> new MessageDto(
-                        message.getId(),
-                        message.isAnonymous()
-                                ? "Anonymous"
-                                : message.getCreator().getName(),
-                        message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
-                        message.getCreatedAt(),
-                        messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.UPVOTE),
-                        messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.DOWNVOTE),
-                        replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE),
-                        messageVoteRepository
-                                .findByMessageIdAndVoterId(message.getId(), currentUserId)
-                                .map(MessageVoteEntity::getVoteType)
-                                .map(Enum::name)
-                                .orElse(null),
-                        message.getStatus() == MessageStatus.DELETED))
-                .toList();
+    private PageRequest pageRequest(int pageNo) {
+        return PageRequest.of(pageNo - 1, FEED_PAGE_SIZE);
+    }
+
+    private MessageDto toMessageDto(MessageEntity message, Long currentUserId) {
+        return new MessageDto(
+                message.getId(),
+                message.isAnonymous() ? "Anonymous" : message.getCreator().getName(),
+                message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
+                message.getCreatedAt(),
+                messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.UPVOTE),
+                messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.DOWNVOTE),
+                replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE),
+                messageVoteRepository
+                        .findByMessageIdAndVoterId(message.getId(), currentUserId)
+                        .map(MessageVoteEntity::getVoteType)
+                        .map(Enum::name)
+                        .orElse(null),
+                message.getStatus() == MessageStatus.DELETED);
     }
 
     @Transactional(readOnly = true)
