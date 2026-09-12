@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{dashboard}">
+<head>
+    <title>Create User</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-2xl font-bold text-slate-900">Create User</h1>
+    <p class="mt-2 text-slate-600">Add an employee account with a name, unique email, and role.</p>
+    <form method="post" th:action="@{/admin/users}" th:object="${form}" class="mt-6 max-w-lg space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div>
+            <label for="name" class="mb-2 block text-sm font-semibold text-slate-700">Name <span class="text-rose-600">*</span></label>
+            <input id="name" type="text" th:field="*{name}" required
+                   class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"/>
+            <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="mt-2 text-sm text-rose-600"></p>
+        </div>
+        <div>
+            <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Email <span class="text-rose-600">*</span></label>
+            <input id="email" type="email" th:field="*{email}" required
+                   class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"/>
+            <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="mt-2 text-sm text-rose-600"></p>
+        </div>
+        <div>
+            <label for="role" class="mb-2 block text-sm font-semibold text-slate-700">Role <span class="text-rose-600">*</span></label>
+            <select id="role" th:field="*{role}" required
+                    class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
+                <option value="">Select role</option>
+                <option th:each="role : ${roles}" th:value="${role}" th:text="${role.displayName}">USER</option>
+            </select>
+            <p th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="mt-2 text-sm text-rose-600"></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700">
+                Create user
+            </button>
+            <a th:href="@{/admin/users}" class="text-sm font-medium text-slate-600 hover:text-slate-900">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

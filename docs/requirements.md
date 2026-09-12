@@ -9,7 +9,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 | UseCase ID | Use Case Title              | Status          |
 |------------|-----------------------------|-----------------|
 | UC-001     | Authenticate User           | COMPLETED       |
-| UC-002     | Create User Account         | NOT_IMPLEMENTED |
+| UC-002     | Create User Account         | COMPLETED       |
 | UC-003     | Assign User Role            | NOT_IMPLEMENTED |
 | UC-004     | Activate or Deactivate User | NOT_IMPLEMENTED |
 | UC-005     | View and Filter Users       | NOT_IMPLEMENTED |
@@ -45,7 +45,7 @@ Statuses reflect the PRD alone and should be updated as implementation progresse
 
 ### UC-002 — Create User Account
 
-- **Status:** NOT_IMPLEMENTED
+- **Status:** COMPLETED
 - **Depends On:** UC-001
 - **Description:** An Admin creates an employee account using the employee's name, unique email address, and initial role.
 - **Acceptance Criteria:**

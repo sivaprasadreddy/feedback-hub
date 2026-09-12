@@ -9,8 +9,39 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <h1 class="text-2xl font-bold text-slate-900">Manage Users</h1>
-    <p class="mt-2 text-slate-600">User administration will appear here.</p>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold text-slate-900">Manage Users</h1>
+        <a th:href="@{/admin/users/new}"
+           class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700">
+            <i class="fa-solid fa-user-plus mr-2"></i> Create user
+        </a>
+    </div>
+    <div class="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Name</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Email</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Role</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Created</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+            <tr th:each="user : ${users}">
+                <td class="px-4 py-3 text-sm text-slate-900" th:text="${user.name()}">Name</td>
+                <td class="px-4 py-3 text-sm text-slate-700" th:text="${user.email()}">email@example.com</td>
+                <td class="px-4 py-3 text-sm text-slate-700" th:text="${user.role().displayName}">USER</td>
+                <td class="px-4 py-3 text-sm">
+                    <span th:if="${user.active()}" class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">Active</span>
+                    <span th:unless="${user.active()}" class="rounded-full bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700">Inactive</span>
+                </td>
+                <td class="px-4 py-3 text-sm text-slate-700"
+                    th:text="${user.createdAt() != null ? #temporals.format(user.createdAt(), 'yyyy-MM-dd HH:mm') : ''}">2026-01-01</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>

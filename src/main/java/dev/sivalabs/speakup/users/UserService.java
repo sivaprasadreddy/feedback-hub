@@ -1,6 +1,6 @@
 package dev.sivalabs.speakup.users;
 
-import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class UserService {
+    static final String INITIAL_PASSWORD = "secret123";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -26,15 +28,24 @@ class UserService {
         return userRepository.findById(id).map(this::toUserDto);
     }
 
+    @Transactional(readOnly = true)
+    public List<UserDto> findAllUsers() {
+        return userRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(this::toUserDto)
+                .toList();
+    }
+
     @Transactional
     public void createUser(CreateUserCmd cmd) {
+        if (userRepository.existsByEmailIgnoreCase(cmd.email())) {
+            throw new DuplicateEmailException();
+        }
         var user = new UserEntity();
         user.setName(cmd.name());
         user.setEmail(cmd.email());
-        user.setPassword(passwordEncoder.encode(cmd.password()));
+        user.setPassword(passwordEncoder.encode(INITIAL_PASSWORD));
         user.setRole(cmd.role());
         user.setActive(true);
-        user.setCreatedAt(Instant.now());
         userRepository.save(user);
     }
 
@@ -45,6 +56,7 @@ class UserService {
     }
 
     private UserDto toUserDto(UserEntity user) {
-        return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole(), user.getCreatedAt());
+        return new UserDto(
+                user.getId(), user.getName(), user.getEmail(), user.getRole(), user.isActive(), user.getCreatedAt());
     }
 }
