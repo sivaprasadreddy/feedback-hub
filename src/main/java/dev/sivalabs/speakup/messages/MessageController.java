@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -116,6 +117,21 @@ class MessageController {
             @PathVariable Long messageId, @PathVariable Long replyId, RedirectAttributes redirectAttributes) {
         messageService.deleteReply(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
         redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
+    @PostMapping("/messages/{messageId}/vote")
+    String voteOnMessage(
+            @PathVariable Long messageId, @RequestParam VoteType voteType, RedirectAttributes redirectAttributes) {
+        messageService.voteOnMessage(messageId, AuthUtils.getCurrentUserIdOrThrow(), voteType);
+        redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
+        return "redirect:/messages/" + messageId;
+    }
+
+    @PostMapping("/messages/{messageId}/vote/remove")
+    String removeMessageVote(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
+        messageService.removeMessageVote(messageId, AuthUtils.getCurrentUserIdOrThrow());
+        redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
         return "redirect:/messages/" + messageId;
     }
 

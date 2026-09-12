@@ -44,6 +44,20 @@
                 <dd class="mt-1 text-sm font-semibold text-slate-900" th:text="${message.currentUserVote() != null ? message.currentUserVote() : 'No vote'}">No vote</dd>
             </div>
         </dl>
+        <div th:if="${message.votable()}" class="mt-4 flex flex-wrap items-center gap-3">
+            <form method="post" th:action="@{/messages/{id}/vote(id=${message.id()})}">
+                <input type="hidden" name="voteType" value="UPVOTE"/>
+                <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Upvote</button>
+            </form>
+            <form method="post" th:action="@{/messages/{id}/vote(id=${message.id()})}">
+                <input type="hidden" name="voteType" value="DOWNVOTE"/>
+                <button type="submit" class="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700">Downvote</button>
+            </form>
+            <form th:if="${message.currentUserVote() != null}" method="post"
+                  th:action="@{/messages/{id}/vote/remove(id=${message.id()})}">
+                <button type="submit" class="text-sm font-semibold text-slate-600 hover:text-slate-900">Remove vote</button>
+            </form>
+        </div>
     </article>
     <section class="mt-6" aria-labelledby="replies-heading">
         <h2 id="replies-heading" class="text-xl font-bold text-slate-900">Replies</h2>

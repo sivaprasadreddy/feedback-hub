@@ -14,11 +14,17 @@ class MessageService {
     static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
     private final ReplyRepository replyRepository;
+    private final MessageVoteRepository messageVoteRepository;
     private final EntityManager entityManager;
 
-    MessageService(MessageRepository messageRepository, ReplyRepository replyRepository, EntityManager entityManager) {
+    MessageService(
+            MessageRepository messageRepository,
+            ReplyRepository replyRepository,
+            MessageVoteRepository messageVoteRepository,
+            EntityManager entityManager) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
+        this.messageVoteRepository = messageVoteRepository;
         this.entityManager = entityManager;
     }
 
@@ -50,17 +56,24 @@ class MessageService {
                 .findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         var deleted = message.getStatus() == MessageStatus.DELETED;
+        var ownedByCurrentUser = message.getCreator().getId().equals(currentUserId);
+        var currentUserVote = messageVoteRepository
+                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .map(MessageVoteEntity::getVoteType)
+                .map(Enum::name)
+                .orElse(null);
         return new MessageDetailsDto(
                 message.getId(),
                 message.isAnonymous() ? "Anonymous" : message.getCreator().getName(),
                 deleted ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
-                0,
-                0,
+                messageVoteRepository.countByMessageIdAndVoteType(messageId, VoteType.UPVOTE),
+                messageVoteRepository.countByMessageIdAndVoteType(messageId, VoteType.DOWNVOTE),
                 replyRepository.countByMessageIdAndStatus(messageId, ReplyStatus.ACTIVE),
-                null,
+                currentUserVote,
                 deleted,
-                !deleted && message.getCreator().getId().equals(currentUserId));
+                !deleted && ownedByCurrentUser,
+                !deleted && !ownedByCurrentUser);
     }
 
     @Transactional(readOnly = true)
@@ -143,6 +156,42 @@ class MessageService {
     public void deleteReply(Long messageId, Long replyId, Long currentUserId) {
         var reply = getEditableReply(messageId, replyId, currentUserId);
         reply.setStatus(ReplyStatus.DELETED);
+    }
+
+    @Transactional
+    public void voteOnMessage(Long messageId, Long currentUserId, VoteType voteType) {
+        var message = getVotableMessage(messageId, currentUserId);
+        var vote = messageVoteRepository
+                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .orElseGet(() -> {
+                    var newVote = new MessageVoteEntity();
+                    newVote.setMessage(message);
+                    newVote.setVoter(entityManager.getReference(UserEntity.class, currentUserId));
+                    return newVote;
+                });
+        vote.setVoteType(voteType);
+        messageVoteRepository.save(vote);
+    }
+
+    @Transactional
+    public void removeMessageVote(Long messageId, Long currentUserId) {
+        getVotableMessage(messageId, currentUserId);
+        messageVoteRepository
+                .findByMessageIdAndVoterId(messageId, currentUserId)
+                .ifPresent(messageVoteRepository::delete);
+    }
+
+    private MessageEntity getVotableMessage(Long messageId, Long currentUserId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        if (message.getStatus() == MessageStatus.DELETED) {
+            throw new AccessDeniedException("Deleted messages cannot be voted on");
+        }
+        if (message.getCreator().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You cannot vote on your own message");
+        }
+        return message;
     }
 
     private ReplyEntity getEditableReply(Long messageId, Long replyId, Long currentUserId) {
