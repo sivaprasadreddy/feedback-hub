@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: feedbackhub-ollama-pv
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/feedbackhub-ollama
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: feedbackhub-ollama-pv-claim
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: feedbackhub-ollama-svc
+spec:
+  selector:
+    app: feedbackhub-ollama-pod
+  ports:
+    - name: http
+      port: 11434
+      targetPort: 11434
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedbackhub-ollama-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: feedbackhub-ollama-pod
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: feedbackhub-ollama-pod
+    spec:
+      containers:
+        - name: ollama
+          image: "ollama/ollama:0.34.0"
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - |
+              ollama serve &
+              OLLAMA_PID=$!
+              until ollama list >/dev/null 2>&1; do sleep 1; done
+              ollama pull "$OLLAMA_MODEL"
+              wait "$OLLAMA_PID"
+          env:
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedbackhub-configmap
+                  key: ollama_model
+          ports:
+            - name: http
+              containerPort: 11434
+          readinessProbe:
+            exec:
+              command: [ "/bin/sh", "-c", "ollama show \"$OLLAMA_MODEL\" >/dev/null 2>&1" ]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 2
+          volumeMounts:
+            - name: ollama-storage
+              mountPath: /root/.ollama
+      volumes:
+        - name: ollama-storage
+          persistentVolumeClaim:
+            claimName: feedbackhub-ollama-pv-claim

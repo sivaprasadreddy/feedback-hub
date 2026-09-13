@@ -42,6 +42,47 @@ $ task --version
 $ ollama --version
 ```
 
+## How to run?
+
+```shell
+# runs all tests
+$ task test 
+
+# formats java code using spotless
+$ task format
+
+# builds docker image
+$ task build_image 
+
+# starts app using docker compose
+$ task start 
+$ task stop
+$ task restart
+```
+
+* Application URL: http://localhost:8080
+* Credentials: `admin@gmail.com/secret`, `siva@gmail.com/secret`
+
+## Deploying on k8s cluster
+
+Set up a Kind cluster following [Installation Guide](docs/installation.md)
+
+```shell
+# create kind cluster 
+$ task kind_create
+
+# deploy app to kind cluster 
+$ task k8s_deploy  // this will take a while to download ollama
+
+# undeploy app
+$ task k8s_undeploy
+
+# destroy kind cluster 
+$ task kind_destroy
+```
+
+Application URL: http://localhost:80
+
 ## Using Agent Skills
 
 This repository includes project-specific Agent Skills in [`.agents/skills`](.agents/skills). 

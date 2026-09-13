@@ -60,6 +60,16 @@ spec:
                 configMapKeyRef:
                   name: feedbackhub-configmap
                   key: email_port
+            - name: OLLAMA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedbackhub-configmap
+                  key: ollama_url
+            - name: OLLAMA_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedbackhub-configmap
+                  key: ollama_model
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

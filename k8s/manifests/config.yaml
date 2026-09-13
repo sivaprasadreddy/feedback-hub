@@ -6,6 +6,8 @@ data:
   db_jdbc_url: "jdbc:postgresql://feedbackhub-postgres-svc:5432/postgres"
   email_host: "feedbackhub-mailpit-svc"
   email_port: "1025"
+  ollama_url: "http://feedbackhub-ollama-svc:11434"
+  ollama_model: "gemma3:270m"
 ---
 apiVersion: v1
 kind: Secret
