@@ -36,13 +36,6 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserDto> findAllUsers() {
-        return userRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(this::toUserDto)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public List<UserDto> findUsers(UserFilterQuery query) {
         return userRepository.findUsers(query.role(), query.active()).stream()
                 .map(this::toUserDto)
@@ -61,12 +54,6 @@ class UserService {
         user.setRole(cmd.role());
         user.setActive(true);
         userRepository.save(user);
-    }
-
-    @Transactional
-    public void updateUser(Long userId, UpdateUserCmd cmd) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
-        userRepository.updateUser(user.getId(), cmd.name());
     }
 
     @Transactional

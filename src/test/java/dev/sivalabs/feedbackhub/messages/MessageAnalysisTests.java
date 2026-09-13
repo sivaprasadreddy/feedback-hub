@@ -35,7 +35,9 @@ class MessageAnalysisTests extends BaseIT {
         var userSession = session(login("siva@gmail.com", "secret"));
         var content = "I am delighted with our new learning budget " + UUID.randomUUID();
         when(messageAnalyzer.analyze(content))
-                .thenReturn(new MessageAnalysis(Set.of(" Benefits ", "Learning", "learning"), MessageSentiment.HAPPY));
+                .thenReturn(new MessageAnalysis(
+                        Set.of(MessageTopic.BENEFITS_AND_PERKS, MessageTopic.LEARNING_AND_DEVELOPMENT),
+                        MessageSentiment.HAPPY));
 
         assertThat(mvc.post()
                         .uri("/messages")
@@ -56,17 +58,17 @@ class MessageAnalysisTests extends BaseIT {
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             var message = messageService.findMessage(createdEvent.messageId(), 2L);
             assertThat(message.sentiment()).isEqualTo(MessageSentiment.HAPPY);
-            assertThat(message.topics()).containsExactlyInAnyOrder("Benefits", "Learning");
+            assertThat(message.topics()).containsExactlyInAnyOrder("Benefits & Perks", "Learning & Development");
         });
 
         assertThat(mvc.get().uri("/").session(userSession).exchange())
                 .bodyText()
-                .contains(content, "Happy", "Benefits", "Learning");
+                .contains(content, "Happy", "Benefits &amp; Perks", "Learning &amp; Development");
         assertThat(mvc.get()
                         .uri("/messages/{id}", createdEvent.messageId())
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .contains(content, "Happy", "Benefits", "Learning");
+                .contains(content, "Happy", "Benefits &amp; Perks", "Learning &amp; Development");
     }
 }

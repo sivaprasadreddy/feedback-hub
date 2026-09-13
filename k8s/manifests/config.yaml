@@ -12,6 +12,7 @@ kind: Secret
 metadata:
   name: feedbackhub-secrets
 type: Opaque
+# DON'T DO THIS IN PRODUCTION
 stringData:
   db_username: "postgres"
   db_password: "postgres"

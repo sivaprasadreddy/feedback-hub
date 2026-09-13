@@ -13,15 +13,21 @@ class SpringAiMessageAnalyzer implements MessageAnalyzer {
 
     @Override
     public MessageAnalysis analyze(String content) {
-        return chatClient.prompt().system("""
-                        Analyze employee feedback. Return between one and three broad, relevant topics in Title Case
-                        and choose exactly one sentiment: HAPPY, SAD, ANGRY, or DISAPPOINTED.
-                        Prefer stable organization-level topics instead of fine-grained keywords or phrases copied
-                        from the feedback. Examples include Work Culture, Engineering, Management, Benefits, Office,
-                        HR, Ideas, Learning, Concern, People, and Other. This list is illustrative, not exhaustive.
-                        Use Other only when no more meaningful broad topic applies.
+        return chatClient
+                .prompt()
+                .system("""
+                        Analyze employee feedback. Return between one and three relevant topics, using only the exact
+                        topic names in the following list:
+
+                        %s
+
+                        Do not create, rename, shorten, or combine topic names. Use Other only when no more specific
+                        topic from the list applies. Choose exactly one sentiment: HAPPY, SAD, ANGRY, or DISAPPOINTED.
                         Use SAD for generally unhappy content that is not clearly anger or disappointment.
                         Do not include explanations or information that is not present in the feedback.
-                        """).user(content).call().entity(MessageAnalysis.class);
+                        """.formatted(MessageTopic.promptValues()))
+                .user(content)
+                .call()
+                .entity(MessageAnalysis.class);
     }
 }

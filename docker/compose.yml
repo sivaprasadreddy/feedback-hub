@@ -15,6 +15,16 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  ollama:
+    image: ollama/ollama:0.34.0
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    entrypoint: [ "/entrypoint.sh" ]
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./ollama-entrypoint.sh:/entrypoint.sh:ro
+
   feedbackhub:
     image: sivaprasadreddy/feedbackhub
     container_name: feedbackhub
@@ -25,9 +35,17 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       EMAIL_HOST: mailpit
       EMAIL_PORT: 1025
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: gemma3:270m
+      BOOTUI_ENABLED: on
+      BOOTUI_MCP_ENABLED: on
     ports:
       - "8080:8080"
     depends_on:
       - postgres
       - mailpit
+      - ollama
     restart: unless-stopped
+
+volumes:
+  ollama_data:

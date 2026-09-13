@@ -27,7 +27,7 @@ A feedback management platform where an organization can provide their employees
 ## Prerequisites
 * JDK 25
 * Docker and Docker Compose
-* [Ollama](https://ollama.com/) with [qwen3:8b](https://ollama.com/library/qwen3.8) model
+* [Ollama](https://ollama.com/) with [gemma3:270m](https://ollama.com/library/gemma3) model
 * Your favourite IDE (Recommended: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
 
 Follow the [Installation Guide](docs/installation.md) to install the required tools.

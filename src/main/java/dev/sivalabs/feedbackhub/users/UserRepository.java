@@ -3,7 +3,6 @@ package dev.sivalabs.feedbackhub.users;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,8 +20,4 @@ interface UserRepository extends JpaRepository<UserEntity, Long> {
             order by u.createdAt desc
             """)
     List<UserEntity> findUsers(@Param("role") Role role, @Param("active") Boolean active);
-
-    @Modifying
-    @Query("update UserEntity u set u.name = :name where u.id = :id")
-    void updateUser(Long id, String name);
 }
