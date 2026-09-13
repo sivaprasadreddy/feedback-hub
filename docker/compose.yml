@@ -1,0 +1,33 @@
+name: feedback-hub
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+  
+  mailpit:
+    image: axllent/mailpit:v1.31
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  feedbackhub:
+    image: sivaprasadreddy/feedbackhub
+    container_name: feedbackhub
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - mailpit
+    restart: unless-stopped

@@ -6,7 +6,7 @@ vars:
   SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
   IMAGE_NAME: 'sivaprasadreddy/feedbackhub'
   CLUSTER_NAME: 'sivalabs-k8s'
-  DC_FILE: "compose.yml"
+  DC_FILE: "docker/compose.yml"
 
 tasks:
   default:
@@ -33,13 +33,13 @@ tasks:
     desc: Start the application
     deps: [ build_image ]
     cmds:
-      - docker compose --profile app -f "{{.DC_FILE}}" up --force-recreate -d
+      - docker compose -f "{{.DC_FILE}}" up --force-recreate -d
 
   stop:
     desc: Stop the application
     cmds:
-      - docker compose --profile app -f "{{.DC_FILE}}" stop
-      - docker compose --profile app -f "{{.DC_FILE}}" rm -f
+      - docker compose -f "{{.DC_FILE}}" stop
+      - docker compose -f "{{.DC_FILE}}" rm -f
 
   restart:
     desc: Restarts the application
@@ -49,19 +49,23 @@ tasks:
       - task: start
 
   kind_create:
+    desc: Create KinD cluster
     cmds:
       - ./k8s/kind/kind-cluster.sh create
 
   kind_destroy:
+    desc: Destroy KinD cluster
     cmds:
       - ./k8s/kind/kind-cluster.sh destroy
 
   k8s_deploy:
+    desc: Deploy application on Kind cluster
     cmds:
       - kind load docker-image {{.IMAGE_NAME}} --name {{.CLUSTER_NAME}}
       - kubectl apply -f k8s/manifests/
 
   k8s_undeploy:
+    desc: Undeploy application from Kind cluster
     cmds:
       - kubectl delete -f k8s/manifests/
 

@@ -79,6 +79,15 @@ class UserService {
         user.setActive(cmd.active());
     }
 
+    @Transactional
+    void changePassword(Long userId, ChangePasswordCmd cmd) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!passwordEncoder.matches(cmd.currentPassword(), user.getPassword())) {
+            throw new InvalidCurrentPasswordException();
+        }
+        user.setPassword(passwordEncoder.encode(cmd.newPassword()));
+    }
+
     private UserDto toUserDto(UserEntity user) {
         return new UserDto(
                 user.getId(), user.getName(), user.getEmail(), user.getRole(), user.isActive(), user.getCreatedAt());

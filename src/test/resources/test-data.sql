@@ -3,6 +3,7 @@ DELETE FROM message_votes;
 DELETE FROM message_topics;
 DELETE FROM replies;
 DELETE FROM messages;
+DELETE FROM user_profile_pictures;
 DELETE FROM users;
 
 -- pwd is 'secret'

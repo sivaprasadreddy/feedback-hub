@@ -15,6 +15,15 @@ create table users
     constraint user_email_unique unique (email)
 );
 
+create table user_profile_pictures
+(
+    user_id      bigint not null,
+    content_type text   not null,
+    content      bytea  not null,
+    primary key (user_id),
+    constraint user_profile_picture_user_fk foreign key (user_id) references users (id) on delete cascade
+);
+
 -- pwd is 'secret'
 insert into users(id, email, password, name, role, active, created_at) values
 (1, 'admin@gmail.com','$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi','Admin', 'ROLE_ADMIN', true, CURRENT_TIMESTAMP),
