@@ -25,8 +25,8 @@ class NavigateFeedPagesTests extends BaseIT {
         var session = session(login("siva@gmail.com", "secret"));
         var contents = createMessages(session, 12, "Recent page");
 
-        var firstPage = mvc.get().uri("/?feed=RECENT&page=1").session(session).exchange();
-        var secondPage = mvc.get().uri("/?feed=RECENT&page=2").session(session).exchange();
+        var firstPage = mvc.get().uri("/?feed=recent&page=1").session(session).exchange();
+        var secondPage = mvc.get().uri("/?feed=recent&page=2").session(session).exchange();
 
         assertThat(firstPage).hasStatusOk().bodyText().contains("Next", "Page 1");
         assertThat(secondPage).hasStatusOk().bodyText().contains("Previous", "Page 2");
@@ -41,9 +41,9 @@ class NavigateFeedPagesTests extends BaseIT {
         contents.forEach(content -> vote(voterSession, findMessage(content).getId()));
 
         var firstPage =
-                mvc.get().uri("/?feed=POPULAR&page=1").session(voterSession).exchange();
+                mvc.get().uri("/?feed=popular&page=1").session(voterSession).exchange();
         var secondPage =
-                mvc.get().uri("/?feed=POPULAR&page=2").session(voterSession).exchange();
+                mvc.get().uri("/?feed=popular&page=2").session(voterSession).exchange();
 
         assertThat(firstPage).hasStatusOk().bodyText().contains("Popular", "Next");
         assertThat(secondPage).hasStatusOk().bodyText().contains("Popular", "Previous");

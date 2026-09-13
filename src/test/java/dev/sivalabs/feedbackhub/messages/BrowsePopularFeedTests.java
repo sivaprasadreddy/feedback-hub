@@ -22,7 +22,7 @@ class BrowsePopularFeedTests extends BaseIT {
         var voterSession = session(login("siva@gmail.com", "secret"));
         vote(voterSession, findMessage(moreVotes).getId(), "UPVOTE");
 
-        var feed = mvc.get().uri("/?feed=POPULAR").session(voterSession).exchange();
+        var feed = mvc.get().uri("/?feed=popular").session(voterSession).exchange();
         assertThat(feed)
                 .hasStatusOk()
                 .hasViewName("index")
@@ -38,7 +38,7 @@ class BrowsePopularFeedTests extends BaseIT {
         var older = createMessage(adminSession, "Older equal score " + UUID.randomUUID(), "IDENTIFIED");
         var newer = createMessage(adminSession, "Newer equal score " + UUID.randomUUID(), "IDENTIFIED");
 
-        var feed = mvc.get().uri("/?feed=POPULAR").session(adminSession).exchange();
+        var feed = mvc.get().uri("/?feed=popular").session(adminSession).exchange();
         var html = feed.getMvcResult().getResponse().getContentAsString();
         assertThat(html.indexOf(newer)).isLessThan(html.indexOf(older));
     }
@@ -51,7 +51,7 @@ class BrowsePopularFeedTests extends BaseIT {
         var voterSession = session(login("siva@gmail.com", "secret"));
         vote(voterSession, findMessage(downvotedNewer).getId(), "DOWNVOTE");
 
-        var feed = mvc.get().uri("/?feed=POPULAR").session(voterSession).exchange();
+        var feed = mvc.get().uri("/?feed=popular").session(voterSession).exchange();
         var html = feed.getMvcResult().getResponse().getContentAsString();
         assertThat(html.indexOf(downvotedNewer)).isLessThan(html.indexOf(unvotedOlder));
     }
@@ -62,7 +62,7 @@ class BrowsePopularFeedTests extends BaseIT {
         var content = createMessage(adminSession, "Anonymous popular " + UUID.randomUUID(), "ANONYMOUS");
         var userSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(mvc.get().uri("/?feed=POPULAR").session(userSession).exchange())
+        assertThat(mvc.get().uri("/?feed=popular").session(userSession).exchange())
                 .bodyText()
                 .contains("Anonymous", content)
                 .doesNotContain("admin@gmail.com");

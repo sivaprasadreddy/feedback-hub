@@ -26,13 +26,13 @@ class MessageController {
 
     @GetMapping("/")
     String home(
-            @RequestParam(defaultValue = "RECENT") FeedType feed,
+            @RequestParam(defaultValue = "recent") String feed,
             @RequestParam(defaultValue = "1") String page,
             Model model) {
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new CreateMessageForm("", null));
         }
-        populateHome(model, feed, parsePage(page));
+        populateHome(model, FeedType.fromValue(feed), parsePage(page));
         return "index";
     }
 
