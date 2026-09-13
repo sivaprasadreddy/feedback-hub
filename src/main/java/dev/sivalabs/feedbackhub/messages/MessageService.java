@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 class MessageService {
     static final int FEED_PAGE_SIZE = 10;
     static final int ADMIN_PAGE_SIZE = 20;
+    private static final int MAX_TOPICS = 3;
     static final String DELETED_CONTENT = "This message has been deleted.";
     static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
@@ -27,6 +28,7 @@ class MessageService {
     private final ReplyVoteRepository replyVoteRepository;
     private final UsersAPI usersAPI;
     private final ApplicationEventPublisher eventPublisher;
+    private final MessageAnalyzer messageAnalyzer;
 
     MessageService(
             MessageRepository messageRepository,
@@ -34,13 +36,15 @@ class MessageService {
             MessageVoteRepository messageVoteRepository,
             ReplyVoteRepository replyVoteRepository,
             UsersAPI usersAPI,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            MessageAnalyzer messageAnalyzer) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
         this.replyVoteRepository = replyVoteRepository;
         this.usersAPI = usersAPI;
         this.eventPublisher = eventPublisher;
+        this.messageAnalyzer = messageAnalyzer;
     }
 
     @Transactional
@@ -73,7 +77,51 @@ class MessageService {
                         message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
                         message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                         message.getCreatedAt(),
-                        message.getStatus() == MessageStatus.DELETED));
+                        message.getStatus() == MessageStatus.DELETED,
+                        new LinkedHashSet<>(message.getTopics()),
+                        message.getSentiment()));
+    }
+
+    @Transactional(readOnly = true)
+    public AdminMessageDto findMessageForAdmin(Long messageId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        return new AdminMessageDto(
+                message.getId(),
+                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
+                message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
+                message.getCreatedAt(),
+                message.getStatus() == MessageStatus.DELETED,
+                new LinkedHashSet<>(message.getTopics()),
+                message.getSentiment());
+    }
+
+    @Transactional
+    public void analyzeMessage(Long messageId) {
+        var message = messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        if (message.getSentiment() != null) {
+            return;
+        }
+        var analysis = messageAnalyzer.analyze(message.getContent());
+        if (analysis == null || analysis.sentiment() == null) {
+            throw new IllegalStateException("Message analysis did not return a sentiment");
+        }
+        var topics = new LinkedHashSet<String>();
+        if (analysis.topics() != null) {
+            analysis.topics().stream()
+                    .filter(java.util.Objects::nonNull)
+                    .map(MessageTopic::displayName)
+                    .limit(MAX_TOPICS)
+                    .forEach(topics::add);
+        }
+        if (topics.isEmpty()) {
+            topics.add(MessageTopic.OTHER.displayName());
+        }
+        message.setTopics(topics);
+        message.setSentiment(analysis.sentiment());
     }
 
     @Transactional

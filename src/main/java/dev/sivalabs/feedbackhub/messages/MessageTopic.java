@@ -1,7 +1,5 @@
 package dev.sivalabs.feedbackhub.messages;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -37,20 +35,11 @@ enum MessageTopic {
         this.displayName = displayName;
     }
 
-    @JsonValue
     String displayName() {
         return displayName;
     }
 
-    @JsonCreator
-    static MessageTopic fromDisplayName(String displayName) {
-        return Arrays.stream(values())
-                .filter(topic -> topic.displayName.equals(displayName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown message topic: " + displayName));
-    }
-
     static String promptValues() {
-        return Arrays.stream(values()).map(MessageTopic::displayName).collect(Collectors.joining("\n"));
+        return Arrays.stream(values()).map(MessageTopic::name).collect(Collectors.joining("\n"));
     }
 }

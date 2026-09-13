@@ -1,15 +1,18 @@
 package dev.sivalabs.feedbackhub.messages;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,9 @@ class ModerateMessageTests extends BaseIT {
 
     @Autowired
     ReplyRepository replyRepository;
+
+    @MockitoBean
+    MessageAnalyzer messageAnalyzer;
 
     @Test
     void adminCanDeleteAnotherUsersMessageWithAuditAndAssociationsPreserved() {
@@ -95,6 +101,70 @@ class ModerateMessageTests extends BaseIT {
         assertThat(deleteAsAdmin(adminSession, message.getId()))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
+    }
+
+    @Test
+    void adminCanAnalyzeUnanalyzedMessageWithHtmx() {
+        var userSession = session(login("siva@gmail.com", "secret"));
+        var content = createMessage(userSession, "Analyze from admin " + UUID.randomUUID(), "IDENTIFIED");
+        var message = findMessage(content);
+        var adminSession = session(login("admin@gmail.com", "secret"));
+        when(messageAnalyzer.analyze(content))
+                .thenReturn(new MessageAnalysis(
+                        Set.of(MessageTopic.WORK_CULTURE, MessageTopic.PEOPLE_AND_TEAM), MessageSentiment.HAPPY));
+
+        assertThat(mvc.get().uri("/admin/messages").session(adminSession).exchange())
+                .bodyText()
+                .contains(
+                        content,
+                        "Analyze message",
+                        "hx-post=\"/admin/messages/" + message.getId() + "/analyze\"",
+                        "hx-target=\"closest .admin-message\"",
+                        "hx-swap=\"outerHTML\"");
+
+        assertThat(mvc.post()
+                        .uri("/admin/messages/{id}/analyze", message.getId())
+                        .header("HX-Request", "true")
+                        .session(adminSession)
+                        .with(csrf())
+                        .exchange())
+                .hasStatusOk()
+                .hasViewName("fragments/admin-message :: message(message=${message})")
+                .bodyText()
+                .contains(content, "Happy", "Work Culture", "People &amp; Team")
+                .doesNotContain("Analyze message", "<html");
+
+        var analyzed = messageRepository.findById(message.getId()).orElseThrow();
+        assertThat(analyzed.getSentiment()).isEqualTo(MessageSentiment.HAPPY);
+        assertThat(analyzed.getTopics()).containsExactlyInAnyOrder("Work Culture", "People & Team");
+    }
+
+    @Test
+    void analysisErrorKeepsPreviousMessageDetailsAndShowsRetryOption() {
+        var userSession = session(login("siva@gmail.com", "secret"));
+        var content = createMessage(userSession, "Failed admin analysis " + UUID.randomUUID(), "IDENTIFIED");
+        var message = findMessage(content);
+        var adminSession = session(login("admin@gmail.com", "secret"));
+        when(messageAnalyzer.analyze(content)).thenThrow(new IllegalStateException("AI unavailable"));
+
+        assertThat(mvc.post()
+                        .uri("/admin/messages/{id}/analyze", message.getId())
+                        .header("HX-Request", "true")
+                        .session(adminSession)
+                        .with(csrf())
+                        .exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains(
+                        content,
+                        "Something went wrong while analyzing this message. Please try again.",
+                        "Analyze message",
+                        "Delete message")
+                .doesNotContain("Internal Server Error", "<html");
+
+        var unchanged = messageRepository.findById(message.getId()).orElseThrow();
+        assertThat(unchanged.getSentiment()).isNull();
+        assertThat(unchanged.getTopics()).isEmpty();
     }
 
     @Test
