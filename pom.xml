@@ -11,9 +11,9 @@
         <relativePath/>
     </parent>
     <groupId>dev.sivalabs</groupId>
-    <artifactId>feedbackhub</artifactId>
+    <artifactId>feedback-hub</artifactId>
     <version>0.0.1</version>
-    <name>feedbackhub</name>
+    <name>feedback-hub</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
