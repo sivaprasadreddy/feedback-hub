@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: speakup-svc
+  name: feedbackhub-svc
 spec:
   type: NodePort
   selector:
-    app: speakup-pod
+    app: feedbackhub-pod
   ports:
     - name: app-port-mapping
       protocol: TCP
@@ -15,20 +15,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: speakup-deployment
+  name: feedbackhub-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: speakup-pod
+      app: feedbackhub-pod
   template:
     metadata:
       labels:
-        app: speakup-pod
+        app: feedbackhub-pod
     spec:
       containers:
-        - name: speakup
-          image: sivaprasadreddy/speakup
+        - name: feedbackhub
+          image: sivaprasadreddy/feedbackhub
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -38,27 +38,27 @@ spec:
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 configMapKeyRef:
-                  name: speakup-configmap
+                  name: feedbackhub-configmap
                   key: db_jdbc_url
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: speakup-secrets
+                  name: feedbackhub-secrets
                   key: db_username
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: speakup-secrets
+                  name: feedbackhub-secrets
                   key: db_password
             - name: EMAIL_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: speakup-configmap
+                  name: feedbackhub-configmap
                   key: email_host
             - name: EMAIL_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: speakup-configmap
+                  name: feedbackhub-configmap
                   key: email_port
           livenessProbe:
             httpGet:

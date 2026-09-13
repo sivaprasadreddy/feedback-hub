@@ -1,20 +1,20 @@
 -- All seeded users have the password 'secret'.
 insert into users(id, email, password, name, role, active, created_at) values
-(101, 'ananya.sharma@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Ananya Sharma', 'ROLE_USER', true, '2026-01-05 09:00:00'),
-(102, 'arjun.mehta@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Arjun Mehta', 'ROLE_USER', true, '2026-01-05 09:15:00'),
-(103, 'divya.nair@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Divya Nair', 'ROLE_USER', true, '2026-01-06 10:00:00'),
-(104, 'farhan.khan@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Farhan Khan', 'ROLE_USER', true, '2026-01-06 10:30:00'),
-(105, 'isha.patel@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Isha Patel', 'ROLE_USER', true, '2026-01-07 11:00:00'),
-(106, 'kabir.singh@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Kabir Singh', 'ROLE_USER', true, '2026-01-07 11:20:00'),
-(107, 'lakshmi.iyer@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Lakshmi Iyer', 'ROLE_USER', true, '2026-01-08 09:45:00'),
-(108, 'manish.gupta@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Manish Gupta', 'ROLE_USER', true, '2026-01-08 14:00:00'),
-(109, 'meera.reddy@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Meera Reddy', 'ROLE_USER', true, '2026-01-09 09:30:00'),
-(110, 'neha.verma@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Neha Verma', 'ROLE_USER', true, '2026-01-09 15:00:00'),
-(111, 'omkar.joshi@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Omkar Joshi', 'ROLE_USER', true, '2026-01-12 10:00:00'),
-(112, 'priya.rao@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Priya Rao', 'ROLE_USER', true, '2026-01-12 10:30:00'),
-(113, 'rahul.das@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Rahul Das', 'ROLE_USER', true, '2026-01-13 09:00:00'),
-(114, 'sneha.kulkarni@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Sneha Kulkarni', 'ROLE_USER', true, '2026-01-13 13:00:00'),
-(115, 'vikram.menon@speakup.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Vikram Menon', 'ROLE_USER', true, '2026-01-14 16:00:00');
+(101, 'ananya.sharma@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Ananya Sharma', 'ROLE_USER', true, '2026-01-05 09:00:00'),
+(102, 'arjun.mehta@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Arjun Mehta', 'ROLE_USER', true, '2026-01-05 09:15:00'),
+(103, 'divya.nair@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Divya Nair', 'ROLE_USER', true, '2026-01-06 10:00:00'),
+(104, 'farhan.khan@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Farhan Khan', 'ROLE_USER', true, '2026-01-06 10:30:00'),
+(105, 'isha.patel@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Isha Patel', 'ROLE_USER', true, '2026-01-07 11:00:00'),
+(106, 'kabir.singh@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Kabir Singh', 'ROLE_USER', true, '2026-01-07 11:20:00'),
+(107, 'lakshmi.iyer@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Lakshmi Iyer', 'ROLE_USER', true, '2026-01-08 09:45:00'),
+(108, 'manish.gupta@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Manish Gupta', 'ROLE_USER', true, '2026-01-08 14:00:00'),
+(109, 'meera.reddy@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Meera Reddy', 'ROLE_USER', true, '2026-01-09 09:30:00'),
+(110, 'neha.verma@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Neha Verma', 'ROLE_USER', true, '2026-01-09 15:00:00'),
+(111, 'omkar.joshi@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Omkar Joshi', 'ROLE_USER', true, '2026-01-12 10:00:00'),
+(112, 'priya.rao@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Priya Rao', 'ROLE_USER', true, '2026-01-12 10:30:00'),
+(113, 'rahul.das@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Rahul Das', 'ROLE_USER', true, '2026-01-13 09:00:00'),
+(114, 'sneha.kulkarni@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Sneha Kulkarni', 'ROLE_USER', true, '2026-01-13 13:00:00'),
+(115, 'vikram.menon@feedbackhub.local', '$2a$10$2bF0hrLWv/bH9kJPzOq4qe3.ky6cMSMl9MbNkAGUG8E2nxjibFtxi', 'Vikram Menon', 'ROLE_USER', true, '2026-01-14 16:00:00');
 
 insert into messages(id, content, created_by_user_id, anonymous, created_at) values
 (201, 'The mentoring programme made my first quarter welcoming and productive.', 101, false, '2026-01-19 09:15:00'),

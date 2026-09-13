@@ -1,4 +1,4 @@
-# SpeakUp PRD
+# FeedbackHub PRD
 
 # 1. Product Overview
 

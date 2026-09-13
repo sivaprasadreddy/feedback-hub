@@ -14,9 +14,9 @@ services:
       - "1025:1025"
       - "8025:8025"
 
-  speakup:
-    image: sivaprasadreddy/speakup
-    container_name: speakup
+  feedbackhub:
+    image: sivaprasadreddy/feedbackhub
+    container_name: feedbackhub
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres

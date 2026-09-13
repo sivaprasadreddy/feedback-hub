@@ -11,9 +11,9 @@
         <relativePath/>
     </parent>
     <groupId>dev.sivalabs</groupId>
-    <artifactId>speakup</artifactId>
+    <artifactId>feedbackhub</artifactId>
     <version>0.0.1</version>
-    <name>SpeakUp</name>
+    <name>feedbackhub</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,7 +31,7 @@
         <spotless.version>3.10.2</spotless.version>
         <archunit.version>1.5.0</archunit.version>
         <taikai.version>1.66.0</taikai.version>
-        <dockerImageName>sivaprasadreddy/speakup</dockerImageName>
+        <dockerImageName>sivaprasadreddy/feedbackhub</dockerImageName>
     </properties>
 
     <dependencyManagement>

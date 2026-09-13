@@ -1,4 +1,4 @@
-# SpeakUp Requirements
+# FeedbackHub Requirements
 
 This document translates the requirements in [PRD](prd.md) into implementable use cases. 
 Features explicitly described as optional or future work are excluded. 

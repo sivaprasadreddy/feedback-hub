@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: speakup-postgres-pv
+  name: feedbackhub-postgres-pv
 spec:
   storageClassName: 'standard'
   accessModes:
@@ -10,12 +10,12 @@ spec:
   capacity:
     storage: 2Gi
   hostPath:
-    path: /data/speakup-postgres
+    path: /data/feedbackhub-postgres
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: speakup-postgres-pv-claim
+  name: feedbackhub-postgres-pv-claim
 spec:
   storageClassName: 'standard'
   accessModes:
@@ -27,10 +27,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: speakup-postgres-svc
+  name: feedbackhub-postgres-svc
 spec:
   selector:
-    app: speakup-postgres-pod
+    app: feedbackhub-postgres-pod
   ports:
     - port: 5432
       targetPort: 5432
@@ -38,17 +38,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: speakup-postgres-deployment
+  name: feedbackhub-postgres-deployment
 spec:
   selector:
     matchLabels:
-      app: speakup-postgres-pod
+      app: feedbackhub-postgres-pod
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: speakup-postgres-pod
+        app: feedbackhub-postgres-pod
     spec:
       containers:
         - name: postgres
@@ -60,12 +60,12 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: speakup-secrets
+                  name: feedbackhub-secrets
                   key: db_username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: speakup-secrets
+                  name: feedbackhub-secrets
                   key: db_password
             - name: POSTGRES_DB
               value: postgres
@@ -87,4 +87,4 @@ spec:
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
-            claimName: speakup-postgres-pv-claim
+            claimName: feedbackhub-postgres-pv-claim

@@ -67,7 +67,7 @@
                           th:action="@{/admin/users/{id}/edit(id=${user.id()})}"
                           class="flex items-center gap-2">
                         <select name="role" aria-label="Role" class="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700">
-                            <option th:each="role : ${T(dev.sivalabs.speakup.users.Role).values()}"
+                            <option th:each="role : ${T(dev.sivalabs.feedbackhub.users.Role).values()}"
                                     th:value="${role}"
                                     th:text="${role.displayName}"
                                     th:selected="${role == user.role()}">USER</option>

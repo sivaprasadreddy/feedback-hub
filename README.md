@@ -1,6 +1,6 @@
-# SpeakUp
+# FeedbackHub
 
-[![Build](https://github.com/sivaprasadreddy/SpeakUp/actions/workflows/ci.yml/badge.svg)](https://github.com/sivaprasadreddy/SpeakUp/actions/workflows/ci.yml)
+[![Build](https://github.com/sivaprasadreddy/FeedbackHub/actions/workflows/ci.yml/badge.svg)](https://github.com/sivaprasadreddy/FeedbackHub/actions/workflows/ci.yml)
 
 A feedback management platform where an organization can provide their employees with a private space to:
 
