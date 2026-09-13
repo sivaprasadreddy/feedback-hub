@@ -43,14 +43,15 @@ class BrowseRecentFeedTests extends BaseIT {
         var feed = mvc.get().uri("/").session(voterSession).exchange();
         assertThat(feed)
                 .bodyText()
-                .contains("Admin", content, "Remove your upvote", "1", "Downvote message", "0", "Replies", "1")
+                .contains("Admin", content, "Remove your upvote", "1", "Downvote message", "0", "Replies", "1", "View")
                 .doesNotContain("Your vote");
         assertThat(feed.getMvcResult().getResponse().getContentAsString())
                 .contains(
                         "text-emerald-600",
                         "title=\"Remove your upvote\"",
                         "hx-target=\"closest .message-votes\"",
-                        "name=\"returnToHome\" value=\"true\"");
+                        "name=\"returnToHome\" value=\"true\"",
+                        "href=\"/messages/" + message.getId() + "\"");
     }
 
     @Test

@@ -17,7 +17,6 @@ class DashboardLayoutTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("index")
                 .bodyText()
-                .contains("Feedback")
                 .contains("Recent")
                 .contains("Dashboard");
 

@@ -30,7 +30,6 @@ class AuthenticationTests extends BaseIT {
                 .hasViewName("index")
                 .bodyText()
                 .contains("Siva")
-                .contains("Feedback")
                 .contains("Dashboard")
                 .contains("Recent")
                 .doesNotContain("Manage Users")

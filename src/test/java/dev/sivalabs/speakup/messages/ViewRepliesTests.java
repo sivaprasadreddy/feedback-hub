@@ -37,21 +37,13 @@ class ViewRepliesTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("messages/view")
                 .bodyText()
-                .contains(
-                        "Replies",
-                        "Siva",
-                        identifiedContent,
-                        "Anonymous",
-                        anonymousContent,
-                        "Created",
-                        "Updated",
-                        "Upvotes",
-                        "Downvotes")
-                .doesNotContain("Your vote", "No vote")
+                .contains("Replies", "Siva", identifiedContent, "Anonymous", anonymousContent, "Upvotes", "Downvotes")
+                .doesNotContain("Your vote", "No vote", "Updated")
                 .doesNotContain("Admin", "admin@gmail.com");
         var html = result.getMvcResult().getResponse().getContentAsString();
+        assertThat(html.indexOf("id=\"reply-content\"")).isLessThan(html.indexOf("id=\"replies-heading\""));
         assertThat(html.indexOf(identifiedContent)).isLessThan(html.indexOf(anonymousContent));
-        assertThat(html).contains("2026-");
+        assertThat(html).containsPattern("\\d{2} [A-Z][a-z]{2} 2026 \\d{2}:\\d{2}");
     }
 
     @Test
