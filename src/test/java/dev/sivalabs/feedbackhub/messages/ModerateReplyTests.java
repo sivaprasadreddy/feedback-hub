@@ -103,6 +103,23 @@ class ModerateReplyTests extends BaseIT {
     }
 
     @Test
+    void adminCanSeeWhenReplyIsSpam() {
+        var userSession = session(login("siva@gmail.com", "secret"));
+        var message = createMessage(userSession);
+        var content = "Spam reply for admin " + UUID.randomUUID();
+        createReply(userSession, message.getId(), content, "IDENTIFIED");
+        var reply = findReply(message.getId(), content);
+        reply.setSpam(true);
+        replyRepository.saveAndFlush(reply);
+        var adminSession = session(login("admin@gmail.com", "secret"));
+
+        assertThat(mvc.get().uri("/admin/replies").session(adminSession).exchange())
+                .hasStatusOk()
+                .bodyText()
+                .contains(content, "Spam");
+    }
+
+    @Test
     void adminReplyListIsPaginated() {
         var message = new MessageEntity();
         message.setContent("Message with paginated replies");
