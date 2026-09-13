@@ -19,14 +19,14 @@
         <p class="mt-4 whitespace-pre-wrap text-slate-700"
            th:classappend="${message.deleted()} ? ' italic text-slate-500' : ''"
            th:text="${message.content()}">Message</p>
-        <div th:if="${message.sentiment() != null || !#sets.isEmpty(message.labels())}"
+        <div th:if="${message.sentiment() != null || !#sets.isEmpty(message.topics())}"
              class="mt-4 flex flex-wrap items-center gap-2">
             <span th:if="${message.sentiment() != null}"
                   class="rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-700"
                   th:text="${message.sentiment().displayName}">Happy</span>
-            <span th:each="label : ${message.labels()}"
+            <span th:each="topic : ${message.topics()}"
                   class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600"
-                  th:text="${label}">label</span>
+                  th:text="${topic}">Topic</span>
         </div>
         <div th:if="${message.editable()}" class="mt-4 flex items-center gap-4">
             <a th:href="@{/messages/{id}/edit(id=${message.id()})}"

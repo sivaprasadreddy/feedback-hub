@@ -11,17 +11,35 @@ A feedback management platform where an organization can provide their employees
 * Discover popular and recent discussions.
 * Allow organization administrators to manage users.
 
+## Tech Stack
+
+* Java
+* Spring Boot
+* Spring Modulith
+* Spring AI, Ollama
+* Spring Security
+* Spring Data JPA
+* PostgreSQL
+* FlywayDb
+* Thymeleaf
+* Tailwind CSS4
+
 ## Prerequisites
 * JDK 25
 * Docker and Docker Compose
+* [Ollama](https://ollama.com/) with [qwen3:8b](https://ollama.com/library/qwen3.8) model
 * Your favourite IDE (Recommended: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
 
-Install JDK, Maven, Gradle using [SDKMAN](https://sdkman.io/)
+Follow the [Installation Guide](docs/installation.md) to install the required tools.
+
+Verify the prerequisites:
 
 ```shell
-$ curl -s "https://get.sdkman.io" | bash
-$ source "$HOME/.sdkman/bin/sdkman-init.sh"
-$ sdk env install
+$ java -version
+$ docker info
+$ docker compose version
+$ task --version
+$ ollama --version
 ```
 
 ## Using Agent Skills

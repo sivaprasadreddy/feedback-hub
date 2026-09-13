@@ -46,9 +46,9 @@ class MessageEntity extends BaseEntity {
     private Instant deletedByAdminAt;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "message_labels", joinColumns = @JoinColumn(name = "message_id"))
-    @Column(name = "label", nullable = false)
-    private Set<String> labels = new LinkedHashSet<>();
+    @CollectionTable(name = "message_topics", joinColumns = @JoinColumn(name = "message_id"))
+    @Column(name = "topic", nullable = false)
+    private Set<String> topics = new LinkedHashSet<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sentiment")
@@ -106,13 +106,13 @@ class MessageEntity extends BaseEntity {
         this.deletedByAdminAt = deletedByAdminAt;
     }
 
-    public Set<String> getLabels() {
-        return labels;
+    public Set<String> getTopics() {
+        return topics;
     }
 
-    public void setLabels(Set<String> labels) {
-        this.labels.clear();
-        this.labels.addAll(labels);
+    public void setTopics(Set<String> topics) {
+        this.topics.clear();
+        this.topics.addAll(topics);
     }
 
     public MessageSentiment getSentiment() {

@@ -1,6 +1,6 @@
 DELETE FROM reply_votes;
 DELETE FROM message_votes;
-DELETE FROM message_labels;
+DELETE FROM message_topics;
 DELETE FROM replies;
 DELETE FROM messages;
 DELETE FROM users;

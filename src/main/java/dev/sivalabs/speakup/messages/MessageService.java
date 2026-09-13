@@ -141,7 +141,7 @@ class MessageService {
                 message.getStatus() == MessageStatus.DELETED,
                 message.getStatus() != MessageStatus.DELETED
                         && !message.getCreatorUserId().equals(currentUserId),
-                new LinkedHashSet<>(message.getLabels()),
+                new LinkedHashSet<>(message.getTopics()),
                 message.getSentiment());
     }
 
@@ -156,10 +156,10 @@ class MessageService {
                 .collect(Collectors.toMap(MessageCountsView::getMessageId, Function.identity()));
         var currentVotes = messageVoteRepository.findAllByMessageIdInAndVoterUserId(messageIds, currentUserId).stream()
                 .collect(Collectors.toMap(vote -> vote.getMessage().getId(), MessageVoteEntity::getVoteType));
-        var labels = messageRepository.findLabelsByMessageIds(messageIds).stream()
+        var topics = messageRepository.findTopicsByMessageIds(messageIds).stream()
                 .collect(Collectors.groupingBy(
-                        MessageLabelView::getMessageId,
-                        Collectors.mapping(MessageLabelView::getLabel, Collectors.toCollection(LinkedHashSet::new))));
+                        MessageTopicView::getMessageId,
+                        Collectors.mapping(MessageTopicView::getTopic, Collectors.toCollection(LinkedHashSet::new))));
         var userNames = getUserNames(messages);
         return PagedResult.from(page).map(message -> {
             var messageCounts = counts.get(message.getId());
@@ -176,7 +176,7 @@ class MessageService {
                     message.getStatus() == MessageStatus.DELETED,
                     message.getStatus() != MessageStatus.DELETED
                             && !message.getCreatorUserId().equals(currentUserId),
-                    labels.getOrDefault(message.getId(), new LinkedHashSet<>()),
+                    topics.getOrDefault(message.getId(), new LinkedHashSet<>()),
                     message.getSentiment());
         });
     }
@@ -227,7 +227,7 @@ class MessageService {
                 deleted,
                 !deleted && ownedByCurrentUser,
                 !deleted && !ownedByCurrentUser,
-                new LinkedHashSet<>(message.getLabels()),
+                new LinkedHashSet<>(message.getTopics()),
                 message.getSentiment());
     }
 

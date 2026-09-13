@@ -5,6 +5,7 @@ vars:
   MVNW: '{{if eq .GOOS "windows"}}mvnw.cmd{{else}}./mvnw{{end}}'
   SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
   IMAGE_NAME: 'sivaprasadreddy/speakup'
+  CLUSTER_NAME: 'sivalabs-k8s'
   DC_FILE: "compose.yml"
 
 tasks:
@@ -46,6 +47,23 @@ tasks:
       - task: stop
       - task: sleep
       - task: start
+
+  kind_create:
+    cmds:
+      - ./k8s/kind/kind-cluster.sh create
+
+  kind_destroy:
+    cmds:
+      - ./k8s/kind/kind-cluster.sh destroy
+
+  k8s_deploy:
+    cmds:
+      - kind load docker-image {{.IMAGE_NAME}} --name {{.CLUSTER_NAME}}
+      - kubectl apply -f k8s/manifests/
+
+  k8s_undeploy:
+    cmds:
+      - kubectl delete -f k8s/manifests/
 
   sleep:
     desc: Sleeps for the given number of seconds

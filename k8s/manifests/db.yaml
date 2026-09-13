@@ -1,0 +1,90 @@
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: speakup-postgres-pv
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /data/speakup-postgres
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: speakup-postgres-pv-claim
+spec:
+  storageClassName: 'standard'
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: speakup-postgres-svc
+spec:
+  selector:
+    app: speakup-postgres-pod
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speakup-postgres-deployment
+spec:
+  selector:
+    matchLabels:
+      app: speakup-postgres-pod
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: speakup-postgres-pod
+    spec:
+      containers:
+        - name: postgres
+          image: "postgres:18-alpine"
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: speakup-secrets
+                  key: db_username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: speakup-secrets
+                  key: db_password
+            - name: POSTGRES_DB
+              value: postgres
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 45
+            timeoutSeconds: 2
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: speakup-postgres-pv-claim

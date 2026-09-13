@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: speakup-configmap
+data:
+  db_jdbc_url: "jdbc:postgresql://speakup-postgres-svc:5432/postgres"
+  email_host: "speakup-mailpit-svc"
+  email_port: "1025"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: speakup-secrets
+type: Opaque
+stringData:
+  db_username: "postgres"
+  db_password: "postgres"

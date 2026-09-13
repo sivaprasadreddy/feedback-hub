@@ -14,5 +14,5 @@ record MessageDto(
         String currentUserVote,
         boolean deleted,
         boolean votable,
-        Set<String> labels,
+        Set<String> topics,
         MessageSentiment sentiment) {}

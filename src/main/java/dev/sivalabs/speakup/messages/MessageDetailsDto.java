@@ -15,5 +15,5 @@ record MessageDetailsDto(
         boolean deleted,
         boolean editable,
         boolean votable,
-        Set<String> labels,
+        Set<String> topics,
         MessageSentiment sentiment) {}

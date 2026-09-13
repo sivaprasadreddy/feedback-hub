@@ -38,11 +38,11 @@ interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     List<MessageCountsView> findCountsByMessageIds(@Param("messageIds") List<Long> messageIds);
 
     @Query("""
-            select m.id as messageId, label as label
-            from MessageEntity m join m.labels label
+            select m.id as messageId, topic as topic
+            from MessageEntity m join m.topics topic
             where m.id in :messageIds
             """)
-    List<MessageLabelView> findLabelsByMessageIds(@Param("messageIds") List<Long> messageIds);
+    List<MessageTopicView> findTopicsByMessageIds(@Param("messageIds") List<Long> messageIds);
 
     @Override
     Optional<MessageEntity> findById(Long id);
@@ -58,8 +58,8 @@ interface MessageCountsView {
     long getReplies();
 }
 
-interface MessageLabelView {
+interface MessageTopicView {
     Long getMessageId();
 
-    String getLabel();
+    String getTopic();
 }
