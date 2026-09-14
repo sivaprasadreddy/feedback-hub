@@ -1,6 +1,9 @@
 package dev.sivalabs.feedbackhub.users;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -77,4 +80,12 @@ class AdminUserController {
         redirectAttributes.addFlashAttribute("successMessage", "User updated successfully.");
         return "redirect:/admin/users";
     }
+
+    record CreateUserForm(
+            @NotBlank(message = "Name is required") String name,
+
+            @NotBlank(message = "Email is required") @Email(message = "Email address must be valid")
+            String email,
+
+            @NotNull(message = "Role is required") Role role) {}
 }

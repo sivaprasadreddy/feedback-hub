@@ -280,9 +280,9 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public EditMessageForm getEditForm(Long messageId, Long currentUserId) {
+    public String getMessageContent(Long messageId, Long currentUserId) {
         var message = getEditableMessage(messageId, currentUserId);
-        return new EditMessageForm(message.getContent());
+        return message.getContent();
     }
 
     @Transactional
@@ -345,9 +345,9 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public EditReplyForm getReplyEditForm(Long messageId, Long replyId, Long currentUserId) {
+    public String getReplyContent(Long messageId, Long replyId, Long currentUserId) {
         var reply = getEditableReply(messageId, replyId, currentUserId);
-        return new EditReplyForm(reply.getContent());
+        return reply.getContent();
     }
 
     @Transactional(readOnly = true)
@@ -409,6 +409,11 @@ class MessageService {
     public void removeReplyVote(Long messageId, Long replyId, Long currentUserId) {
         getVotableReply(messageId, replyId, currentUserId);
         replyVoteRepository.findByReplyIdAndVoterUserId(replyId, currentUserId).ifPresent(replyVoteRepository::delete);
+    }
+
+    @Transactional(readOnly = true)
+    public MessageStatistics getStatistics() {
+        return new MessageStatistics(messageRepository.count(), replyRepository.count());
     }
 
     private ReplyEntity getVotableReply(Long messageId, Long replyId, Long currentUserId) {

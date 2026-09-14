@@ -20,13 +20,13 @@ class AccountService {
     }
 
     @Transactional(readOnly = true)
-    AccountDetails getAccount(Long userId) {
+    public AccountDetails getAccount(Long userId) {
         var user = userService.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return new AccountDetails(user.name(), user.email(), user.role(), profilePictureRepository.existsById(userId));
     }
 
     @Transactional
-    void saveProfilePicture(Long userId, String contentType, byte[] content) {
+    public void saveProfilePicture(Long userId, String contentType, byte[] content) {
         if (content.length == 0) {
             throw new IllegalArgumentException("Select an image to upload");
         }
@@ -43,13 +43,14 @@ class AccountService {
     }
 
     @Transactional(readOnly = true)
-    ProfilePictureEntity getProfilePicture(Long userId) {
+    public ProfilePictureEntity getProfilePicture(Long userId) {
         return profilePictureRepository
                 .findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile picture not found"));
     }
 
-    void changePassword(Long userId, ChangePasswordCmd cmd) {
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordCmd cmd) {
         userService.changePassword(userId, cmd);
     }
 }

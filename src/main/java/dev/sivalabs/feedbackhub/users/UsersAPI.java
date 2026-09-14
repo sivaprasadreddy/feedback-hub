@@ -22,4 +22,8 @@ public class UsersAPI {
         return userService.findByIds(userIds).stream()
                 .collect(Collectors.toMap(UserDto::id, UserDto::name, (first, second) -> first));
     }
+
+    public long countUsers() {
+        return userService.countUsers();
+    }
 }

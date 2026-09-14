@@ -4,6 +4,8 @@ import dev.sivalabs.feedbackhub.shared.BadRequestException;
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import dev.sivalabs.feedbackhub.users.SecurityUser;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -89,10 +91,11 @@ class MessageController {
 
     @GetMapping("/messages/{messageId}/replies/{replyId}/edit")
     String editReplyForm(@PathVariable Long messageId, @PathVariable Long replyId, Model model) {
+        var content = messageService.getReplyContent(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
+        var form = new EditReplyForm(content);
         model.addAttribute("messageId", messageId);
         model.addAttribute("replyId", replyId);
-        model.addAttribute(
-                "form", messageService.getReplyEditForm(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow()));
+        model.addAttribute("form", form);
         return "messages/edit-reply";
     }
 
@@ -201,8 +204,10 @@ class MessageController {
 
     @GetMapping("/messages/{messageId}/edit")
     String editMessageForm(@PathVariable Long messageId, Model model) {
+        var content = messageService.getMessageContent(messageId, AuthUtils.getCurrentUserIdOrThrow());
+        var form = new EditMessageForm(content);
         model.addAttribute("messageId", messageId);
-        model.addAttribute("form", messageService.getEditForm(messageId, AuthUtils.getCurrentUserIdOrThrow()));
+        model.addAttribute("form", form);
         return "messages/edit";
     }
 
@@ -259,4 +264,18 @@ class MessageController {
                 .findFirst()
                 .orElseThrow();
     }
+
+    record CreateMessageForm(
+            @NotBlank(message = "Message is required") String content,
+            @NotNull(message = "Choose how to post") PostingIdentity postingIdentity) {}
+
+    record CreateReplyForm(
+            @NotBlank(message = "Reply is required") String content,
+            @NotNull(message = "Choose how to reply") PostingIdentity postingIdentity) {}
+
+    record EditReplyForm(
+            @NotBlank(message = "Reply is required") String content) {}
+
+    record EditMessageForm(
+            @NotBlank(message = "Message is required") String content) {}
 }

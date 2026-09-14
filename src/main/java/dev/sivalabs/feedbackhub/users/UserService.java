@@ -21,17 +21,17 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    Optional<UserEntity> findByEmail(String email) {
+    public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email);
     }
 
     @Transactional(readOnly = true)
-    Optional<UserDto> findById(Long id) {
+    public Optional<UserDto> findById(Long id) {
         return userRepository.findById(id).map(this::toUserDto);
     }
 
     @Transactional(readOnly = true)
-    List<UserDto> findByIds(Set<Long> ids) {
+    public List<UserDto> findByIds(Set<Long> ids) {
         return userRepository.findAllById(ids).stream().map(this::toUserDto).toList();
     }
 
@@ -67,12 +67,17 @@ class UserService {
     }
 
     @Transactional
-    void changePassword(Long userId, ChangePasswordCmd cmd) {
+    public void changePassword(Long userId, ChangePasswordCmd cmd) {
         var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         if (!passwordEncoder.matches(cmd.currentPassword(), user.getPassword())) {
             throw new InvalidCurrentPasswordException();
         }
         user.setPassword(passwordEncoder.encode(cmd.newPassword()));
+    }
+
+    @Transactional(readOnly = true)
+    public long countUsers() {
+        return userRepository.count();
     }
 
     private UserDto toUserDto(UserEntity user) {
