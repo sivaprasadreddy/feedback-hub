@@ -13,4 +13,8 @@ public enum Role {
     public String getDisplayName() {
         return displayName;
     }
+
+    public static String getRoleHierarchy() {
+        return ROLE_ADMIN.name() + " > " + ROLE_USER.name();
+    }
 }
