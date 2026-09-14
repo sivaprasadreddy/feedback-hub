@@ -1,6 +1,6 @@
 package dev.sivalabs.feedbackhub.shared;
 
-public class PaginationUtils {
+public final class PaginationUtils {
     private PaginationUtils() {}
 
     public static int parsePage(String page) {

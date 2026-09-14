@@ -191,6 +191,8 @@ class MessageService {
                         .orElse(null),
                 message.getStatus() == MessageStatus.DELETED,
                 message.getStatus() != MessageStatus.DELETED
+                        && message.getCreatorUserId().equals(currentUserId),
+                message.getStatus() != MessageStatus.DELETED
                         && !message.getCreatorUserId().equals(currentUserId),
                 new LinkedHashSet<>(message.getTopics()),
                 message.getSentiment());
@@ -222,6 +224,8 @@ class MessageService {
                     vote == null ? null : vote.name(),
                     message.getStatus() == MessageStatus.DELETED,
                     message.getStatus() != MessageStatus.DELETED
+                            && message.getCreatorUserId().equals(currentUserId),
+                    message.getStatus() != MessageStatus.DELETED
                             && !message.getCreatorUserId().equals(currentUserId),
                     topics.getOrDefault(message.getId(), new LinkedHashSet<>()),
                     message.getSentiment());
@@ -251,7 +255,7 @@ class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public MessageDetailsDto findMessage(Long messageId, Long currentUserId) {
+    public MessageDto findMessage(Long messageId, Long currentUserId) {
         var message = messageRepository
                 .findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
@@ -262,7 +266,7 @@ class MessageService {
                 .map(MessageVoteEntity::getVoteType)
                 .map(Enum::name)
                 .orElse(null);
-        return new MessageDetailsDto(
+        return new MessageDto(
                 message.getId(),
                 message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                 deleted ? DELETED_CONTENT : message.getContent(),

@@ -13,6 +13,7 @@ record MessageDto(
         long replyCount,
         String currentUserVote,
         boolean deleted,
+        boolean editable,
         boolean votable,
         Set<String> topics,
         MessageSentiment sentiment) {}
