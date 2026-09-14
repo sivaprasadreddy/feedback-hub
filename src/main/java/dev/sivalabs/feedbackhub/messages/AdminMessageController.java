@@ -1,6 +1,5 @@
 package dev.sivalabs.feedbackhub.messages;
 
-import dev.sivalabs.feedbackhub.shared.BadRequestException;
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 @Controller
 @RequestMapping("/admin/messages")
@@ -65,17 +66,5 @@ class AdminMessageController {
         }
         redirectAttributes.addFlashAttribute("successMessage", "Message analyzed successfully.");
         return "redirect:/admin/messages";
-    }
-
-    private int parsePage(String page) {
-        try {
-            var pageNo = Integer.parseInt(page);
-            if (pageNo < 1) {
-                throw new BadRequestException("Page number must be at least 1");
-            }
-            return pageNo;
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("Page number must be a positive integer");
-        }
     }
 }

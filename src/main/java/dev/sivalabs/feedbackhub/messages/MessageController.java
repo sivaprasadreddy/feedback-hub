@@ -1,6 +1,5 @@
 package dev.sivalabs.feedbackhub.messages;
 
-import dev.sivalabs.feedbackhub.shared.BadRequestException;
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import dev.sivalabs.feedbackhub.users.SecurityUser;
 import jakarta.validation.Valid;
@@ -18,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
+
 @Controller
 class MessageController {
     private final MessageService messageService;
@@ -34,7 +35,7 @@ class MessageController {
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new CreateMessageForm("", null));
         }
-        populateHome(model, FeedType.fromValue(feed), parsePage(page));
+        populateMessages(model, FeedType.fromValue(feed), parsePage(page));
         return "index";
     }
 
@@ -46,7 +47,7 @@ class MessageController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            populateHome(model, FeedType.RECENT, 1);
+            populateMessages(model, FeedType.RECENT, 1);
             return "index";
         }
         messageService.createMessage(new CreateMessageCmd(
@@ -235,7 +236,7 @@ class MessageController {
         return "redirect:/messages/" + messageId;
     }
 
-    private void populateHome(Model model, FeedType feed, int pageNo) {
+    private void populateMessages(Model model, FeedType feed, int pageNo) {
         model.addAttribute("postingIdentities", PostingIdentity.values());
         model.addAttribute("selectedFeed", feed);
         var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
@@ -244,18 +245,6 @@ class MessageController {
                 : messageService.findRecentMessages(currentUserId, pageNo);
         model.addAttribute("page", page);
         model.addAttribute("messages", page.data());
-    }
-
-    private int parsePage(String page) {
-        try {
-            var pageNo = Integer.parseInt(page);
-            if (pageNo < 1) {
-                throw new BadRequestException("Page number must be at least 1");
-            }
-            return pageNo;
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("Page number must be a positive integer");
-        }
     }
 
     private ReplyDto findReply(Long messageId, Long replyId, Long currentUserId) {

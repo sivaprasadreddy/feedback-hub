@@ -1,6 +1,5 @@
 package dev.sivalabs.feedbackhub.messages;
 
-import dev.sivalabs.feedbackhub.shared.BadRequestException;
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 @Controller
 @RequestMapping("/admin/replies")
@@ -33,17 +34,5 @@ class AdminReplyController {
         messageService.deleteReplyAsAdmin(replyId, AuthUtils.getCurrentUserIdOrThrow());
         redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
         return "redirect:/admin/replies";
-    }
-
-    private int parsePage(String page) {
-        try {
-            var pageNo = Integer.parseInt(page);
-            if (pageNo < 1) {
-                throw new BadRequestException("Page number must be at least 1");
-            }
-            return pageNo;
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("Page number must be a positive integer");
-        }
     }
 }

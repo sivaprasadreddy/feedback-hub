@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,9 @@ class MessageService {
 
     @Transactional(readOnly = true)
     public PagedResult<MessageDto> findRecentMessages(Long currentUserId, int pageNo) {
-        return toMessagePage(messageRepository.findPageByOrderByCreatedAtDesc(feedPageRequest(pageNo)), currentUserId);
+        PageRequest pageable = feedPageRequest(pageNo);
+        Page<MessageEntity> pagedMessages = messageRepository.findPageByOrderByCreatedAtDesc(pageable);
+        return toMessagePage(pagedMessages, currentUserId);
     }
 
     @Transactional(readOnly = true)
@@ -193,8 +196,7 @@ class MessageService {
                 message.getSentiment());
     }
 
-    private PagedResult<MessageDto> toMessagePage(
-            org.springframework.data.domain.Page<MessageEntity> page, Long currentUserId) {
+    private PagedResult<MessageDto> toMessagePage(Page<MessageEntity> page, Long currentUserId) {
         var messages = page.getContent();
         var messageIds = messages.stream().map(MessageEntity::getId).toList();
         if (messageIds.isEmpty()) {
