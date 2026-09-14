@@ -14,6 +14,8 @@ A feedback management platform where an organization can provide their employees
 * Keep discussions clean by detecting potentially spammy replies.
 * Allow administrators to moderate users, messages, and replies.
 
+![FeedbackHub](feedbackhub.png)
+
 ## Tech Stack
 
 * Java
