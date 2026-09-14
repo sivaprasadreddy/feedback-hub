@@ -1,4 +1,4 @@
-# FeedbackHub PRD
+# FeedbackHub PRD (AI Generated)
 
 # 1. Product Overview
 
@@ -9,7 +9,10 @@ A feedback management application providing its employees with a private space t
 * Post or reply using their identity or anonymously.
 * Upvote/downvote messages and replies.
 * Discover popular and recent discussions.
-* Allow organization administrators to manage users.
+* Understand the tone of each message through AI-powered sentiment analysis.
+* Organize messages with relevant topics identified automatically by AI.
+* Keep discussions clean by detecting potentially spammy replies.
+* Allow administrators to moderate users, messages, and replies.
 
 ---
 

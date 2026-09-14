@@ -9,19 +9,23 @@ A feedback management platform where an organization can provide their employees
 * Post or reply using their identity or anonymously.
 * Upvote/downvote messages and replies.
 * Discover popular and recent discussions.
-* Allow organization administrators to manage users.
+* Understand the tone of each message through AI-powered sentiment analysis.
+* Organize messages with relevant topics identified automatically by AI.
+* Keep discussions clean by detecting potentially spammy replies.
+* Allow administrators to moderate users, messages, and replies.
 
 ## Tech Stack
 
 * Java
 * Spring Boot
 * Spring Modulith
-* Spring AI, Ollama
+* Spring AI, Ollama/OpenAI
 * Spring Security
 * Spring Data JPA
 * PostgreSQL
 * FlywayDb
 * Thymeleaf
+* HTMX
 * Tailwind CSS4
 
 ## Prerequisites
@@ -82,6 +86,41 @@ $ task kind_destroy
 ```
 
 Application URL: http://localhost:80
+
+## AI Model Setup
+
+FeedbackHub uses Spring AI and supports both Ollama and OpenAI as chat model providers. Ollama is the default provider.
+The provider and model can be selected through environment variables when starting the application. 
+
+To use Ollama:
+
+```shell
+$ AI_PROVIDER=ollama OLLAMA_MODEL=gemma3:270m ./mvnw spring-boot:run
+```
+
+To use OpenAI, provide an API key and optionally choose a model:
+
+```shell
+$ AI_PROVIDER=openai OPENAI_API_KEY=<your-api-key> OPENAI_MODEL=gpt-5 ./mvnw spring-boot:run
+```
+
+These environment variables map to the Spring AI settings in [`src/main/resources/application.properties`](src/main/resources/application.properties). 
+
+`OLLAMA_URL` can also be set when Ollama is running somewhere other than `http://localhost:11434`.
+
+To try a different Ollama model locally, pull it first and pass its name through `OLLAMA_MODEL`:
+
+```shell
+$ ollama pull <model-name>
+$ AI_PROVIDER=ollama OLLAMA_MODEL=<model-name> ./mvnw spring-boot:run
+```
+
+Using an environment variable requires no source-file changes. To make another Ollama model the project default, update every place that declares or prepares the default model:
+
+* [`src/main/resources/application.properties`](src/main/resources/application.properties) for the application default.
+* [`docker/compose.yml`](docker/compose.yml) and [`docker/ollama-entrypoint.sh`](docker/ollama-entrypoint.sh) for Docker Compose.
+* [`k8s/manifests/config.yaml`](k8s/manifests/config.yaml) for Kubernetes.
+* This README and [`docs/installation.md`](docs/installation.md) to keep the setup instructions current.
 
 ## Using Agent Skills
 
