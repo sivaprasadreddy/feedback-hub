@@ -20,17 +20,16 @@ A feedback management platform where an organization can provide their employees
 
 ## Tech Stack
 
-* Java
-* Spring Boot
-* Spring Modulith
-* Spring AI, Ollama/OpenAI
-* Spring Security
-* Spring Data JPA
-* PostgreSQL
-* FlywayDb
-* Thymeleaf
-* HTMX
-* Tailwind CSS4
+* **Backend:** Java, Spring Boot, Spring MVC, Bean Validation, and Spring Boot Actuator
+* **Architecture:** Spring Modulith
+* **AI:** Spring AI with Ollama and OpenAI
+* **Security:** Spring Security and Thymeleaf Spring Security integration
+* **Data:** Spring Data JPA, Hibernate, PostgreSQL, and Flyway
+* **Email:** Spring Mail and Mailpit
+* **Frontend:** Thymeleaf, Thymeleaf Layout Dialect, HTMX, Tailwind CSS 4, Font Awesome, and WebJars
+* **Developer tooling:** Spring Boot DevTools, Docker Compose, BootUI, Maven, and Spotless
+* **Testing:** JUnit 5, Spring Boot Test, Spring Modulith Test, Testcontainers, Awaitility, ArchUnit, Taikai, and Spring Test Profiler
+* **Code quality:** JaCoCo and SonarQube
 
 ## Prerequisites
 * JDK 25
