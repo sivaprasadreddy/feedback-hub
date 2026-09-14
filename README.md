@@ -1,6 +1,8 @@
 # FeedbackHub
 
 [![Build](https://github.com/sivaprasadreddy/feedback-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/sivaprasadreddy/feedback-hub/actions/workflows/ci.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sivaprasadreddy_feedback-hub&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sivaprasadreddy_feedback-hub)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=sivaprasadreddy_feedback-hub&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=sivaprasadreddy_feedback-hub)
 
 A feedback management platform where an organization can provide their employees with a private space to:
 
