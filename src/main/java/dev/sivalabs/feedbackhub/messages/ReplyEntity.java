@@ -49,6 +49,12 @@ class ReplyEntity extends BaseEntity {
     @Column(name = "deleted_by_admin_at")
     private Instant deletedByAdminAt;
 
+    @Column(name = "upvote_count", nullable = false)
+    private long upvoteCount;
+
+    @Column(name = "downvote_count", nullable = false)
+    private long downvoteCount;
+
     public Long getId() {
         return id;
     }
@@ -115,5 +121,13 @@ class ReplyEntity extends BaseEntity {
 
     public void setDeletedByAdminAt(Instant deletedByAdminAt) {
         this.deletedByAdminAt = deletedByAdminAt;
+    }
+
+    public long getUpvoteCount() {
+        return upvoteCount;
+    }
+
+    public long getDownvoteCount() {
+        return downvoteCount;
     }
 }

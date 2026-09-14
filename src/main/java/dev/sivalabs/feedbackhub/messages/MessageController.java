@@ -1,5 +1,7 @@
 package dev.sivalabs.feedbackhub.messages;
 
+import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
+
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import dev.sivalabs.feedbackhub.users.SecurityUser;
 import jakarta.validation.Valid;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 @Controller
 class MessageController {

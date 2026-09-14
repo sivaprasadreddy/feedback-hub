@@ -54,6 +54,15 @@ class MessageEntity extends BaseEntity {
     @Column(name = "sentiment")
     private MessageSentiment sentiment;
 
+    @Column(name = "upvote_count", nullable = false)
+    private long upvoteCount;
+
+    @Column(name = "downvote_count", nullable = false)
+    private long downvoteCount;
+
+    @Column(name = "reply_count", nullable = false)
+    private long replyCount;
+
     public Long getId() {
         return id;
     }
@@ -121,5 +130,17 @@ class MessageEntity extends BaseEntity {
 
     public void setSentiment(MessageSentiment sentiment) {
         this.sentiment = sentiment;
+    }
+
+    public long getUpvoteCount() {
+        return upvoteCount;
+    }
+
+    public long getDownvoteCount() {
+        return downvoteCount;
+    }
+
+    public long getReplyCount() {
+        return replyCount;
     }
 }

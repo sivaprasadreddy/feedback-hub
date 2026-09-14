@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -165,6 +164,7 @@ class MessageService {
         reply.setStatus(ReplyStatus.DELETED);
         reply.setDeletedByAdminUserId(adminId);
         reply.setDeletedByAdminAt(Instant.now());
+        updateMessageCounts(reply.getMessage().getId(), 0, 0, -1);
     }
 
     private PageRequest feedPageRequest(int pageNo) {
@@ -181,9 +181,9 @@ class MessageService {
                 message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                 message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
-                messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.UPVOTE),
-                messageVoteRepository.countByMessageIdAndVoteType(message.getId(), VoteType.DOWNVOTE),
-                replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE),
+                message.getUpvoteCount(),
+                message.getDownvoteCount(),
+                message.getReplyCount(),
                 messageVoteRepository
                         .findByMessageIdAndVoterUserId(message.getId(), currentUserId)
                         .map(MessageVoteEntity::getVoteType)
@@ -202,8 +202,6 @@ class MessageService {
         if (messageIds.isEmpty()) {
             return PagedResult.from(page).map(message -> toMessageDto(message, currentUserId));
         }
-        var counts = messageRepository.findCountsByMessageIds(messageIds).stream()
-                .collect(Collectors.toMap(MessageCountsView::getMessageId, Function.identity()));
         var currentVotes = messageVoteRepository.findAllByMessageIdInAndVoterUserId(messageIds, currentUserId).stream()
                 .collect(Collectors.toMap(vote -> vote.getMessage().getId(), MessageVoteEntity::getVoteType));
         var topics = messageRepository.findTopicsByMessageIds(messageIds).stream()
@@ -212,16 +210,15 @@ class MessageService {
                         Collectors.mapping(MessageTopicView::getTopic, Collectors.toCollection(LinkedHashSet::new))));
         var userNames = getUserNames(messages);
         return PagedResult.from(page).map(message -> {
-            var messageCounts = counts.get(message.getId());
             var vote = currentVotes.get(message.getId());
             return new MessageDto(
                     message.getId(),
                     message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
                     message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                     message.getCreatedAt(),
-                    messageCounts == null ? 0 : messageCounts.getUpvotes(),
-                    messageCounts == null ? 0 : messageCounts.getDownvotes(),
-                    messageCounts == null ? 0 : messageCounts.getReplies(),
+                    message.getUpvoteCount(),
+                    message.getDownvoteCount(),
+                    message.getReplyCount(),
                     vote == null ? null : vote.name(),
                     message.getStatus() == MessageStatus.DELETED,
                     message.getStatus() != MessageStatus.DELETED
@@ -270,9 +267,9 @@ class MessageService {
                 message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
                 deleted ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
-                messageVoteRepository.countByMessageIdAndVoteType(messageId, VoteType.UPVOTE),
-                messageVoteRepository.countByMessageIdAndVoteType(messageId, VoteType.DOWNVOTE),
-                replyRepository.countByMessageIdAndStatus(messageId, ReplyStatus.ACTIVE),
+                message.getUpvoteCount(),
+                message.getDownvoteCount(),
+                message.getReplyCount(),
                 currentUserVote,
                 deleted,
                 !deleted && ownedByCurrentUser,
@@ -313,6 +310,7 @@ class MessageService {
         reply.setCreatorUserId(cmd.creatorId());
         reply.setAnonymous(cmd.anonymous());
         replyRepository.save(reply);
+        updateMessageCounts(message.getId(), 0, 0, 1);
         eventPublisher.publishEvent(new ReplyCreatedEvent(reply.getId(), reply.getContent()));
     }
 
@@ -332,8 +330,8 @@ class MessageService {
                             deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
                             reply.getCreatedAt(),
                             reply.getUpdatedAt(),
-                            replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.UPVOTE),
-                            replyVoteRepository.countByReplyIdAndVoteType(reply.getId(), VoteType.DOWNVOTE),
+                            reply.getUpvoteCount(),
+                            reply.getDownvoteCount(),
                             replyVoteRepository
                                     .findByReplyIdAndVoterUserId(reply.getId(), currentUserId)
                                     .map(ReplyVoteEntity::getVoteType)
@@ -367,21 +365,23 @@ class MessageService {
     public void deleteReply(Long messageId, Long replyId, Long currentUserId) {
         var reply = getEditableReply(messageId, replyId, currentUserId);
         reply.setStatus(ReplyStatus.DELETED);
+        updateMessageCounts(messageId, 0, 0, -1);
     }
 
     @Transactional
     public void voteOnMessage(Long messageId, Long currentUserId, VoteType voteType) {
         var message = getVotableMessage(messageId, currentUserId);
-        var vote = messageVoteRepository
-                .findByMessageIdAndVoterUserId(messageId, currentUserId)
-                .orElseGet(() -> {
-                    var newVote = new MessageVoteEntity();
-                    newVote.setMessage(message);
-                    newVote.setVoterUserId(currentUserId);
-                    return newVote;
-                });
+        var existingVote = messageVoteRepository.findByMessageIdAndVoterUserId(messageId, currentUserId);
+        var previousVoteType = existingVote.map(MessageVoteEntity::getVoteType).orElse(null);
+        var vote = existingVote.orElseGet(() -> {
+            var newVote = new MessageVoteEntity();
+            newVote.setMessage(message);
+            newVote.setVoterUserId(currentUserId);
+            return newVote;
+        });
         vote.setVoteType(voteType);
         messageVoteRepository.save(vote);
+        updateMessageVoteCounts(messageId, previousVoteType, voteType);
     }
 
     @Transactional
@@ -389,28 +389,67 @@ class MessageService {
         getVotableMessage(messageId, currentUserId);
         messageVoteRepository
                 .findByMessageIdAndVoterUserId(messageId, currentUserId)
-                .ifPresent(messageVoteRepository::delete);
+                .ifPresent(vote -> {
+                    messageVoteRepository.delete(vote);
+                    updateMessageVoteCounts(messageId, vote.getVoteType(), null);
+                });
     }
 
     @Transactional
     public void voteOnReply(Long messageId, Long replyId, Long currentUserId, VoteType voteType) {
         var reply = getVotableReply(messageId, replyId, currentUserId);
-        var vote = replyVoteRepository
-                .findByReplyIdAndVoterUserId(replyId, currentUserId)
-                .orElseGet(() -> {
-                    var newVote = new ReplyVoteEntity();
-                    newVote.setReply(reply);
-                    newVote.setVoterUserId(currentUserId);
-                    return newVote;
-                });
+        var existingVote = replyVoteRepository.findByReplyIdAndVoterUserId(replyId, currentUserId);
+        var previousVoteType = existingVote.map(ReplyVoteEntity::getVoteType).orElse(null);
+        var vote = existingVote.orElseGet(() -> {
+            var newVote = new ReplyVoteEntity();
+            newVote.setReply(reply);
+            newVote.setVoterUserId(currentUserId);
+            return newVote;
+        });
         vote.setVoteType(voteType);
         replyVoteRepository.save(vote);
+        updateReplyVoteCounts(replyId, previousVoteType, voteType);
     }
 
     @Transactional
     public void removeReplyVote(Long messageId, Long replyId, Long currentUserId) {
         getVotableReply(messageId, replyId, currentUserId);
-        replyVoteRepository.findByReplyIdAndVoterUserId(replyId, currentUserId).ifPresent(replyVoteRepository::delete);
+        replyVoteRepository.findByReplyIdAndVoterUserId(replyId, currentUserId).ifPresent(vote -> {
+            replyVoteRepository.delete(vote);
+            updateReplyVoteCounts(replyId, vote.getVoteType(), null);
+        });
+    }
+
+    private void updateMessageVoteCounts(Long messageId, VoteType previousVoteType, VoteType newVoteType) {
+        updateMessageCounts(
+                messageId,
+                voteDelta(previousVoteType, newVoteType, VoteType.UPVOTE),
+                voteDelta(previousVoteType, newVoteType, VoteType.DOWNVOTE),
+                0);
+    }
+
+    private void updateReplyVoteCounts(Long replyId, VoteType previousVoteType, VoteType newVoteType) {
+        var upvoteDelta = voteDelta(previousVoteType, newVoteType, VoteType.UPVOTE);
+        var downvoteDelta = voteDelta(previousVoteType, newVoteType, VoteType.DOWNVOTE);
+        if (upvoteDelta == 0 && downvoteDelta == 0) {
+            return;
+        }
+        if (replyRepository.updateVoteCounts(replyId, upvoteDelta, downvoteDelta) != 1) {
+            throw new IllegalStateException("Failed to update engagement counts for reply " + replyId);
+        }
+    }
+
+    private void updateMessageCounts(Long messageId, int upvoteDelta, int downvoteDelta, int replyDelta) {
+        if (upvoteDelta == 0 && downvoteDelta == 0 && replyDelta == 0) {
+            return;
+        }
+        if (messageRepository.updateCounts(messageId, upvoteDelta, downvoteDelta, replyDelta) != 1) {
+            throw new IllegalStateException("Failed to update engagement counts for message " + messageId);
+        }
+    }
+
+    private int voteDelta(VoteType previousVoteType, VoteType newVoteType, VoteType countedType) {
+        return (newVoteType == countedType ? 1 : 0) - (previousVoteType == countedType ? 1 : 0);
     }
 
     @Transactional(readOnly = true)
