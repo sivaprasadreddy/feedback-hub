@@ -1,5 +1,8 @@
 name: Build
 
+env:
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 on:
   push:
     branches: [ "main", "dev", "fix/*", "feat/*" ]
@@ -33,3 +36,7 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw -ntp verify
+
+      - if: ${{ github.ref == 'refs/heads/main' }}
+        name: Sonar Scan
+        run: ./mvnw initialize sonar:sonar -Dsonar.token=${{ env.SONAR_TOKEN }}

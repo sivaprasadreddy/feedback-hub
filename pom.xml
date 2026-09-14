@@ -25,12 +25,14 @@
         <htmx.org.version>4.0.0</htmx.org.version>
         <htmx-spring-boot-thymeleaf.version>5.1.0</htmx-spring-boot-thymeleaf.version>
         <bootui.version>1.17.0</bootui.version>
-        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
-        <jacoco.minimum.coverage>80%</jacoco.minimum.coverage>
         <palantir-java-format.version>2.98.0</palantir-java-format.version>
         <spotless.version>3.10.2</spotless.version>
         <archunit.version>1.5.0</archunit.version>
         <taikai.version>1.66.0</taikai.version>
+        <properties-maven-plugin.version>1.3.1</properties-maven-plugin.version>
+        <sonar-maven-plugin.version>5.8.0.7211</sonar-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
+        <jacoco.minimum.coverage>80%</jacoco.minimum.coverage>
         <dockerImageName>sivaprasadreddy/feedbackhub</dockerImageName>
     </properties>
 
@@ -359,6 +361,36 @@
                             <goal>check</goal>
                         </goals>
                         <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <files>
+                                <file>sonar-project.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>sonar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
