@@ -5,6 +5,10 @@ import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +24,24 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 class AdminMessageController {
     private static final Logger LOG = LoggerFactory.getLogger(AdminMessageController.class);
     private final MessageService messageService;
+    private final MessagePdfExportService messagePdfExporter;
 
-    AdminMessageController(MessageService messageService) {
+    AdminMessageController(MessageService messageService, MessagePdfExportService messagePdfExporter) {
         this.messageService = messageService;
+        this.messagePdfExporter = messagePdfExporter;
+    }
+
+    @GetMapping("/{messageId}/export.pdf")
+    ResponseEntity<byte[]> exportMessage(@PathVariable Long messageId) {
+        var pdf = messagePdfExporter.export(messageService.findMessageExportData(messageId));
+        var disposition = ContentDisposition.attachment()
+                .filename("feedback-message-" + messageId + ".pdf")
+                .build();
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .contentLength(pdf.length)
+                .body(pdf);
     }
 
     @GetMapping

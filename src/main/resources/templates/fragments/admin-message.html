@@ -19,6 +19,10 @@
               th:text="${topic}">Topic</span>
     </div>
     <div class="mt-4 flex flex-wrap items-center gap-4">
+        <a th:href="@{/admin/messages/{id}/export.pdf(id=${message.id()})}"
+           class="text-sm font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300">
+            <i class="fa-solid fa-file-pdf mr-1"></i> Export PDF
+        </a>
         <form th:if="${!message.deleted() && !message.analyzed()}" method="post"
               th:action="@{/admin/messages/{id}/analyze(id=${message.id()})}"
               th:hx-post="@{/admin/messages/{id}/analyze(id=${message.id()})}"

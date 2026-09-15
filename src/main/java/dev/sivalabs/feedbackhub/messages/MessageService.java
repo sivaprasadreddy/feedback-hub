@@ -99,6 +99,24 @@ class MessageService {
                 message.getSentiment());
     }
 
+    @Transactional(readOnly = true)
+    public MessageExportData findMessageExportData(Long messageId) {
+        var message = findMessageForAdmin(messageId);
+        var replies = replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId);
+        var userNames = getReplyUserNames(replies);
+        var replyDtos = replies.stream()
+                .map(reply -> new AdminReplyDto(
+                        reply.getId(),
+                        messageId,
+                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
+                        reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
+                        reply.getCreatedAt(),
+                        reply.getStatus() == ReplyStatus.DELETED,
+                        reply.isSpam()))
+                .toList();
+        return new MessageExportData(message, replyDtos);
+    }
+
     @Transactional
     public void analyzeMessage(Long messageId) {
         var message = messageRepository
