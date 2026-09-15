@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.messages;
 
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,10 +43,27 @@ interface MessageRepository extends JpaRepository<MessageEntity, Long> {
             where m.id in :messageIds
             """)
     List<MessageTopicView> findTopicsByMessageIds(@Param("messageIds") List<Long> messageIds);
+
+    @Query("""
+            select m.sentiment as sentiment, count(m) as count
+            from MessageEntity m
+            where m.sentiment is not null
+              and m.createdAt >= :startDate
+              and m.createdAt < :endDate
+            group by m.sentiment
+            """)
+    List<MessageSentimentCountView> countBySentimentBetween(
+            @Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }
 
 interface MessageTopicView {
     Long getMessageId();
 
     String getTopic();
+}
+
+interface MessageSentimentCountView {
+    MessageSentiment getSentiment();
+
+    long getCount();
 }

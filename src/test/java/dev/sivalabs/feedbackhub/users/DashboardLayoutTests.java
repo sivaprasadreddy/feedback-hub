@@ -59,6 +59,7 @@ class DashboardLayoutTests extends BaseIT {
                 .contains("My Account")
                 .contains("Manage Users")
                 .contains("Manage Messages")
+                .contains("Sentiment Analysis")
                 .contains("Total messages", "Total replies", "No. of users", "3");
     }
 
@@ -93,6 +94,8 @@ class DashboardLayoutTests extends BaseIT {
 
         assertThat(mvc.get().uri("/admin/users").session(session).exchange()).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.get().uri("/admin/messages").session(session).exchange()).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(mvc.get().uri("/admin/sentiment-analysis").session(session).exchange())
+                .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -109,5 +112,10 @@ class DashboardLayoutTests extends BaseIT {
                 .hasViewName("admin/messages")
                 .bodyText()
                 .contains("Manage Messages");
+        assertThat(mvc.get().uri("/admin/sentiment-analysis").session(session).exchange())
+                .hasStatusOk()
+                .hasViewName("admin/sentiment-analysis")
+                .bodyText()
+                .contains("Sentiment Analysis", "Start date", "End date", "Messages by sentiment");
     }
 }

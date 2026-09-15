@@ -4,6 +4,9 @@ import dev.sivalabs.feedbackhub.shared.PagedResult;
 import dev.sivalabs.feedbackhub.shared.ResourceNotFoundException;
 import dev.sivalabs.feedbackhub.users.UsersAPI;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,8 @@ class MessageService {
     static final int FEED_PAGE_SIZE = 10;
     static final int ADMIN_PAGE_SIZE = 20;
     private static final int MAX_TOPICS = 3;
+    private static final Instant EARLIEST_ANALYSIS_DATE = Instant.parse("0001-01-01T00:00:00Z");
+    private static final Instant LATEST_ANALYSIS_DATE = Instant.parse("9999-12-31T23:59:59Z");
     static final String DELETED_CONTENT = "This message has been deleted.";
     static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
     private final MessageRepository messageRepository;
@@ -477,6 +482,34 @@ class MessageService {
     @Transactional(readOnly = true)
     public MessageStatistics getStatistics() {
         return new MessageStatistics(messageRepository.count(), replyRepository.count());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SentimentCount> getSentimentCounts(LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date must be on or before end date.");
+        }
+
+        var zone = ZoneId.systemDefault();
+        var start = startDate == null
+                ? EARLIEST_ANALYSIS_DATE
+                : startDate.atStartOfDay(zone).toInstant();
+        var endExclusive = endDate == null
+                ? LATEST_ANALYSIS_DATE
+                : endDate.plusDays(1).atStartOfDay(zone).toInstant();
+        var counts = new EnumMap<MessageSentiment, Long>(MessageSentiment.class);
+        messageRepository
+                .countBySentimentBetween(start, endExclusive)
+                .forEach(result -> counts.put(result.getSentiment(), result.getCount()));
+        var maximum = counts.values().stream().mapToLong(Long::longValue).max().orElse(0);
+
+        return java.util.Arrays.stream(MessageSentiment.values())
+                .map(sentiment -> {
+                    var count = counts.getOrDefault(sentiment, 0L);
+                    var percentage = maximum == 0 ? 0 : (int) Math.round(count * 100.0 / maximum);
+                    return new SentimentCount(sentiment, count, percentage);
+                })
+                .toList();
     }
 
     private ReplyEntity getVotableReply(Long messageId, Long replyId, Long currentUserId) {
