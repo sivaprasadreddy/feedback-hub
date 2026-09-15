@@ -11,10 +11,16 @@
 <div layout:fragment="content">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Manage Users</h1>
-        <a th:href="@{/admin/users/new}"
-           class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700">
-            <i class="fa-solid fa-user-plus mr-2"></i> Create user
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <a th:href="@{/admin/users/import}"
+               class="inline-flex items-center justify-center rounded-lg border border-sky-600 px-4 py-2 text-sm font-semibold text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-slate-700">
+                <i class="fa-solid fa-file-csv mr-2"></i> Import users
+            </a>
+            <a th:href="@{/admin/users/new}"
+               class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700">
+                <i class="fa-solid fa-user-plus mr-2"></i> Create user
+            </a>
+        </div>
     </div>
     <form method="get" th:action="@{/admin/users}" class="mt-6 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm">
         <div>

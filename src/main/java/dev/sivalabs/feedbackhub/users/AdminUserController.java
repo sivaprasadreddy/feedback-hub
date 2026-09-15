@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -39,6 +42,34 @@ class AdminUserController {
         model.addAttribute("form", new CreateUserForm("", "", null));
         model.addAttribute("roles", Role.values());
         return "admin/users-new";
+    }
+
+    @GetMapping("/import")
+    String importUsersForm() {
+        return "admin/users-import";
+    }
+
+    @PostMapping("/import")
+    String importUsers(@RequestParam("file") MultipartFile file, Model model, RedirectAttributes redirectAttributes) {
+        if (file.isEmpty()) {
+            model.addAttribute("errors", java.util.List.of(new ImportUserError(1, "Select a CSV file to import")));
+            return "admin/users-import";
+        }
+        final String csv;
+        try {
+            csv = new String(file.getBytes(), StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            model.addAttribute("errors", java.util.List.of(new ImportUserError(1, "Could not read the CSV file")));
+            return "admin/users-import";
+        }
+        var result = userService.importUsers(csv);
+        if (!result.successful()) {
+            model.addAttribute("errors", result.errors());
+            return "admin/users-import";
+        }
+        redirectAttributes.addFlashAttribute(
+                "successMessage", result.importedCount() + " users imported successfully.");
+        return "redirect:/admin/users";
     }
 
     @PostMapping
