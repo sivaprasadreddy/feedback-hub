@@ -12,6 +12,13 @@
             </button>
             <a th:href="@{/}" class="text-lg font-bold text-white">FeedbackHub</a>
         </div>
+        <div class="ml-auto flex items-center gap-1">
+            <button type="button" data-theme-toggle onclick="toggleTheme()"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    aria-label="Switch to dark mode" title="Switch to dark mode">
+                <i class="fa-solid fa-moon dark:hidden" aria-hidden="true"></i>
+                <i class="fa-solid fa-sun hidden dark:inline" aria-hidden="true"></i>
+            </button>
         <div class="relative" sec:authorize="isAuthenticated()">
             <button type="button" onclick="toggleUserDropdown()" id="user-menu-button"
                     class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-white">
@@ -20,12 +27,12 @@
                 <i class="fa-solid fa-chevron-down text-xs"></i>
             </button>
             <div id="user-dropdown"
-                 class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5">
-                <a th:href="@{/dashboard}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                 class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
+                <a th:href="@{/dashboard}" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700">
                     <i class="fa-solid fa-gauge-high mr-2"></i> Dashboard
                 </a>
                 <form method="post" th:action="@{/logout}">
-                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
+                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
                     </button>
                 </form>
@@ -35,6 +42,7 @@
             <a th:href="@{/login}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-white">
                 <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
             </a>
+        </div>
         </div>
     </div>
 </header>

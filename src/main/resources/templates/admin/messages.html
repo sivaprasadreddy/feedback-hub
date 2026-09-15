@@ -9,21 +9,21 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <h1 class="text-2xl font-bold text-slate-900">Manage Messages</h1>
-    <p class="mt-2 text-slate-600">Review feedback and remove inappropriate messages.</p>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Manage Messages</h1>
+    <p class="mt-2 text-slate-600 dark:text-slate-300">Review feedback and remove inappropriate messages.</p>
     <div class="mt-6 space-y-4">
         <th:block th:each="message : ${messages}">
             <th:block th:replace="~{fragments/admin-message :: message(message=${message})}"></th:block>
         </th:block>
-        <p th:if="${#lists.isEmpty(messages)}" class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No messages to review.</p>
+        <p th:if="${#lists.isEmpty(messages)}" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400">No messages to review.</p>
     </div>
     <nav th:if="${page.hasPreviousPage() || page.hasNextPage()}" aria-label="Message pages" class="mt-6 flex items-center justify-between">
         <a th:if="${page.hasPreviousPage()}" th:href="@{/admin/messages(page=${page.currentPageNo() - 1})}"
-           class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Previous</a>
+           class="rounded-lg bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">Previous</a>
         <span th:unless="${page.hasPreviousPage()}"></span>
-        <span class="text-sm text-slate-600" th:text="|Page ${page.currentPageNo()} of ${page.totalPages()}|">Page 1</span>
+        <span class="text-sm text-slate-600 dark:text-slate-300" th:text="|Page ${page.currentPageNo()} of ${page.totalPages()}|">Page 1</span>
         <a th:if="${page.hasNextPage()}" th:href="@{/admin/messages(page=${page.currentPageNo() + 1})}"
-           class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Next</a>
+           class="rounded-lg bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">Next</a>
         <span th:unless="${page.hasNextPage()}"></span>
     </nav>
 </div>

@@ -9,7 +9,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
     <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE" th:text="FeedbackHub">FeedbackHub</title>
+    <script th:src="@{/js/theme.js}"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
     <link rel="stylesheet" href="/webjars/font-awesome/css/all.css">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
     <script>
@@ -32,7 +34,7 @@
         });
     </script>
 </head>
-<body class="min-h-screen bg-slate-100">
+<body class="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
 <div th:replace="~{fragments/navbar :: topbar(true)}"></div>
 
 <div id="sidebar-overlay" class="fixed inset-0 z-20 hidden bg-slate-900/50 md:hidden" onclick="toggleSidebar()"></div>
@@ -73,11 +75,11 @@
 
 <main class="pt-16 md:pl-64">
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div th:if="${successMessage}" class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
-            <p class="text-sm font-medium text-green-800" th:text="${successMessage}"></p>
+        <div th:if="${successMessage}" class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/50">
+            <p class="text-sm font-medium text-green-800 dark:text-green-300" th:text="${successMessage}"></p>
         </div>
-        <div th:if="${errorMessage}" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
-            <p class="text-sm font-medium text-red-800" th:text="${errorMessage}"></p>
+        <div th:if="${errorMessage}" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/50">
+            <p class="text-sm font-medium text-red-800 dark:text-red-300" th:text="${errorMessage}"></p>
         </div>
         <div layout:fragment="content"></div>
     </div>

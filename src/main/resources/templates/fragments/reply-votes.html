@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <body>
-<dl th:fragment="votes(messageId, reply)" class="reply-votes mt-4 flex flex-wrap gap-6 border-t border-slate-200 pt-3 text-sm">
+<dl th:fragment="votes(messageId, reply)" class="reply-votes mt-4 flex flex-wrap gap-6 border-t border-slate-200 dark:border-slate-700 pt-3 text-sm">
     <div class="flex items-center gap-1">
         <dt>
             <form th:if="${reply.votable()}" method="post"
@@ -9,14 +9,14 @@
                   th:hx-post="${reply.currentUserVote() == 'UPVOTE'} ? @{/messages/{messageId}/replies/{replyId}/vote/remove(messageId=${messageId},replyId=${reply.id()})} : @{/messages/{messageId}/replies/{replyId}/vote(messageId=${messageId},replyId=${reply.id()})}"
                   hx-target="closest .reply-votes" hx-swap="outerHTML">
                 <input type="hidden" name="voteType" value="UPVOTE"/>
-                <button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        th:classappend="${reply.currentUserVote() == 'UPVOTE'} ? ' text-emerald-600' : ' text-slate-500'"
+                <button type="submit" class="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        th:classappend="${reply.currentUserVote() == 'UPVOTE'} ? ' text-emerald-600' : ' text-slate-500 dark:text-slate-400'"
                         th:title="${reply.currentUserVote() == 'UPVOTE'} ? 'Remove your reply upvote' : 'Upvote reply'">
                     <i class="fa-solid fa-thumbs-up" aria-hidden="true"></i>
                     <span class="sr-only" th:text="${reply.currentUserVote() == 'UPVOTE'} ? 'Remove your reply upvote' : 'Upvote reply'">Upvote reply</span>
                 </button>
             </form>
-            <span th:unless="${reply.votable()}" class="text-slate-500" title="Upvotes"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span class="sr-only">Upvotes</span></span>
+            <span th:unless="${reply.votable()}" class="text-slate-500 dark:text-slate-400" title="Upvotes"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span class="sr-only">Upvotes</span></span>
         </dt>
         <dd th:text="${reply.upvoteCount()}">0</dd>
     </div>
@@ -27,14 +27,14 @@
                   th:hx-post="${reply.currentUserVote() == 'DOWNVOTE'} ? @{/messages/{messageId}/replies/{replyId}/vote/remove(messageId=${messageId},replyId=${reply.id()})} : @{/messages/{messageId}/replies/{replyId}/vote(messageId=${messageId},replyId=${reply.id()})}"
                   hx-target="closest .reply-votes" hx-swap="outerHTML">
                 <input type="hidden" name="voteType" value="DOWNVOTE"/>
-                <button type="submit" class="rounded p-1 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        th:classappend="${reply.currentUserVote() == 'DOWNVOTE'} ? ' text-amber-600' : ' text-slate-500'"
+                <button type="submit" class="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        th:classappend="${reply.currentUserVote() == 'DOWNVOTE'} ? ' text-amber-600' : ' text-slate-500 dark:text-slate-400'"
                         th:title="${reply.currentUserVote() == 'DOWNVOTE'} ? 'Remove your reply downvote' : 'Downvote reply'">
                     <i class="fa-solid fa-thumbs-down" aria-hidden="true"></i>
                     <span class="sr-only" th:text="${reply.currentUserVote() == 'DOWNVOTE'} ? 'Remove your reply downvote' : 'Downvote reply'">Downvote reply</span>
                 </button>
             </form>
-            <span th:unless="${reply.votable()}" class="text-slate-500" title="Downvotes"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i><span class="sr-only">Downvotes</span></span>
+            <span th:unless="${reply.votable()}" class="text-slate-500 dark:text-slate-400" title="Downvotes"><i class="fa-solid fa-thumbs-down" aria-hidden="true"></i><span class="sr-only">Downvotes</span></span>
         </dt>
         <dd th:text="${reply.downvoteCount()}">0</dd>
     </div>

@@ -11,27 +11,27 @@
 <div layout:fragment="content">
 
     <form method="post" th:action="@{/messages}" th:object="${form}"
-          class="mt-1 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          class="mt-1 space-y-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
         <div>
-            <label for="content" class="mb-2 block text-sm font-semibold text-slate-700">Message</label>
+            <label for="content" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Message</label>
             <textarea id="content" rows="3" th:field="*{content}" placeholder="What's on your mind?"
-                      class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-900 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"></textarea>
-            <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="mt-2 text-sm text-rose-600"></p>
+                      class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-slate-900 dark:text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"></textarea>
+            <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
         </div>
         <div class="flex flex-wrap items-end justify-between gap-4">
             <fieldset>
-                <legend class="mb-2 text-sm font-semibold text-slate-700">Post as</legend>
+                <legend class="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Post as</legend>
                 <div class="flex flex-wrap gap-4">
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                         <input type="radio" th:field="*{postingIdentity}" value="IDENTIFIED"/>
                         Myself
                     </label>
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                         <input type="radio" th:field="*{postingIdentity}" value="ANONYMOUS"/>
                         Anonymous
                     </label>
                 </div>
-                <p th:if="${#fields.hasErrors('postingIdentity')}" th:errors="*{postingIdentity}" class="mt-2 text-sm text-rose-600"></p>
+                <p th:if="${#fields.hasErrors('postingIdentity')}" th:errors="*{postingIdentity}" class="mt-2 text-sm text-rose-600 dark:text-rose-400"></p>
             </fieldset>
             <button type="submit" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">Post message</button>
         </div>
@@ -39,44 +39,44 @@
 
     <section class="mt-8" aria-labelledby="feed-heading">
         <div class="flex items-center justify-between gap-4">
-            <h2 id="feed-heading" class="text-xl font-bold text-slate-900" th:text="${selectedFeed.name() == 'POPULAR' ? 'Popular' : 'Recent'}">Recent</h2>
+            <h2 id="feed-heading" class="text-xl font-bold text-slate-900 dark:text-slate-100" th:text="${selectedFeed.name() == 'POPULAR' ? 'Popular' : 'Recent'}">Recent</h2>
             <nav aria-label="Choose feedback feed" class="flex items-center gap-2">
                 <a th:href="@{/(feed='recent',page=1)}" th:aria-current="${selectedFeed.name() == 'RECENT' ? 'page' : null}"
-                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'RECENT' ? ' bg-sky-600 text-white' : ' bg-white text-slate-700 hover:bg-slate-50'}">Recent</a>
+                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'RECENT' ? ' bg-sky-600 text-white' : ' bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'}">Recent</a>
                 <a th:href="@{/(feed='popular',page=1)}" th:aria-current="${selectedFeed.name() == 'POPULAR' ? 'page' : null}"
-                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'POPULAR' ? ' bg-sky-600 text-white' : ' bg-white text-slate-700 hover:bg-slate-50'}">Popular</a>
+                   class="rounded-lg px-3 py-2 text-sm font-semibold" th:classappend="${selectedFeed.name() == 'POPULAR' ? ' bg-sky-600 text-white' : ' bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'}">Popular</a>
             </nav>
         </div>
         <div class="mt-4 space-y-4">
-            <article th:each="message : ${messages}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <article th:each="message : ${messages}" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
                 <div class="flex flex-wrap items-center gap-3">
-                    <p class="font-semibold text-slate-900" th:text="${message.visibleAuthor()}">Author</p>
-                    <time class="text-xs text-slate-500"
+                    <p class="font-semibold text-slate-900 dark:text-slate-100" th:text="${message.visibleAuthor()}">Author</p>
+                    <time class="text-xs text-slate-500 dark:text-slate-400"
                           th:text="${message.createdAt() != null ? #temporals.format(message.createdAt(), 'dd MMM yyyy HH:mm') : ''}">20 Sept 2026 14:30</time>
                 </div>
-                <p class="mt-3 whitespace-pre-wrap text-slate-700"
-                   th:classappend="${message.deleted()} ? ' italic text-slate-500' : ''"
+                <p class="mt-3 whitespace-pre-wrap text-slate-700 dark:text-slate-200"
+                   th:classappend="${message.deleted()} ? ' italic text-slate-500 dark:text-slate-400' : ''"
                    th:text="${message.content()}">Message</p>
                 <div th:if="${message.sentiment() != null || !#sets.isEmpty(message.topics())}"
                      class="mt-3 flex flex-wrap items-center gap-2">
                     <span th:if="${message.sentiment() != null}"
-                          class="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700"
+                          class="rounded-full bg-violet-100 dark:bg-violet-950/50 px-2.5 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300"
                           th:text="${message.sentiment().displayName}">Happy</span>
                     <span th:each="topic : ${message.topics()}"
-                          class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+                          class="rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300"
                           th:text="${topic}">Topic</span>
                 </div>
                 <div th:replace="~{fragments/message-votes :: votes(message=${message}, returnToHome=true)}"></div>
             </article>
-            <p th:if="${#lists.isEmpty(messages)}" class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No feedback yet.</p>
+            <p th:if="${#lists.isEmpty(messages)}" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400">No feedback yet.</p>
         </div>
         <nav th:if="${page.hasPreviousPage() || page.hasNextPage()}" aria-label="Feed pages" class="mt-6 flex items-center justify-between">
             <a th:if="${page.hasPreviousPage()}" th:href="@{/(feed=${selectedFeed.value()},page=${page.currentPageNo() - 1})}"
-               class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Previous</a>
+               class="rounded-lg bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">Previous</a>
             <span th:unless="${page.hasPreviousPage()}"></span>
-            <span class="text-sm text-slate-600" th:text="|Page ${page.currentPageNo()} of ${page.totalPages()}|">Page 1</span>
+            <span class="text-sm text-slate-600 dark:text-slate-300" th:text="|Page ${page.currentPageNo()} of ${page.totalPages()}|">Page 1</span>
             <a th:if="${page.hasNextPage()}" th:href="@{/(feed=${selectedFeed.value()},page=${page.currentPageNo() + 1})}"
-               class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">Next</a>
+               class="rounded-lg bg-white dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">Next</a>
             <span th:unless="${page.hasNextPage()}"></span>
         </nav>
     </section>
