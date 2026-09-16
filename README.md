@@ -67,6 +67,8 @@ $ task stop
 $ task restart
 ```
 
+**NOTE:** For development, keep the watcher running in a separate terminal: `npm run css:watch`
+
 * Application URL: http://localhost:8080
 * Credentials: `admin@gmail.com/secret`, `siva@gmail.com/secret`
 

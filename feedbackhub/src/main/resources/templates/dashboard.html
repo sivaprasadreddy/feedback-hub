@@ -10,10 +10,10 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
     <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE" th:text="FeedbackHub">FeedbackHub</title>
     <script th:src="@{/js/theme.js}"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!--<script src="https://cdn.tailwindcss.com"></script>-->
     <script>tailwind.config = { darkMode: 'class' };</script>
     <link rel="stylesheet" href="/webjars/font-awesome/css/all.css">
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.generated.css}"/>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');

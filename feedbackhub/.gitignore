@@ -36,3 +36,6 @@ out/
 ### Misc ###
 .env
 .env.properties
+node/
+node_modules/
+#src/main/resources/static/css/app.generated.css

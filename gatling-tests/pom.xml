@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.sivalabs</groupId>
     <artifactId>gatling-tests</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>gatling-tests</name>
     <description>Gatling Performance Tests for FeedbackHub</description>
 

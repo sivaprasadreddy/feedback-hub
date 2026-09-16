@@ -1,0 +1,13 @@
+{
+  "name": "feedbackhub",
+  "version": "1.0.0",
+  "scripts": {
+    "css:build": "npx @tailwindcss/cli -i ./src/main/resources/static/css/app.css -o ./src/main/resources/static/css/app.generated.css --minify",
+    "css:watch": "npx @tailwindcss/cli -i ./src/main/resources/static/css/app.css -o ./src/main/resources/static/css/app.generated.css --watch"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

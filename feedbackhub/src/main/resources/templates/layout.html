@@ -10,10 +10,8 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
     <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE" th:text="FeedbackHub">FeedbackHub</title>
     <script th:src="@{/js/theme.js}"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' };</script>
-        <link rel="stylesheet" href="/webjars/font-awesome/css/all.css">
-        <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <link rel="stylesheet" href="/webjars/font-awesome/css/all.css">
+    <link rel="stylesheet" th:href="@{/css/app.generated.css}"/>
         <script>
             function toggleMobileMenu() {
                 const menu = document.getElementById('mobile-menu');
@@ -44,8 +42,8 @@
                 <button type="button" data-theme-toggle onclick="toggleTheme()"
                         class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-500"
                         aria-label="Switch to dark mode" title="Switch to dark mode">
-                    <i class="fa-solid fa-moon dark:hidden" aria-hidden="true"></i>
-                    <i class="fa-solid fa-sun hidden dark:inline" aria-hidden="true"></i>
+                    <i class="fa-solid fa-moon dark:hidden!" aria-hidden="true"></i>
+                    <i class="fa-solid fa-sun hidden! dark:inline!" aria-hidden="true"></i>
                 </button>
             <div class="hidden md:block">
                 <div class="ml-4 flex items-center md:ml-6 space-x-4">
