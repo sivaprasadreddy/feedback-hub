@@ -18,6 +18,8 @@
 
     <modules>
         <module>feedbackhub</module>
+        <module>playwright-tests</module>
+        <module>gatling-tests</module>
     </modules>
 
     <build>

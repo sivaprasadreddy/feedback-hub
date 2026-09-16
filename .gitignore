@@ -36,3 +36,4 @@ out/
 ### Misc ###
 .env
 .env.properties
+*.log
