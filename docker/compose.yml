@@ -16,7 +16,7 @@ services:
       - "8025:8025"
 
   ollama:
-    image: ollama/ollama:0.34.0
+    image: ollama/ollama:0.34.1
     container_name: ollama
     ports:
       - "11434:11434"
