@@ -4,7 +4,9 @@ vars:
   GOOS: "{{default OS .GOOS}}"
   MVNW: '{{if eq .GOOS "windows"}}mvnw.cmd{{else}}./mvnw{{end}}'
   SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
+  REGISTRY: docker.io
   IMAGE_NAME: 'sivaprasadreddy/feedbackhub'
+  VERSION: '{{.VERSION | default "latest"}}'
   CLUSTER_NAME: 'sivalabs-k8s'
   DC_FILE: "docker/compose.yml"
 
@@ -27,7 +29,31 @@ tasks:
   build_image:
     desc: Build Docker Image using Buildpacks
     cmds:
-      - "{{.MVNW}} clean compile spring-boot:build-image -DskipTests -DdockerImageName={{.IMAGE_NAME}}"
+      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}"
+
+  build_image:amd64:
+    desc: Build and publish the AMD64 OCI image
+    cmds:
+      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64"
+      - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64
+
+  build_image:arm64:
+    desc: Build and publish the ARM64 OCI image
+    cmds:
+      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64"
+      - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64
+
+  build_image_multiarch:
+    desc: Build and publish the multi-arch OCI image (requires amd64 and arm64 images to be published first)
+    cmds:
+      # Keep these builds sequential because both Maven invocations write to the
+      # same target directory and Spring Boot repackages the same JAR.
+      - task: build_image:amd64
+      - task: build_image:arm64
+      - docker manifest create {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}
+        --amend {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64
+        --amend {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64
+      - docker manifest push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}
 
   start:
     desc: Start the application

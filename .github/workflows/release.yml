@@ -26,6 +26,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
@@ -39,21 +42,27 @@ jobs:
       - name: Build with Maven
         run: ./mvnw -ntp verify
 
+      - name: Get Maven Project Version
+        id: project
+        run: echo "version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Get Maven Project Version
-        id: project
-        run: echo "version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
 
-      - name: Build and Publish Docker Image
-        env:
-          MAVEN_PROJECT_VERSION: ${{ steps.project.outputs.version }}
-        run: |
-          ./mvnw spring-boot:build-image -DskipTests -DdockerImageName="$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION"
-          docker tag "$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION" "$DOCKER_IMAGE_NAME:latest"
-          docker push "$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION"
-          docker push "$DOCKER_IMAGE_NAME:latest"
+#      - name: Build and Publish Docker Image
+#        env:
+#          MAVEN_PROJECT_VERSION: ${{ steps.project.outputs.version }}
+#        run: |
+#          ./mvnw spring-boot:build-image -DskipTests -DdockerImageName="$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION"
+#          docker tag "$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION" "$DOCKER_IMAGE_NAME:latest"
+#          docker push "$DOCKER_IMAGE_NAME:$MAVEN_PROJECT_VERSION"
+#          docker push "$DOCKER_IMAGE_NAME:latest"
+
+      - name: Build and publish multi-arch OCI image
+        run: task build_image_multiarch
