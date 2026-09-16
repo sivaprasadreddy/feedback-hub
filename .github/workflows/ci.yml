@@ -41,4 +41,4 @@ jobs:
         name: Sonar Scan
         run: |
           cd feedbackhub
-          mvn initialize sonar:sonar -Dsonar.token=${{ env.SONAR_TOKEN }} -am
+          mvn initialize sonar:sonar -Dsonar.token=${{ env.SONAR_TOKEN }}
