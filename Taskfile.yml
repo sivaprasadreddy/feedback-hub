@@ -29,18 +29,18 @@ tasks:
   build_image:
     desc: Build Docker Image using Buildpacks
     cmds:
-      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}"
+      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}"
 
   build_image:amd64:
     desc: Build and publish the AMD64 OCI image
     cmds:
-      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64"
+      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64"
       - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64
 
   build_image:arm64:
     desc: Build and publish the ARM64 OCI image
     cmds:
-      - "{{.MVNW}} package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64"
+      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64"
       - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64
 
   build_image_multiarch:
