@@ -3,6 +3,7 @@ package dev.sivalabs.feedbackhub.messages;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
+import dev.sivalabs.feedbackhub.ApplicationProperties;
 import dev.sivalabs.feedbackhub.BaseIT;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,9 @@ class ModerateReplyTests extends BaseIT {
 
     @Autowired
     ReplyRepository replyRepository;
+
+    @Autowired
+    private ApplicationProperties properties;
 
     @Test
     void adminCanDeleteAnotherUsersReplyWithAuditAndAssociationsPreserved() {
@@ -125,7 +129,7 @@ class ModerateReplyTests extends BaseIT {
         message.setContent("Message with paginated replies");
         message.setCreatorUserId(2L);
         messageRepository.save(message);
-        for (int index = 0; index < MessageService.ADMIN_PAGE_SIZE + 1; index++) {
+        for (int index = 0; index < properties.adminPageSize() + 1; index++) {
             var reply = new ReplyEntity();
             reply.setMessage(message);
             reply.setContent("Paginated admin reply " + index);

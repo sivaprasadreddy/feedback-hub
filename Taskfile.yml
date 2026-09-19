@@ -1,14 +1,14 @@
 version: '3'
 
 vars:
-  GOOS: "{{default OS .GOOS}}"
-  MVNW: '{{if eq .GOOS "windows"}}mvnw.cmd{{else}}./mvnw{{end}}'
-  SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
+  K8S_CLUSTER_NAME: 'sivalabs-k8s'
+  DC_FILE: "docker/compose.yml"
   REGISTRY: docker.io
   IMAGE_NAME: 'sivaprasadreddy/feedbackhub'
-  VERSION: '{{.VERSION | default "latest"}}'
-  CLUSTER_NAME: 'sivalabs-k8s'
-  DC_FILE: "docker/compose.yml"
+  DOCKER_IMAGE_NAME: '{{.REGISTRY}}/{{.IMAGE_NAME}}'
+  VERSION:
+    sh: './mvnw -pl feedbackhub help:evaluate -Dexpression=project.version -q -DforceStdout'
+
 
 tasks:
   default:
@@ -18,30 +18,35 @@ tasks:
   format:
     desc: Formats code
     cmds:
-      - "{{.MVNW}} spotless:apply"
+      - "./mvnw spotless:apply"
 
   test:
-    desc: Run all the tests
+    desc: Format code and run all tests
     deps: [ format ]
     cmds:
-      - "{{.MVNW}} clean verify"
+      - "./mvnw clean test -Dsurefire.skipAfterFailureCount=1"
+
+  verify:
+    desc: Run verification checks
+    cmds:
+      - "./mvnw -ntp verify"
 
   build_image:
     desc: Build Docker Image using Buildpacks
     cmds:
-      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}"
+      - "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.DOCKER_IMAGE_NAME}}:{{.VERSION}}"
 
   build_image:amd64:
     desc: Build and publish the AMD64 OCI image
     cmds:
-      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64"
-      - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64
+      - "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64"
+      - docker push {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-amd64
 
   build_image:arm64:
     desc: Build and publish the ARM64 OCI image
     cmds:
-      - "{{.MVNW}} -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64"
-      - docker push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64
+      - "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64"
+      - docker push {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-arm64
 
   build_image_multiarch:
     desc: Build and publish the multi-arch OCI image (requires amd64 and arm64 images to be published first)
@@ -50,10 +55,10 @@ tasks:
       # same target directory and Spring Boot repackages the same JAR.
       - task: build_image:amd64
       - task: build_image:arm64
-      - docker manifest create {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}
-        --amend {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-amd64
-        --amend {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}-arm64
-      - docker manifest push {{.REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}
+      - docker manifest create {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}
+        --amend {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-amd64
+        --amend {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}-arm64
+      - docker manifest push {{.DOCKER_IMAGE_NAME}}:{{.VERSION}}
 
   start:
     desc: Start the application
@@ -87,7 +92,7 @@ tasks:
   k8s_deploy:
     desc: Deploy application on Kind cluster
     cmds:
-      - kind load docker-image {{.IMAGE_NAME}} --name {{.CLUSTER_NAME}}
+      - kind load docker-image {{.DOCKER_IMAGE_NAME}} --name {{.K8S_CLUSTER_NAME}}
       - kubectl apply -f k8s/manifests/
 
   k8s_undeploy:
@@ -100,4 +105,4 @@ tasks:
     vars:
       DURATION: "{{default 5 .DURATION}}"
     cmds:
-      - "{{.SLEEP_CMD}} {{.DURATION}}"
+      - "sleep {{.DURATION}}"

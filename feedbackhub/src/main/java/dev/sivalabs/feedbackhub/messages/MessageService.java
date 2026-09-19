@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.messages;
 
+import dev.sivalabs.feedbackhub.ApplicationProperties;
 import dev.sivalabs.feedbackhub.shared.PagedResult;
 import dev.sivalabs.feedbackhub.shared.ResourceNotFoundException;
 import dev.sivalabs.feedbackhub.users.UsersAPI;
@@ -20,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class MessageService {
-    static final int FEED_PAGE_SIZE = 10;
-    static final int ADMIN_PAGE_SIZE = 20;
     private static final int MAX_TOPICS = 3;
     private static final Instant EARLIEST_ANALYSIS_DATE = Instant.parse("0001-01-01T00:00:00Z");
     private static final Instant LATEST_ANALYSIS_DATE = Instant.parse("9999-12-31T23:59:59Z");
@@ -34,6 +33,7 @@ class MessageService {
     private final UsersAPI usersAPI;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageAnalyzer messageAnalyzer;
+    private final ApplicationProperties properties;
 
     MessageService(
             MessageRepository messageRepository,
@@ -42,7 +42,8 @@ class MessageService {
             ReplyVoteRepository replyVoteRepository,
             UsersAPI usersAPI,
             ApplicationEventPublisher eventPublisher,
-            MessageAnalyzer messageAnalyzer) {
+            MessageAnalyzer messageAnalyzer,
+            ApplicationProperties properties) {
         this.messageRepository = messageRepository;
         this.replyRepository = replyRepository;
         this.messageVoteRepository = messageVoteRepository;
@@ -50,6 +51,7 @@ class MessageService {
         this.usersAPI = usersAPI;
         this.eventPublisher = eventPublisher;
         this.messageAnalyzer = messageAnalyzer;
+        this.properties = properties;
     }
 
     @Transactional
@@ -191,11 +193,11 @@ class MessageService {
     }
 
     private PageRequest feedPageRequest(int pageNo) {
-        return PageRequest.of(pageNo - 1, FEED_PAGE_SIZE);
+        return PageRequest.of(pageNo - 1, properties.feedPageSize());
     }
 
     private PageRequest adminPageRequest(int pageNo) {
-        return PageRequest.of(pageNo - 1, ADMIN_PAGE_SIZE);
+        return PageRequest.of(pageNo - 1, properties.adminPageSize());
     }
 
     private MessageDto toMessageDto(MessageEntity message, Long currentUserId) {

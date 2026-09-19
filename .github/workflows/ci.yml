@@ -24,11 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
       - name: Set up JDK
         uses: actions/setup-java@v6
         with:
-          java-version: 25
-          distribution: 'temurin'
+          java-version-file: .sdkmanrc
           cache: 'maven'
 
       - name: Make Maven wrapper executable

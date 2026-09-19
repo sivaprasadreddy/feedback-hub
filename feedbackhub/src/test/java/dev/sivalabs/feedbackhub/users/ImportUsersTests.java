@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import dev.sivalabs.feedbackhub.BaseIT;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,7 +66,7 @@ class ImportUsersTests extends BaseIT {
                 .bodyText()
                 .contains("Email address must be valid", "Role must be ADMIN or USER", "No users were imported");
         assertThat(result.getMvcResult().getModelAndView().getModel().get("errors"))
-                .asList()
+                .asInstanceOf(InstanceOfAssertFactories.LIST)
                 .extracting("rowNumber")
                 .containsExactly(3, 4);
         assertThat(userRepository.findByEmailIgnoreCase(uniqueEmail)).isEmpty();

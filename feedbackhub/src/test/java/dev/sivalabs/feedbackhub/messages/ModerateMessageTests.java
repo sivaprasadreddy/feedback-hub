@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
+import dev.sivalabs.feedbackhub.ApplicationProperties;
 import dev.sivalabs.feedbackhub.BaseIT;
 import java.util.Set;
 import java.util.UUID;
@@ -26,6 +27,9 @@ class ModerateMessageTests extends BaseIT {
 
     @MockitoBean
     MessageAnalyzer messageAnalyzer;
+
+    @Autowired
+    private ApplicationProperties properties;
 
     @Test
     void adminCanDeleteAnotherUsersMessageWithAuditAndAssociationsPreserved() {
@@ -169,7 +173,7 @@ class ModerateMessageTests extends BaseIT {
 
     @Test
     void adminMessageListIsPaginated() {
-        for (int index = 0; index < MessageService.ADMIN_PAGE_SIZE + 1; index++) {
+        for (int index = 0; index < properties.adminPageSize() + 1; index++) {
             var message = new MessageEntity();
             message.setContent("Paginated admin message " + index);
             message.setCreatorUserId(2L);
