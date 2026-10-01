@@ -1,5 +1,6 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
+import dev.sivalabs.feedbackhub.users.domain.models.SecurityUser;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,16 +9,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 class SecurityUserDetailsService implements UserDetailsService {
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    SecurityUserDetailsService(UserService userService) {
-        this.userService = userService;
+    SecurityUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public @NonNull UserDetails loadUserByUsername(@NonNull String userName) {
-        return userService
-                .findByEmail(userName)
+        return userRepository
+                .findByEmailIgnoreCase(userName)
                 .map(this::toSecurityUser)
                 .orElseThrow(() -> new UsernameNotFoundException("Email " + userName + " not found"));
     }

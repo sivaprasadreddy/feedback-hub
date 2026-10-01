@@ -1,5 +1,9 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
+import dev.sivalabs.feedbackhub.users.domain.exceptions.DuplicateEmailException;
+import dev.sivalabs.feedbackhub.users.domain.exceptions.InvalidCurrentPasswordException;
+import dev.sivalabs.feedbackhub.users.domain.exceptions.UserNotFoundException;
+import dev.sivalabs.feedbackhub.users.domain.models.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -13,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-class UserService {
-    static final String INITIAL_PASSWORD = "secret123";
+public class UserService {
+    public static final String INITIAL_PASSWORD = "secret123";
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
 
     private final UserRepository userRepository;
@@ -26,8 +30,8 @@ class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserEntity> findByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email);
+    public Optional<UserDto> findByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email).map(this::toUserDto);
     }
 
     @Transactional(readOnly = true)

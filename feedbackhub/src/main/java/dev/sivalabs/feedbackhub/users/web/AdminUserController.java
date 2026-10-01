@@ -1,5 +1,9 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.web;
 
+import dev.sivalabs.feedbackhub.users.*;
+import dev.sivalabs.feedbackhub.users.domain.UserService;
+import dev.sivalabs.feedbackhub.users.domain.exceptions.DuplicateEmailException;
+import dev.sivalabs.feedbackhub.users.domain.models.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -1,6 +1,7 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
 import dev.sivalabs.feedbackhub.shared.BaseEntity;
+import dev.sivalabs.feedbackhub.users.domain.models.Role;
 import jakarta.persistence.*;
 
 @Entity

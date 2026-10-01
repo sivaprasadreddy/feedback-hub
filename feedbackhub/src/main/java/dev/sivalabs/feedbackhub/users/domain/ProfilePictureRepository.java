@@ -1,4 +1,4 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

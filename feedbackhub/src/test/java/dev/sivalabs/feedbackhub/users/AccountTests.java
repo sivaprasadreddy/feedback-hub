@@ -5,10 +5,13 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.users.domain.AccountService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class AccountTests extends BaseIT {
     @Autowired
-    UserRepository userRepository;
+    JdbcClient jdbcClient;
+
+    @Autowired
+    EntityManager entityManager;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -107,10 +113,13 @@ class AccountTests extends BaseIT {
                         .exchange())
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/account");
-        assertThat(passwordEncoder.matches(
-                        "new-secret-123",
-                        userRepository.findById(2L).orElseThrow().getPassword()))
-                .isTrue();
+        entityManager.flush();
+        var password = jdbcClient
+                .sql("select password from users where id = ?")
+                .param(2L)
+                .query(String.class)
+                .single();
+        assertThat(passwordEncoder.matches("new-secret-123", password)).isTrue();
     }
 
     @Test

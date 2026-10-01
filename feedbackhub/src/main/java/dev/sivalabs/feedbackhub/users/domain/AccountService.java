@@ -1,13 +1,16 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
 import dev.sivalabs.feedbackhub.shared.ResourceNotFoundException;
+import dev.sivalabs.feedbackhub.users.domain.models.AccountDetails;
+import dev.sivalabs.feedbackhub.users.domain.models.ChangePasswordCmd;
+import dev.sivalabs.feedbackhub.users.domain.models.ProfilePictureDto;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-class AccountService {
-    static final long MAX_PROFILE_PICTURE_SIZE = 1024 * 1024;
+public class AccountService {
+    public static final long MAX_PROFILE_PICTURE_SIZE = 1024 * 1024;
     private static final Set<String> SUPPORTED_IMAGE_TYPES =
             Set.of("image/jpeg", "image/png", "image/gif", "image/webp");
 
@@ -43,10 +46,15 @@ class AccountService {
     }
 
     @Transactional(readOnly = true)
-    public ProfilePictureEntity getProfilePicture(Long userId) {
+    public ProfilePictureDto getProfilePicture(Long userId) {
         return profilePictureRepository
                 .findById(userId)
+                .map(this::toProfilePictureDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile picture not found"));
+    }
+
+    private ProfilePictureDto toProfilePictureDto(ProfilePictureEntity entity) {
+        return new ProfilePictureDto(entity.getUserId(), entity.getContentType(), entity.getContent());
     }
 
     @Transactional

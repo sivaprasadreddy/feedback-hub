@@ -1,6 +1,6 @@
 package dev.sivalabs.feedbackhub.config;
 
-import dev.sivalabs.feedbackhub.users.SecurityUser;
+import dev.sivalabs.feedbackhub.users.domain.models.SecurityUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

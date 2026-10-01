@@ -1,4 +1,4 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain.models;
 
 public enum Role {
     ROLE_ADMIN("ADMIN"),

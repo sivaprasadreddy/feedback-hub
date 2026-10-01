@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.users.domain.UserService;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -14,8 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 
 class ImportUsersTests extends BaseIT {
+
     @Autowired
-    UserRepository userRepository;
+    private UserService userService;
 
     @Test
     void adminCanOpenImportUsersPage() {
@@ -69,7 +71,7 @@ class ImportUsersTests extends BaseIT {
                 .asInstanceOf(InstanceOfAssertFactories.LIST)
                 .extracting("rowNumber")
                 .containsExactly(3, 4);
-        assertThat(userRepository.findByEmailIgnoreCase(uniqueEmail)).isEmpty();
+        assertThat(userService.findByEmail(uniqueEmail)).isEmpty();
     }
 
     @Test

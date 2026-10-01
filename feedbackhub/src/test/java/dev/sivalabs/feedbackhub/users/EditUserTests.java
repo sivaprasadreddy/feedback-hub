@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.users.domain.UserService;
+import dev.sivalabs.feedbackhub.users.domain.models.Role;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class EditUserTests extends BaseIT {
     @Autowired
-    UserRepository userRepository;
+    private UserService userService;
 
     @Test
     void adminCanEditRoleAndStatusTogether() {
@@ -26,9 +28,9 @@ class EditUserTests extends BaseIT {
         var result = editUser(adminSession, userId, "ROLE_ADMIN", false);
 
         assertThat(result).hasStatus(HttpStatus.FOUND).hasRedirectedUrl("/admin/users");
-        var editedUser = userRepository.findById(userId).orElseThrow();
-        assertThat(editedUser.getRole()).isEqualTo(Role.ROLE_ADMIN);
-        assertThat(editedUser.isActive()).isFalse();
+        var editedUser = userService.findById(userId).orElseThrow();
+        assertThat(editedUser.role()).isEqualTo(Role.ROLE_ADMIN);
+        assertThat(editedUser.active()).isFalse();
         assertThat(login(email, UserService.INITIAL_PASSWORD))
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/login?error");
@@ -80,9 +82,9 @@ class EditUserTests extends BaseIT {
         var result = editUser(adminSession, userId, "SUPERUSER", false);
 
         assertThat(result).hasStatus(HttpStatus.FOUND).hasRedirectedUrl("/admin/users");
-        var unchangedUser = userRepository.findById(userId).orElseThrow();
-        assertThat(unchangedUser.getRole()).isEqualTo(Role.ROLE_USER);
-        assertThat(unchangedUser.isActive()).isTrue();
+        var unchangedUser = userService.findById(userId).orElseThrow();
+        assertThat(unchangedUser.role()).isEqualTo(Role.ROLE_USER);
+        assertThat(unchangedUser.active()).isTrue();
     }
 
     @Test
@@ -134,6 +136,6 @@ class EditUserTests extends BaseIT {
     }
 
     private Long findUserId(String email) {
-        return userRepository.findByEmailIgnoreCase(email).orElseThrow().getId();
+        return userService.findByEmail(email).orElseThrow().id();
     }
 }

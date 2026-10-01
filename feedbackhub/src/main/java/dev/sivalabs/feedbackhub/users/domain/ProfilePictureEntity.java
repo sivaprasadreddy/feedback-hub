@@ -1,4 +1,4 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,11 +26,15 @@ class ProfilePictureEntity {
         this.content = content;
     }
 
-    String getContentType() {
+    public Long getUserId() {
+        return userId;
+    }
+
+    public String getContentType() {
         return contentType;
     }
 
-    byte[] getContent() {
+    public byte[] getContent() {
         return content;
     }
 }

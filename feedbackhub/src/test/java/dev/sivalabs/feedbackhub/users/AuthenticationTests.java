@@ -3,6 +3,8 @@ package dev.sivalabs.feedbackhub.users;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.users.domain.models.Role;
+import dev.sivalabs.feedbackhub.users.domain.models.SecurityUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContext;

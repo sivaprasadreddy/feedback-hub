@@ -3,7 +3,7 @@ package dev.sivalabs.feedbackhub.messages;
 import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 import dev.sivalabs.feedbackhub.users.AuthUtils;
-import dev.sivalabs.feedbackhub.users.SecurityUser;
+import dev.sivalabs.feedbackhub.users.domain.models.SecurityUser;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

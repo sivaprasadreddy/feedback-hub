@@ -1,5 +1,9 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.web;
 
+import dev.sivalabs.feedbackhub.users.AuthUtils;
+import dev.sivalabs.feedbackhub.users.domain.AccountService;
+import dev.sivalabs.feedbackhub.users.domain.exceptions.InvalidCurrentPasswordException;
+import dev.sivalabs.feedbackhub.users.domain.models.ChangePasswordCmd;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -50,10 +54,10 @@ class AccountController {
     ResponseEntity<byte[]> profilePicture() {
         var picture = accountService.getProfilePicture(AuthUtils.getCurrentUserIdOrThrow());
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(picture.getContentType()))
+                .contentType(MediaType.parseMediaType(picture.contentType()))
                 .cacheControl(CacheControl.noStore())
                 .header("X-Content-Type-Options", "nosniff")
-                .body(picture.getContent());
+                .body(picture.content());
     }
 
     @PostMapping("/account/password")

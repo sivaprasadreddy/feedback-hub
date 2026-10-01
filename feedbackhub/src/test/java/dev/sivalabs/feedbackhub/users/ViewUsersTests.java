@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.users.domain.UserService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 class ViewUsersTests extends BaseIT {
     @Autowired
-    UserRepository userRepository;
+    private UserService userService;
 
     @Test
     void adminCanViewUserDetailsAndFilterByRoleAndStatus() {
@@ -23,10 +24,8 @@ class ViewUsersTests extends BaseIT {
         var inactiveUserEmail = "inactive-user+" + suffix + "@acme.com";
         createUser(adminSession, "Active Admin Candidate", activeAdminEmail, "ROLE_ADMIN");
         createUser(adminSession, "Inactive User Candidate", inactiveUserEmail, "ROLE_USER");
-        var inactiveUserId = userRepository
-                .findByEmailIgnoreCase(inactiveUserEmail)
-                .orElseThrow()
-                .getId();
+        var inactiveUserId =
+                userService.findByEmail(inactiveUserEmail).orElseThrow().id();
         editUser(adminSession, inactiveUserId, "ROLE_USER", false);
 
         assertThat(mvc.get().uri("/admin/users").session(adminSession).exchange())

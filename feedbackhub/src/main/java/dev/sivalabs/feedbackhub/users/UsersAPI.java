@@ -1,5 +1,7 @@
 package dev.sivalabs.feedbackhub.users;
 
+import dev.sivalabs.feedbackhub.users.domain.UserService;
+import dev.sivalabs.feedbackhub.users.domain.models.UserDto;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;

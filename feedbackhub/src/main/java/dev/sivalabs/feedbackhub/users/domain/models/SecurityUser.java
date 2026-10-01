@@ -1,4 +1,4 @@
-package dev.sivalabs.feedbackhub.users;
+package dev.sivalabs.feedbackhub.users.domain.models;
 
 import java.util.Collection;
 import java.util.Set;
