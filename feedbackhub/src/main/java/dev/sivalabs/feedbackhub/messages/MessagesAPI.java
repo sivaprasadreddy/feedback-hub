@@ -1,5 +1,7 @@
 package dev.sivalabs.feedbackhub.messages;
 
+import dev.sivalabs.feedbackhub.messages.domain.MessageService;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatistics;
 import org.springframework.stereotype.Component;
 
 @Component

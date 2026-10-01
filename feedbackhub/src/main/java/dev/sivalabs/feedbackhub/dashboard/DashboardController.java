@@ -1,7 +1,7 @@
 package dev.sivalabs.feedbackhub.dashboard;
 
-import dev.sivalabs.feedbackhub.messages.MessageStatistics;
 import dev.sivalabs.feedbackhub.messages.MessagesAPI;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatistics;
 import dev.sivalabs.feedbackhub.users.UsersAPI;
 import dev.sivalabs.feedbackhub.users.domain.models.SecurityUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

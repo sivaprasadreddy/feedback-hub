@@ -1,0 +1,80 @@
+package dev.sivalabs.feedbackhub.messages.web;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
+import dev.sivalabs.feedbackhub.BaseIT;
+import dev.sivalabs.feedbackhub.messages.domain.MessageAnalyzer;
+import dev.sivalabs.feedbackhub.messages.domain.MessageService;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageAnalysis;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageCreatedEvent;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageSentiment;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageTopic;
+import java.time.Duration;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
+
+@RecordApplicationEvents
+@TestPropertySource(properties = "feedbackhub.message-analysis.enabled=true")
+class MessageAnalysisTests extends BaseIT {
+    @Autowired
+    MessageService messageService;
+
+    @Autowired
+    ApplicationEvents applicationEvents;
+
+    @MockitoBean
+    MessageAnalyzer messageAnalyzer;
+
+    @Test
+    void postedMessageIsAnalyzedFromEventAndAnalysisIsDisplayed() {
+        var userSession = session(login("siva@gmail.com", "secret"));
+        var content = "I am delighted with our new learning budget " + UUID.randomUUID();
+        when(messageAnalyzer.analyze(content))
+                .thenReturn(new MessageAnalysis(
+                        Set.of(MessageTopic.BENEFITS_AND_PERKS, MessageTopic.LEARNING_AND_DEVELOPMENT),
+                        MessageSentiment.HAPPY));
+
+        assertThat(mvc.post()
+                        .uri("/messages")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("content", content)
+                        .param("postingIdentity", "IDENTIFIED")
+                        .session(userSession)
+                        .with(csrf())
+                        .exchange())
+                .hasStatus(HttpStatus.FOUND)
+                .hasRedirectedUrl("/");
+
+        var createdEvent = applicationEvents.stream(MessageCreatedEvent.class)
+                .filter(event -> event.content().equals(content))
+                .findFirst()
+                .orElseThrow();
+
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            var message = messageService.findMessage(createdEvent.messageId(), 2L);
+            assertThat(message.sentiment()).isEqualTo(MessageSentiment.HAPPY);
+            assertThat(message.topics()).containsExactlyInAnyOrder("Benefits & Perks", "Learning & Development");
+        });
+
+        assertThat(mvc.get().uri("/").session(userSession).exchange())
+                .bodyText()
+                .contains(content, "Happy", "Benefits &amp; Perks", "Learning &amp; Development");
+        assertThat(mvc.get()
+                        .uri("/messages/{id}", createdEvent.messageId())
+                        .session(userSession)
+                        .exchange())
+                .bodyText()
+                .contains(content, "Happy", "Benefits &amp; Perks", "Learning &amp; Development");
+    }
+}
