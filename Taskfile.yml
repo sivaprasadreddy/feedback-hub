@@ -24,7 +24,7 @@ tasks:
     desc: Format code and run all tests
     deps: [ format ]
     cmds:
-      - "./mvnw clean test -Dsurefire.skipAfterFailureCount=1"
+      - "./mvnw clean verify -Dsurefire.skipAfterFailureCount=1"
 
   verify:
     desc: Run verification checks
