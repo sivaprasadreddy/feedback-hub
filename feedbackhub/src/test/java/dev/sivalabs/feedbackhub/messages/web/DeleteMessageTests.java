@@ -4,80 +4,62 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatus;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class DeleteMessageTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
+    private static final long OWNER_MESSAGE_ID = 2011L;
+    private static final long ADMIN_MESSAGE_ID = 2012L;
+    private static final long DELETED_MESSAGE_ID = 2013L;
+
+    private static final String OWNER_CONTENT = "Delete seed owner content 2011";
 
     @Test
     void ownerCanSoftDeleteActiveMessageAndOriginalRecordIsRetained() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = "Feedback to delete " + UUID.randomUUID();
-        createMessage(userSession, content, "IDENTIFIED");
-        var message = findMessage(content);
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", OWNER_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .contains("Delete message");
-        assertThat(deleteMessage(userSession, message.getId()))
+        assertThat(deleteMessage(userSession, OWNER_MESSAGE_ID))
                 .hasStatus(HttpStatus.FOUND)
-                .hasRedirectedUrl("/messages/" + message.getId());
+                .hasRedirectedUrl("/messages/" + OWNER_MESSAGE_ID);
 
-        var deleted = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(deleted.getStatus()).isEqualTo(MessageStatus.DELETED);
-        assertThat(deleted.getContent()).isEqualTo(content);
+        assertThat(statusOf(OWNER_MESSAGE_ID)).isEqualTo("DELETED");
+        assertThat(contentOf(OWNER_MESSAGE_ID)).isEqualTo(OWNER_CONTENT);
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", OWNER_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .contains(MessageService.DELETED_CONTENT)
-                .doesNotContain(content, "Delete message");
+                .doesNotContain(OWNER_CONTENT, "Delete message");
         assertThat(mvc.get().uri("/").session(userSession).exchange())
                 .bodyText()
-                .contains(MessageService.DELETED_CONTENT)
-                .doesNotContain(content);
+                .doesNotContain(OWNER_CONTENT);
     }
 
     @Test
     void anotherUserCannotDeleteMessage() {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var content = "Protected anonymous feedback " + UUID.randomUUID();
-        createMessage(ownerSession, content, "ANONYMOUS");
-        var message = findMessage(content);
         var otherUserSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(deleteMessage(otherUserSession, message.getId()))
+        assertThat(deleteMessage(otherUserSession, ADMIN_MESSAGE_ID))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
-        assertThat(messageRepository.findById(message.getId()).orElseThrow().getStatus())
-                .isEqualTo(MessageStatus.ACTIVE);
+        assertThat(statusOf(ADMIN_MESSAGE_ID)).isEqualTo("ACTIVE");
     }
 
     @Test
     void deletedMessageCannotBeDeletedAgain() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = "Already deleted feedback " + UUID.randomUUID();
-        createMessage(userSession, content, "IDENTIFIED");
-        var message = findMessage(content);
-        message.setStatus(MessageStatus.DELETED);
-        messageRepository.saveAndFlush(message);
 
-        assertThat(deleteMessage(userSession, message.getId()))
+        assertThat(deleteMessage(userSession, DELETED_MESSAGE_ID))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
     }
@@ -87,30 +69,27 @@ class DeleteMessageTests extends BaseIT {
         assertThat(mvc.post().uri("/messages/1/delete").with(csrf()).exchange()).hasStatus(HttpStatus.FOUND);
     }
 
+    private String statusOf(long messageId) {
+        return jdbcClient
+                .sql("select status from messages where id = ?")
+                .param(messageId)
+                .query(String.class)
+                .single();
+    }
+
+    private String contentOf(long messageId) {
+        return jdbcClient
+                .sql("select content from messages where id = ?")
+                .param(messageId)
+                .query(String.class)
+                .single();
+    }
+
     private MvcTestResult deleteMessage(MockHttpSession session, Long messageId) {
         return mvc.post()
                 .uri("/messages/{id}/delete", messageId)
                 .session(session)
                 .with(csrf())
                 .exchange();
-    }
-
-    private MessageEntity findMessage(String content) {
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private void createMessage(MockHttpSession session, String content, String postingIdentity) {
-        assertThat(mvc.post()
-                        .uri("/messages")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", content)
-                        .param("postingIdentity", postingIdentity)
-                        .session(session)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
     }
 }

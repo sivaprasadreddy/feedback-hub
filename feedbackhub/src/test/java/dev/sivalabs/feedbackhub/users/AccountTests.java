@@ -6,23 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import dev.sivalabs.feedbackhub.BaseIT;
 import dev.sivalabs.feedbackhub.users.domain.AccountService;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 class AccountTests extends BaseIT {
-    @Autowired
-    JdbcClient jdbcClient;
-
-    @Autowired
-    EntityManager entityManager;
 
     @Autowired
     PasswordEncoder passwordEncoder;

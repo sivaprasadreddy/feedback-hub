@@ -4,7 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
+import dev.sivalabs.feedbackhub.messages.domain.MessageService;
+import dev.sivalabs.feedbackhub.messages.domain.models.MessageDto;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import org.springframework.mock.web.MockHttpSession;
 
 class CreateMessageTests extends BaseIT {
     @Autowired
-    MessageRepository messageRepository;
+    MessageService messageService;
 
     @Test
     void activeUserCanPostAsThemselvesAndMessageAppearsFirstInRecentFeed() throws Exception {
@@ -38,18 +39,24 @@ class CreateMessageTests extends BaseIT {
 
         createMessage(adminSession, content, "ANONYMOUS");
 
-        var stored = messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
-        assertThat(stored.getCreatorUserId()).isEqualTo(1L);
-        assertThat(stored.isAnonymous()).isTrue();
+        var stored = jdbcClient
+                .sql("select created_by_user_id, anonymous from messages where content = ?")
+                .param(content)
+                .query()
+                .singleRow();
+        assertThat(stored).containsEntry("created_by_user_id", 1L).containsEntry("anonymous", true);
 
         var regularUserFeed = mvc.get()
                 .uri("/")
                 .session(session(login("siva@gmail.com", "secret")))
                 .exchange();
-        assertThat(regularUserFeed).bodyText().contains("Anonymous", content).doesNotContain("Admin");
+        assertThat(regularUserFeed).bodyText().contains("Anonymous", content);
+        // other seeded messages legitimately show "Admin", so check the author of this message only
+        assertThat(messageService.findRecentMessages(2L, 1).data())
+                .filteredOn(message -> message.content().equals(content))
+                .singleElement()
+                .extracting(MessageDto::visibleAuthor)
+                .isEqualTo("Anonymous");
     }
 
     @Test

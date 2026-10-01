@@ -4,24 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
-import dev.sivalabs.feedbackhub.ApplicationProperties;
 import dev.sivalabs.feedbackhub.BaseIT;
 import dev.sivalabs.feedbackhub.messages.domain.MessageAnalyzer;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
 import dev.sivalabs.feedbackhub.messages.domain.models.MessageAnalysis;
 import dev.sivalabs.feedbackhub.messages.domain.models.MessageSentiment;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatus;
 import dev.sivalabs.feedbackhub.messages.domain.models.MessageTopic;
-import dev.sivalabs.feedbackhub.messages.domain.models.ReplyStatus;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -29,115 +21,117 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 class ModerateMessageTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    ReplyRepository replyRepository;
+    private static final long DELETE_ID = 5001L;
+    private static final String DELETE_CONTENT = "Moderation admin-deleted message";
+    private static final long ANONYMOUS_ID = 5002L;
+    private static final String ANONYMOUS_CONTENT = "Moderation anonymous admin deletion";
+    private static final long PROTECTED_ID = 5003L;
+    private static final long REVIEW_ID = 5004L;
+    private static final String REVIEW_CONTENT = "Moderation review target";
+    private static final long ANALYZE_ID = 5005L;
+    private static final String ANALYZE_CONTENT = "Moderation analyze from admin";
+    private static final long FAILED_ANALYSIS_ID = 5006L;
+    private static final String FAILED_ANALYSIS_CONTENT = "Moderation failed admin analysis";
 
     @MockitoBean
     MessageAnalyzer messageAnalyzer;
 
-    @Autowired
-    private ApplicationProperties properties;
-
     @Test
     void adminCanDeleteAnotherUsersMessageWithAuditAndAssociationsPreserved() {
-        var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Admin-deleted message " + UUID.randomUUID(), "IDENTIFIED");
-        var message = findMessage(content);
-        createReply(userSession, message.getId(), "Preserved reply " + UUID.randomUUID());
         var adminSession = session(login("admin@gmail.com", "secret"));
 
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/delete", message.getId())
+                        .uri("/admin/messages/{id}/delete", DELETE_ID)
                         .session(adminSession)
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/admin/messages");
 
-        var deleted = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(deleted.getStatus()).isEqualTo(MessageStatus.DELETED);
-        assertThat(deleted.getDeletedByAdminUserId()).isEqualTo(1L);
-        assertThat(deleted.getDeletedByAdminAt()).isNotNull();
-        assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
+        entityManager.flush();
+        assertThat(status(DELETE_ID)).isEqualTo("DELETED");
+        assertThat(jdbcClient
+                        .sql("select deleted_by_admin_user_id from messages where id = :id")
+                        .param("id", DELETE_ID)
+                        .query(Long.class)
+                        .single())
+                .isEqualTo(1L);
+        assertThat(jdbcClient
+                        .sql("select deleted_by_admin_at is not null from messages where id = :id")
+                        .param("id", DELETE_ID)
+                        .query(Boolean.class)
+                        .single())
+                .isTrue();
+        assertThat(jdbcClient
+                        .sql("select count(*) from replies where message_id = :id and status = 'ACTIVE'")
+                        .param("id", DELETE_ID)
+                        .query(Long.class)
+                        .single())
                 .isOne();
     }
 
     @Test
     void adminDeletedAnonymousMessageShowsPlaceholderWithoutExposingCreator() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Anonymous admin deletion " + UUID.randomUUID(), "ANONYMOUS");
-        var message = findMessage(content);
         var adminSession = session(login("admin@gmail.com", "secret"));
-        deleteAsAdmin(adminSession, message.getId());
+        deleteAsAdmin(adminSession, ANONYMOUS_ID);
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", ANONYMOUS_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .contains("Anonymous", MessageService.DELETED_CONTENT)
-                .doesNotContain(content, "siva@gmail.com");
+                .doesNotContain(ANONYMOUS_CONTENT, "siva@gmail.com");
     }
 
     @Test
     void regularAndUnauthenticatedUsersCannotAdministrativelyDelete() {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var content = createMessage(ownerSession, "Protected from user deletion " + UUID.randomUUID(), "IDENTIFIED");
-        var message = findMessage(content);
         var userSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(deleteAsAdmin(userSession, message.getId())).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(deleteAsAdmin(userSession, PROTECTED_ID)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/delete", message.getId())
+                        .uri("/admin/messages/{id}/delete", PROTECTED_ID)
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND);
-        assertThat(messageRepository.findById(message.getId()).orElseThrow().getStatus())
-                .isEqualTo(MessageStatus.ACTIVE);
+        entityManager.flush();
+        assertThat(status(PROTECTED_ID)).isEqualTo("ACTIVE");
     }
 
     @Test
     void adminCanReviewMessagesAndCannotDeleteDeletedMessageAgain() {
-        var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Review target " + UUID.randomUUID(), "IDENTIFIED");
-        var message = findMessage(content);
         var adminSession = session(login("admin@gmail.com", "secret"));
 
         assertThat(mvc.get().uri("/admin/messages").session(adminSession).exchange())
                 .hasStatusOk()
                 .hasViewName("admin/messages")
                 .bodyText()
-                .contains(content, "Delete message");
-        deleteAsAdmin(adminSession, message.getId());
-        assertThat(deleteAsAdmin(adminSession, message.getId()))
+                .contains(REVIEW_CONTENT, "Delete message");
+        deleteAsAdmin(adminSession, REVIEW_ID);
+        assertThat(deleteAsAdmin(adminSession, REVIEW_ID))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
     }
 
     @Test
     void adminCanAnalyzeUnanalyzedMessageWithHtmx() {
-        var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Analyze from admin " + UUID.randomUUID(), "IDENTIFIED");
-        var message = findMessage(content);
         var adminSession = session(login("admin@gmail.com", "secret"));
-        when(messageAnalyzer.analyze(content))
+        when(messageAnalyzer.analyze(ANALYZE_CONTENT))
                 .thenReturn(new MessageAnalysis(
                         Set.of(MessageTopic.WORK_CULTURE, MessageTopic.PEOPLE_AND_TEAM), MessageSentiment.HAPPY));
 
         assertThat(mvc.get().uri("/admin/messages").session(adminSession).exchange())
                 .bodyText()
                 .contains(
-                        content,
+                        ANALYZE_CONTENT,
                         "Analyze message",
-                        "hx-post=\"/admin/messages/" + message.getId() + "/analyze\"",
+                        "hx-post=\"/admin/messages/" + ANALYZE_ID + "/analyze\"",
                         "hx-target=\"closest .admin-message\"",
                         "hx-swap=\"outerHTML\"");
 
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/analyze", message.getId())
+                        .uri("/admin/messages/{id}/analyze", ANALYZE_ID)
                         .header("HX-Request", "true")
                         .session(adminSession)
                         .with(csrf())
@@ -145,24 +139,26 @@ class ModerateMessageTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("fragments/admin-message :: message(message=${message})")
                 .bodyText()
-                .contains(content, "Happy", "Work Culture", "People &amp; Team")
+                .contains(ANALYZE_CONTENT, "Happy", "Work Culture", "People &amp; Team")
                 .doesNotContain("Analyze message", "<html");
 
-        var analyzed = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(analyzed.getSentiment()).isEqualTo(MessageSentiment.HAPPY);
-        assertThat(analyzed.getTopics()).containsExactlyInAnyOrder("Work Culture", "People & Team");
+        entityManager.flush();
+        assertThat(jdbcClient
+                        .sql("select sentiment from messages where id = :id")
+                        .param("id", ANALYZE_ID)
+                        .query(String.class)
+                        .single())
+                .isEqualTo("HAPPY");
+        assertThat(topics(ANALYZE_ID)).containsExactlyInAnyOrder("Work Culture", "People & Team");
     }
 
     @Test
     void analysisErrorKeepsPreviousMessageDetailsAndShowsRetryOption() {
-        var userSession = session(login("siva@gmail.com", "secret"));
-        var content = createMessage(userSession, "Failed admin analysis " + UUID.randomUUID(), "IDENTIFIED");
-        var message = findMessage(content);
         var adminSession = session(login("admin@gmail.com", "secret"));
-        when(messageAnalyzer.analyze(content)).thenThrow(new IllegalStateException("AI unavailable"));
+        when(messageAnalyzer.analyze(FAILED_ANALYSIS_CONTENT)).thenThrow(new IllegalStateException("AI unavailable"));
 
         assertThat(mvc.post()
-                        .uri("/admin/messages/{id}/analyze", message.getId())
+                        .uri("/admin/messages/{id}/analyze", FAILED_ANALYSIS_ID)
                         .header("HX-Request", "true")
                         .session(adminSession)
                         .with(csrf())
@@ -170,25 +166,24 @@ class ModerateMessageTests extends BaseIT {
                 .hasStatusOk()
                 .bodyText()
                 .contains(
-                        content,
+                        FAILED_ANALYSIS_CONTENT,
                         "Something went wrong while analyzing this message. Please try again.",
                         "Analyze message",
                         "Delete message")
                 .doesNotContain("Internal Server Error", "<html");
 
-        var unchanged = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(unchanged.getSentiment()).isNull();
-        assertThat(unchanged.getTopics()).isEmpty();
+        entityManager.flush();
+        assertThat(jdbcClient
+                        .sql("select sentiment from messages where id = :id")
+                        .param("id", FAILED_ANALYSIS_ID)
+                        .query(String.class)
+                        .optional())
+                .isEmpty();
+        assertThat(topics(FAILED_ANALYSIS_ID)).isEmpty();
     }
 
     @Test
     void adminMessageListIsPaginated() {
-        for (int index = 0; index < properties.adminPageSize() + 1; index++) {
-            var message = new MessageEntity();
-            message.setContent("Paginated admin message " + index);
-            message.setCreatorUserId(2L);
-            messageRepository.save(message);
-        }
         var adminSession = session(login("admin@gmail.com", "secret"));
 
         assertThat(mvc.get().uri("/admin/messages").session(adminSession).exchange())
@@ -203,34 +198,20 @@ class ModerateMessageTests extends BaseIT {
                 .hasStatus(HttpStatus.BAD_REQUEST);
     }
 
-    private String createMessage(MockHttpSession session, String content, String identity) {
-        mvc.post()
-                .uri("/messages")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("content", content)
-                .param("postingIdentity", identity)
-                .session(session)
-                .with(csrf())
-                .exchange();
-        return content;
+    private String status(long messageId) {
+        return jdbcClient
+                .sql("select status from messages where id = :id")
+                .param("id", messageId)
+                .query(String.class)
+                .single();
     }
 
-    private void createReply(MockHttpSession session, Long messageId, String content) {
-        mvc.post()
-                .uri("/messages/{id}/replies", messageId)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("content", content)
-                .param("postingIdentity", "IDENTIFIED")
-                .session(session)
-                .with(csrf())
-                .exchange();
-    }
-
-    private MessageEntity findMessage(String content) {
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
+    private List<String> topics(long messageId) {
+        return jdbcClient
+                .sql("select topic from message_topics where message_id = :id")
+                .param("id", messageId)
+                .query(String.class)
+                .list();
     }
 
     private MvcTestResult deleteAsAdmin(MockHttpSession session, Long messageId) {

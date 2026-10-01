@@ -4,16 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.MessageVoteEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageVoteRepository;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyEntity;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
 import dev.sivalabs.feedbackhub.messages.domain.models.CreateReplyCmd;
 import dev.sivalabs.feedbackhub.messages.domain.models.VoteType;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -23,17 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 class EngagementCountsTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    ReplyRepository replyRepository;
-
-    @Autowired
-    MessageVoteRepository messageVoteRepository;
+    // seeded: message 4004 (zero counts, no replies), reply 4101 on message 4101 (zero counts),
+    // message 4006 with an upvote by siva (vote 4002) whose upvote_count is 0
+    private static final long EMPTY_MESSAGE_ID = 4004L;
+    private static final long REPLY_ID = 4101L;
+    private static final long VOTED_MESSAGE_ID = 4006L;
 
     @Autowired
     MessageService messageService;
@@ -46,71 +35,68 @@ class EngagementCountsTests extends BaseIT {
 
     @Test
     void countersDefaultToZeroAndCannotBecomeNegative() {
-        var message = createMessage(1L);
-        var reply = createReply(message, 2L);
-
-        assertThat(messageRepository.findById(message.getId()).orElseThrow())
-                .extracting(
-                        MessageEntity::getUpvoteCount, MessageEntity::getDownvoteCount, MessageEntity::getReplyCount)
-                .containsExactly(0L, 0L, 0L);
-        assertThat(replyRepository.findById(reply.getId()).orElseThrow())
-                .extracting(ReplyEntity::getUpvoteCount, ReplyEntity::getDownvoteCount)
-                .containsExactly(0L, 0L);
+        assertThat(jdbcClient
+                        .sql("select upvote_count, downvote_count, reply_count from messages where id = :id")
+                        .param("id", EMPTY_MESSAGE_ID)
+                        .query()
+                        .singleRow())
+                .containsEntry("upvote_count", 0L)
+                .containsEntry("downvote_count", 0L)
+                .containsEntry("reply_count", 0L);
+        assertThat(jdbcClient
+                        .sql("select upvote_count, downvote_count from replies where id = :id")
+                        .param("id", REPLY_ID)
+                        .query()
+                        .singleRow())
+                .containsEntry("upvote_count", 0L)
+                .containsEntry("downvote_count", 0L);
 
         var jdbc = new JdbcTemplate(dataSource);
-        assertThatThrownBy(() -> jdbc.update("update messages set upvote_count = -1 where id = ?", message.getId()))
+        assertThatThrownBy(() -> jdbc.update("update messages set upvote_count = -1 where id = ?", EMPTY_MESSAGE_ID))
                 .hasMessageContaining("message_upvote_count_non_negative");
-        assertThatThrownBy(() -> jdbc.update("update replies set downvote_count = -1 where id = ?", reply.getId()))
+        assertThatThrownBy(() -> jdbc.update("update replies set downvote_count = -1 where id = ?", REPLY_ID))
                 .hasMessageContaining("reply_downvote_count_non_negative");
     }
 
     @Test
     void concurrentVotesAndRepliesDoNotLoseCounterUpdates() throws Exception {
-        var message = createMessage(2L);
-
         runConcurrently(
-                () -> messageService.voteOnMessage(message.getId(), 1L, VoteType.UPVOTE),
-                () -> messageService.voteOnMessage(message.getId(), 3L, VoteType.UPVOTE));
+                () -> messageService.voteOnMessage(EMPTY_MESSAGE_ID, 1L, VoteType.UPVOTE),
+                () -> messageService.voteOnMessage(EMPTY_MESSAGE_ID, 3L, VoteType.UPVOTE));
         runConcurrently(
                 () -> messageService.createReply(
-                        new CreateReplyCmd(message.getId(), "First concurrent reply", 1L, false)),
+                        new CreateReplyCmd(EMPTY_MESSAGE_ID, "First concurrent reply", 1L, false)),
                 () -> messageService.createReply(
-                        new CreateReplyCmd(message.getId(), "Second concurrent reply", 3L, false)));
+                        new CreateReplyCmd(EMPTY_MESSAGE_ID, "Second concurrent reply", 3L, false)));
 
-        var updated = messageRepository.findById(message.getId()).orElseThrow();
-        assertThat(updated.getUpvoteCount()).isEqualTo(2);
-        assertThat(updated.getDownvoteCount()).isZero();
-        assertThat(updated.getReplyCount()).isEqualTo(2);
-        assertThat(messageVoteRepository.findAllByMessageIdInAndVoterUserId(List.of(message.getId()), 1L))
-                .hasSize(1);
-        assertThat(messageVoteRepository.findAllByMessageIdInAndVoterUserId(List.of(message.getId()), 3L))
-                .hasSize(1);
-        assertThat(replyRepository.findAllByMessageIdOrderByCreatedAtAsc(message.getId()))
-                .hasSize(2);
+        var counts = jdbcClient
+                .sql("select upvote_count, downvote_count, reply_count from messages where id = :id")
+                .param("id", EMPTY_MESSAGE_ID)
+                .query()
+                .singleRow();
+        assertThat(counts)
+                .containsEntry("upvote_count", 2L)
+                .containsEntry("downvote_count", 0L)
+                .containsEntry("reply_count", 2L);
+        assertThat(messageVoteCount(EMPTY_MESSAGE_ID, 1L)).isEqualTo(1);
+        assertThat(messageVoteCount(EMPTY_MESSAGE_ID, 3L)).isEqualTo(1);
+        assertThat(jdbcClient
+                        .sql("select count(*) from replies where message_id = :id")
+                        .param("id", EMPTY_MESSAGE_ID)
+                        .query(Long.class)
+                        .single())
+                .isEqualTo(2);
     }
 
     @Test
     void voteRemovalRollsBackWhenItsCounterCannotBeUpdated() {
-        var message = createMessage(1L);
-        messageService.voteOnMessage(message.getId(), 2L, VoteType.UPVOTE);
-        var jdbc = new JdbcTemplate(dataSource);
-        new TransactionTemplate(transactionManager)
-                .executeWithoutResult(status -> assertThat(messageRepository.updateCounts(message.getId(), -1, 0, 0))
-                        .isOne());
-        assertThat(jdbc.queryForObject("select upvote_count from messages where id = ?", Long.class, message.getId()))
-                .isZero();
-        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(message.getId(), 2L))
-                .isPresent();
+        assertThat(messageVoteCount(VOTED_MESSAGE_ID, 2L)).isOne();
 
-        assertThatThrownBy(() -> messageService.removeMessageVote(message.getId(), 2L))
+        assertThatThrownBy(() -> messageService.removeMessageVote(VOTED_MESSAGE_ID, 2L))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Failed to update engagement counts");
 
-        assertThat(messageVoteRepository.findByMessageIdAndVoterUserId(message.getId(), 2L))
-                .isPresent()
-                .get()
-                .extracting(MessageVoteEntity::getVoteType)
-                .isEqualTo(VoteType.UPVOTE);
+        assertThat(messageVoteCount(VOTED_MESSAGE_ID, 2L)).isOne();
     }
 
     @Test
@@ -146,19 +132,13 @@ class EngagementCountsTests extends BaseIT {
         }
     }
 
-    private MessageEntity createMessage(Long creatorUserId) {
-        var message = new MessageEntity();
-        message.setContent("Engagement counts " + UUID.randomUUID());
-        message.setCreatorUserId(creatorUserId);
-        return messageRepository.saveAndFlush(message);
-    }
-
-    private ReplyEntity createReply(MessageEntity message, Long creatorUserId) {
-        var reply = new ReplyEntity();
-        reply.setMessage(message);
-        reply.setContent("Engagement count reply " + UUID.randomUUID());
-        reply.setCreatorUserId(creatorUserId);
-        return replyRepository.saveAndFlush(reply);
+    private long messageVoteCount(long messageId, long userId) {
+        return jdbcClient
+                .sql("select count(*) from message_votes where message_id = :messageId and user_id = :userId")
+                .param("messageId", messageId)
+                .param("userId", userId)
+                .query(Long.class)
+                .single();
     }
 
     private void runConcurrently(Runnable first, Runnable second) throws Exception {

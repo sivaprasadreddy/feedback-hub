@@ -4,64 +4,52 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyEntity;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatus;
-import dev.sivalabs.feedbackhub.messages.domain.models.ReplyStatus;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class CreateReplyTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    ReplyRepository replyRepository;
+    private static final long ACTIVE_MESSAGE_ID = 3001L;
+    private static final long DELETED_MESSAGE_ID = 3002L;
 
     @Test
     void activeUserCanReplyAsThemselvesAndReplyCountIsUpdated() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Message for reply " + UUID.randomUUID(), "IDENTIFIED");
         var replyContent = "Identified reply " + UUID.randomUUID();
 
-        assertThat(createReply(userSession, message.getId(), replyContent, "IDENTIFIED"))
+        assertThat(createReply(userSession, ACTIVE_MESSAGE_ID, replyContent, "IDENTIFIED"))
                 .hasStatus(HttpStatus.FOUND)
-                .hasRedirectedUrl("/messages/" + message.getId());
+                .hasRedirectedUrl("/messages/" + ACTIVE_MESSAGE_ID);
 
-        var reply = findReply(message.getId(), replyContent);
-        assertThat(reply.getMessage().getId()).isEqualTo(message.getId());
-        assertThat(reply.getCreatorUserId()).isEqualTo(2L);
-        assertThat(reply.isAnonymous()).isFalse();
+        var reply = findReply(ACTIVE_MESSAGE_ID, replyContent);
+        assertThat(reply.get("created_by_user_id")).isEqualTo(2L);
+        assertThat(reply.get("anonymous")).isEqualTo(false);
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", ACTIVE_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .contains("Replies", "1");
+                .contains("Replies", ">1</dd>");
     }
 
     @Test
     void adminCanReplyAnonymouslyWithoutExposingCreatorToRegularUser() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Public question " + UUID.randomUUID(), "IDENTIFIED");
         var adminSession = session(login("admin@gmail.com", "secret"));
         var replyContent = "Private reply " + UUID.randomUUID();
 
-        assertThat(createReply(adminSession, message.getId(), replyContent, "ANONYMOUS"))
+        assertThat(createReply(adminSession, ACTIVE_MESSAGE_ID, replyContent, "ANONYMOUS"))
                 .hasStatus(HttpStatus.FOUND);
 
-        var reply = findReply(message.getId(), replyContent);
-        assertThat(reply.getCreatorUserId()).isEqualTo(1L);
-        assertThat(reply.isAnonymous()).isTrue();
+        var reply = findReply(ACTIVE_MESSAGE_ID, replyContent);
+        assertThat(reply.get("created_by_user_id")).isEqualTo(1L);
+        assertThat(reply.get("anonymous")).isEqualTo(true);
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", ACTIVE_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
@@ -72,10 +60,9 @@ class CreateReplyTests extends BaseIT {
     @Test
     void replyContentAndPostingIdentityAreRequired() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Validation target " + UUID.randomUUID(), "IDENTIFIED");
 
         assertThat(mvc.post()
-                        .uri("/messages/{id}/replies", message.getId())
+                        .uri("/messages/{id}/replies", ACTIVE_MESSAGE_ID)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("content", "   ")
                         .session(userSession)
@@ -85,24 +72,19 @@ class CreateReplyTests extends BaseIT {
                 .hasViewName("messages/view")
                 .bodyText()
                 .contains("Reply is required", "Choose how to reply");
-        assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
-                .isZero();
+        assertThat(countReplies(ACTIVE_MESSAGE_ID)).isZero();
     }
 
     @Test
     void deletedMessageCannotBeRepliedTo() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Deleted target " + UUID.randomUUID(), "IDENTIFIED");
-        message.setStatus(MessageStatus.DELETED);
-        messageRepository.saveAndFlush(message);
 
-        assertThat(createReply(userSession, message.getId(), "Not allowed", "IDENTIFIED"))
+        assertThat(createReply(userSession, DELETED_MESSAGE_ID, "Not allowed", "IDENTIFIED"))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
-        assertThat(replyRepository.countByMessageIdAndStatus(message.getId(), ReplyStatus.ACTIVE))
-                .isZero();
+        assertThat(countReplies(DELETED_MESSAGE_ID)).isZero();
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", DELETED_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
@@ -131,26 +113,19 @@ class CreateReplyTests extends BaseIT {
                 .exchange();
     }
 
-    private MessageEntity createMessage(MockHttpSession session, String content, String postingIdentity) {
-        assertThat(mvc.post()
-                        .uri("/messages")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", content)
-                        .param("postingIdentity", postingIdentity)
-                        .session(session)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
+    private Map<String, Object> findReply(Long messageId, String content) {
+        return jdbcClient
+                .sql("select created_by_user_id, anonymous from replies where message_id = ? and content = ?")
+                .params(messageId, content)
+                .query()
+                .singleRow();
     }
 
-    private ReplyEntity findReply(Long messageId, String content) {
-        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
-                .filter(reply -> reply.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
+    private long countReplies(Long messageId) {
+        return jdbcClient
+                .sql("select count(*) from replies where message_id = ?")
+                .param(messageId)
+                .query(Long.class)
+                .single();
     }
 }

@@ -3,30 +3,14 @@ package dev.sivalabs.feedbackhub.messages.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageSentiment;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 class SentimentAnalysisTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
     @Test
     void showsAllSentimentCountsForSelectedInclusiveDateRange() {
-        var selectedDate = LocalDate.of(2026, 9, 10);
-        createMessage(MessageSentiment.HAPPY, selectedDate);
-        createMessage(MessageSentiment.HAPPY, selectedDate);
-        createMessage(MessageSentiment.ANGRY, selectedDate);
-        createMessage(MessageSentiment.SAD, selectedDate.minusDays(1));
-
+        // seeded: 2 HAPPY + 1 ANGRY on 2020-03-10 and 1 SAD on 2020-03-09
         var result = mvc.get()
-                .uri("/admin/sentiment-analysis?startDate=2026-09-10&endDate=2026-09-10")
+                .uri("/admin/sentiment-analysis?startDate=2020-03-10&endDate=2020-03-10")
                 .session(session(login("admin@gmail.com", "secret")))
                 .exchange();
 
@@ -46,16 +30,5 @@ class SentimentAnalysisTests extends BaseIT {
                 .exchange();
 
         assertThat(result).hasStatusOk().bodyText().contains("Start date must be on or before end date.");
-    }
-
-    private void createMessage(MessageSentiment sentiment, LocalDate date) {
-        var message = new MessageEntity();
-        message.setContent("Sentiment analysis test message");
-        message.setCreatorUserId(2L);
-        message.setAnonymous(false);
-        message.setSentiment(sentiment);
-        messageRepository.saveAndFlush(message);
-        message.setCreatedAt(date.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant());
-        messageRepository.flush();
     }
 }

@@ -1,80 +1,60 @@
 package dev.sivalabs.feedbackhub.messages.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageStatus;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
 class ViewMessageTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
+    private static final long USER_MESSAGE_ID = 2021L;
+    private static final long ANONYMOUS_ADMIN_MESSAGE_ID = 2022L;
+    private static final long DELETED_MESSAGE_ID = 2023L;
 
     @Test
     void activeUserCanViewMessageAndCurrentEngagementInformation() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = "Message details " + UUID.randomUUID();
-        createMessage(userSession, content, "IDENTIFIED");
-        var messageId = findMessage(content).getId();
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", messageId)
+                        .uri("/messages/{id}", USER_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .hasStatusOk()
                 .hasViewName("messages/view")
                 .bodyText()
-                .contains("Siva", content, "Upvotes", "Downvotes", "Replies")
+                .contains("Siva", "View seed message details 2021", "Upvotes", "Downvotes", "Replies")
                 .doesNotContain("Your vote", "No vote");
     }
 
     @Test
     void anonymousMessageDoesNotExposeItsCreatorToRegularUser() {
-        var adminSession = session(login("admin@gmail.com", "secret"));
-        var content = "Private creator " + UUID.randomUUID();
-        createMessage(adminSession, content, "ANONYMOUS");
-        var messageId = findMessage(content).getId();
         var userSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", messageId)
+                        .uri("/messages/{id}", ANONYMOUS_ADMIN_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .contains("Anonymous", content)
+                .contains("Anonymous", "View seed private creator 2022")
                 .doesNotContain("Admin", "admin@gmail.com");
     }
 
     @Test
     void deletedMessageShowsPlaceholderInsteadOfOriginalContent() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var content = "Deleted content " + UUID.randomUUID();
-        createMessage(userSession, content, "IDENTIFIED");
-        var message = findMessage(content);
-        message.setStatus(MessageStatus.DELETED);
-        messageRepository.saveAndFlush(message);
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", DELETED_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .contains(MessageService.DELETED_CONTENT)
-                .doesNotContain(content);
+                .doesNotContain("View seed deleted content 2023");
 
         assertThat(mvc.get().uri("/").session(userSession).exchange())
                 .bodyText()
-                .contains(MessageService.DELETED_CONTENT)
-                .doesNotContain(content);
+                .doesNotContain("View seed deleted content 2023");
     }
 
     @Test
@@ -83,24 +63,5 @@ class ViewMessageTests extends BaseIT {
         assertThat(login("prasad@gmail.com", "secret"))
                 .hasStatus(HttpStatus.FOUND)
                 .hasRedirectedUrl("/login?error");
-    }
-
-    private MessageEntity findMessage(String content) {
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private void createMessage(MockHttpSession session, String content, String postingIdentity) {
-        assertThat(mvc.post()
-                        .uri("/messages")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", content)
-                        .param("postingIdentity", postingIdentity)
-                        .session(session)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
     }
 }

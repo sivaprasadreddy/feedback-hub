@@ -6,9 +6,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
 import dev.sivalabs.feedbackhub.messages.domain.ReplySpamAnalyzer;
-import dev.sivalabs.feedbackhub.messages.domain.models.MessageCreatedEvent;
 import dev.sivalabs.feedbackhub.messages.domain.models.ReplyCreatedEvent;
 import dev.sivalabs.feedbackhub.messages.domain.models.ReplySpamAnalysis;
 import java.time.Duration;
@@ -25,8 +23,8 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 @RecordApplicationEvents
 @TestPropertySource(properties = "feedbackhub.reply-spam-analysis.enabled=true")
 class ReplySpamAnalysisTests extends BaseIT {
-    @Autowired
-    ReplyRepository replyRepository;
+    // seeded: message 4201 by siva
+    private static final long MESSAGE_ID = 4201L;
 
     @Autowired
     ApplicationEvents applicationEvents;
@@ -37,21 +35,7 @@ class ReplySpamAnalysisTests extends BaseIT {
     @Test
     void postedSpamReplyIsTaggedForAdminReview() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var messageContent = "Discussion for spam classification " + UUID.randomUUID();
-        assertThat(mvc.post()
-                        .uri("/messages")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", messageContent)
-                        .param("postingIdentity", "IDENTIFIED")
-                        .session(userSession)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
-        var messageId = applicationEvents.stream(MessageCreatedEvent.class)
-                .filter(event -> event.content().equals(messageContent))
-                .map(MessageCreatedEvent::messageId)
-                .findFirst()
-                .orElseThrow();
+        var messageId = MESSAGE_ID;
 
         var replyContent = "Buy discounted gift cards at an unrelated promotional link " + UUID.randomUUID();
         when(replySpamAnalyzer.analyze(replyContent)).thenReturn(new ReplySpamAnalysis(true));
@@ -71,10 +55,11 @@ class ReplySpamAnalysisTests extends BaseIT {
                 .findFirst()
                 .orElseThrow();
         await().atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> assertThat(replyRepository
-                                .findById(createdEvent.replyId())
-                                .orElseThrow()
-                                .isSpam())
+                .untilAsserted(() -> assertThat(jdbcClient
+                                .sql("select spam from replies where id = :id")
+                                .param("id", createdEvent.replyId())
+                                .query(Boolean.class)
+                                .single())
                         .isTrue());
 
         var adminSession = session(login("admin@gmail.com", "secret"));

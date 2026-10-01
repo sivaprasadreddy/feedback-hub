@@ -1,41 +1,27 @@
 package dev.sivalabs.feedbackhub.messages.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyEntity;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
-import dev.sivalabs.feedbackhub.messages.domain.models.ReplyStatus;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 
 class ViewRepliesTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    ReplyRepository replyRepository;
+    private static final long DISCUSSION_MESSAGE_ID = 3030L;
+    private static final String IDENTIFIED_REPLY = "First visible reply 3030";
+    private static final String ANONYMOUS_REPLY = "Second anonymous reply 3031";
+    private static final long DELETED_REPLY_MESSAGE_ID = 3031L;
+    private static final String DELETED_REPLY = "Sensitive deleted reply 3032";
+    private static final long OTHER_MESSAGE_ID = 3032L;
+    private static final String OTHER_REPLY = "Other message reply 3033";
 
     @Test
     void repliesAppearUnderMessageWithAuthorTimestampsAndEngagementInformation() throws Exception {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Discussion " + UUID.randomUUID());
-        var identifiedContent = "First visible reply " + UUID.randomUUID();
-        createReply(userSession, message.getId(), identifiedContent, "IDENTIFIED");
-        var adminSession = session(login("admin@gmail.com", "secret"));
-        var anonymousContent = "Second anonymous reply " + UUID.randomUUID();
-        createReply(adminSession, message.getId(), anonymousContent, "ANONYMOUS");
 
         var result = mvc.get()
-                .uri("/messages/{id}", message.getId())
+                .uri("/messages/{id}", DISCUSSION_MESSAGE_ID)
                 .session(userSession)
                 .exchange();
 
@@ -43,93 +29,50 @@ class ViewRepliesTests extends BaseIT {
                 .hasStatusOk()
                 .hasViewName("messages/view")
                 .bodyText()
-                .contains("Replies", "Siva", identifiedContent, "Anonymous", anonymousContent, "Upvotes", "Downvotes")
+                .contains("Replies", "Siva", IDENTIFIED_REPLY, "Anonymous", ANONYMOUS_REPLY, "Upvotes", "Downvotes")
                 .doesNotContain("Your vote", "No vote", "Updated")
                 .doesNotContain("Admin", "admin@gmail.com");
         var html = result.getMvcResult().getResponse().getContentAsString();
         assertThat(html.indexOf("id=\"reply-content\"")).isLessThan(html.indexOf("id=\"replies-heading\""));
-        assertThat(html.indexOf(identifiedContent)).isLessThan(html.indexOf(anonymousContent));
-        assertThat(html).containsPattern("\\d{2} [A-Z][a-z]{2} 2026 \\d{2}:\\d{2}");
+        assertThat(html.indexOf(IDENTIFIED_REPLY)).isLessThan(html.indexOf(ANONYMOUS_REPLY));
+        assertThat(html).containsPattern("\\d{2} [A-Z][a-z]{2} 2020 \\d{2}:\\d{2}");
     }
 
     @Test
     void deletedReplyShowsPlaceholderWithoutExposingOriginalContent() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession, "Deleted reply discussion " + UUID.randomUUID());
-        var content = "Sensitive deleted reply " + UUID.randomUUID();
-        createReply(userSession, message.getId(), content, "IDENTIFIED");
-        var reply = findReply(message.getId(), content);
-        reply.setStatus(ReplyStatus.DELETED);
-        replyRepository.saveAndFlush(reply);
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", DELETED_REPLY_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .contains(MessageService.DELETED_REPLY_CONTENT)
-                .doesNotContain(content);
-        assertThat(replyRepository.findById(reply.getId())).isPresent();
+                .doesNotContain(DELETED_REPLY);
     }
 
     @Test
     void onlyDirectRepliesForCurrentMessageAreDisplayed() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var firstMessage = createMessage(userSession, "First discussion " + UUID.randomUUID());
-        var secondMessage = createMessage(userSession, "Second discussion " + UUID.randomUUID());
-        var directReply = "Direct reply " + UUID.randomUUID();
-        var otherReply = "Other message reply " + UUID.randomUUID();
-        createReply(userSession, firstMessage.getId(), directReply, "IDENTIFIED");
-        createReply(userSession, secondMessage.getId(), otherReply, "IDENTIFIED");
 
         assertThat(mvc.get()
-                        .uri("/messages/{id}", firstMessage.getId())
+                        .uri("/messages/{id}", DISCUSSION_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
-                .contains(directReply)
-                .doesNotContain(otherReply);
-        assertThat(findReply(firstMessage.getId(), directReply).getMessage().getId())
-                .isEqualTo(firstMessage.getId());
+                .contains(IDENTIFIED_REPLY)
+                .doesNotContain(OTHER_REPLY);
+        assertThat(mvc.get()
+                        .uri("/messages/{id}", OTHER_MESSAGE_ID)
+                        .session(userSession)
+                        .exchange())
+                .bodyText()
+                .contains(OTHER_REPLY)
+                .doesNotContain(IDENTIFIED_REPLY);
     }
 
     @Test
     void unauthenticatedUserCannotViewReplies() {
         assertThat(mvc.get().uri("/messages/1").exchange()).hasStatus(HttpStatus.FOUND);
-    }
-
-    private MessageEntity createMessage(MockHttpSession session, String content) {
-        assertThat(mvc.post()
-                        .uri("/messages")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", content)
-                        .param("postingIdentity", "IDENTIFIED")
-                        .session(session)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(message -> message.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private void createReply(MockHttpSession session, Long messageId, String content, String postingIdentity) {
-        assertThat(mvc.post()
-                        .uri("/messages/{id}/replies", messageId)
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("content", content)
-                        .param("postingIdentity", postingIdentity)
-                        .session(session)
-                        .with(csrf())
-                        .exchange())
-                .hasStatus(HttpStatus.FOUND);
-    }
-
-    private ReplyEntity findReply(Long messageId, String content) {
-        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
-                .filter(reply -> reply.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
     }
 }

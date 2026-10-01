@@ -4,67 +4,52 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import dev.sivalabs.feedbackhub.BaseIT;
-import dev.sivalabs.feedbackhub.messages.domain.MessageEntity;
-import dev.sivalabs.feedbackhub.messages.domain.MessageRepository;
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyEntity;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyRepository;
-import dev.sivalabs.feedbackhub.messages.domain.ReplyVoteRepository;
-import dev.sivalabs.feedbackhub.messages.domain.models.ReplyStatus;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class VoteOnReplyTests extends BaseIT {
-    @Autowired
-    MessageRepository messageRepository;
-
-    @Autowired
-    ReplyRepository replyRepository;
-
-    @Autowired
-    ReplyVoteRepository replyVoteRepository;
+    // seeded: message 4101 (by admin) with replies 4101 (admin), 4103 (deleted); message 4102 (by admin); message 4103
+    // (by admin) with reply 4102 (siva)
+    private static final long MESSAGE_ID = 4101L;
+    private static final long OTHER_MESSAGE_ID = 4102L;
+    private static final long ADMIN_REPLY_ID = 4101L;
+    private static final long OWN_REPLY_MESSAGE_ID = 4103L;
+    private static final long OWN_REPLY_ID = 4102L;
+    private static final long DELETED_REPLY_ID = 4103L;
 
     @Autowired
     MessageService messageService;
 
     @Test
     void userCanPlaceChangeAndRemoveVoteOnAnotherUsersReply() {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var message = createMessage(ownerSession);
-        var reply = createReply(ownerSession, message.getId(), "ANONYMOUS");
+        var replyId = ADMIN_REPLY_ID;
         var voterSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(vote(voterSession, message.getId(), reply.getId(), "UPVOTE"))
+        assertThat(vote(voterSession, MESSAGE_ID, replyId, "UPVOTE"))
                 .hasStatus(HttpStatus.FOUND)
-                .hasRedirectedUrl("/messages/" + message.getId());
-        assertReplyVotes(message.getId(), reply.getId(), 1, 0, "UPVOTE");
+                .hasRedirectedUrl("/messages/" + MESSAGE_ID);
+        assertReplyVotes(MESSAGE_ID, replyId, 1, 0, "UPVOTE");
 
-        assertThat(vote(voterSession, message.getId(), reply.getId(), "DOWNVOTE"))
-                .hasStatus(HttpStatus.FOUND);
-        assertReplyVotes(message.getId(), reply.getId(), 0, 1, "DOWNVOTE");
-        assertThat(replyVoteRepository.findAll())
-                .filteredOn(v -> v.getReply().getId().equals(reply.getId()))
-                .hasSize(1);
+        assertThat(vote(voterSession, MESSAGE_ID, replyId, "DOWNVOTE")).hasStatus(HttpStatus.FOUND);
+        assertReplyVotes(MESSAGE_ID, replyId, 0, 1, "DOWNVOTE");
+        assertThat(voteType(replyId)).isEqualTo("DOWNVOTE");
 
-        assertThat(removeVote(voterSession, message.getId(), reply.getId())).hasStatus(HttpStatus.FOUND);
-        assertReplyVotes(message.getId(), reply.getId(), 0, 0, null);
+        assertThat(removeVote(voterSession, MESSAGE_ID, replyId)).hasStatus(HttpStatus.FOUND);
+        assertReplyVotes(MESSAGE_ID, replyId, 0, 0, null);
     }
 
     @Test
     void countsAndCurrentUsersVoteAreRenderedImmediately() throws Exception {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var message = createMessage(ownerSession);
-        var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
+        var replyId = ADMIN_REPLY_ID;
         var voterSession = session(login("siva@gmail.com", "secret"));
-        vote(voterSession, message.getId(), reply.getId(), "UPVOTE");
+        vote(voterSession, MESSAGE_ID, replyId, "UPVOTE");
 
         var upvoted = mvc.get()
-                .uri("/messages/{id}", message.getId())
+                .uri("/messages/{id}", MESSAGE_ID)
                 .session(voterSession)
                 .exchange();
         assertThat(upvoted)
@@ -75,11 +60,11 @@ class VoteOnReplyTests extends BaseIT {
                 .contains(
                         "text-emerald-600",
                         "title=\"Remove your reply upvote\"",
-                        "action=\"/messages/" + message.getId() + "/replies/" + reply.getId() + "/vote/remove\"");
+                        "action=\"/messages/" + MESSAGE_ID + "/replies/" + replyId + "/vote/remove\"");
 
-        vote(voterSession, message.getId(), reply.getId(), "DOWNVOTE");
+        vote(voterSession, MESSAGE_ID, replyId, "DOWNVOTE");
         var downvoted = mvc.get()
-                .uri("/messages/{id}", message.getId())
+                .uri("/messages/{id}", MESSAGE_ID)
                 .session(voterSession)
                 .exchange();
         assertThat(downvoted)
@@ -90,18 +75,16 @@ class VoteOnReplyTests extends BaseIT {
                 .contains(
                         "text-amber-600",
                         "title=\"Remove your reply downvote\"",
-                        "action=\"/messages/" + message.getId() + "/replies/" + reply.getId() + "/vote/remove\"");
+                        "action=\"/messages/" + MESSAGE_ID + "/replies/" + replyId + "/vote/remove\"");
     }
 
     @Test
     void htmxVoteReturnsOnlyUpdatedReplyVoteControls() throws Exception {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var message = createMessage(ownerSession);
-        var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
+        var replyId = ADMIN_REPLY_ID;
         var voterSession = session(login("siva@gmail.com", "secret"));
 
         var response = mvc.post()
-                .uri("/messages/{m}/replies/{r}/vote", message.getId(), reply.getId())
+                .uri("/messages/{m}/replies/{r}/vote", MESSAGE_ID, replyId)
                 .header("HX-Request", "true")
                 .param("voteType", "UPVOTE")
                 .session(voterSession)
@@ -118,71 +101,70 @@ class VoteOnReplyTests extends BaseIT {
                 .contains("class=\"reply-votes", "hx-target=\"closest .reply-votes\"", "hx-swap=\"outerHTML\"");
 
         var removeResponse = mvc.post()
-                .uri("/messages/{m}/replies/{r}/vote/remove", message.getId(), reply.getId())
+                .uri("/messages/{m}/replies/{r}/vote/remove", MESSAGE_ID, replyId)
                 .header("HX-Request", "true")
                 .session(voterSession)
                 .with(csrf())
                 .exchange();
         assertThat(removeResponse).hasStatusOk().bodyText().contains("Upvote reply", "Downvote reply");
-        assertReplyVotes(message.getId(), reply.getId(), 0, 0, null);
+        assertReplyVotes(MESSAGE_ID, replyId, 0, 0, null);
     }
 
     @Test
     void userCannotVoteOnOwnReplyEvenWhenAnonymous() {
         var userSession = session(login("siva@gmail.com", "secret"));
-        var message = createMessage(userSession);
-        var reply = createReply(userSession, message.getId(), "ANONYMOUS");
+        var replyId = OWN_REPLY_ID;
 
-        assertThat(vote(userSession, message.getId(), reply.getId(), "UPVOTE"))
+        assertThat(vote(userSession, OWN_REPLY_MESSAGE_ID, replyId, "UPVOTE"))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
         assertThat(mvc.get()
-                        .uri("/messages/{id}", message.getId())
+                        .uri("/messages/{id}", OWN_REPLY_MESSAGE_ID)
                         .session(userSession)
                         .exchange())
                 .bodyText()
                 .doesNotContain(
                         "Upvote reply", "Downvote reply", "Remove your reply upvote", "Remove your reply downvote");
-        assertThat(replyVoteRepository.findByReplyIdAndVoterUserId(reply.getId(), 2L))
-                .isEmpty();
+        assertThat(voteType(replyId)).isNull();
     }
 
     @Test
     void userCannotVoteOnDeletedReply() {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var message = createMessage(ownerSession);
-        var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
-        reply.setStatus(ReplyStatus.DELETED);
-        replyRepository.saveAndFlush(reply);
+        var replyId = DELETED_REPLY_ID;
         var voterSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(vote(voterSession, message.getId(), reply.getId(), "DOWNVOTE"))
+        assertThat(vote(voterSession, MESSAGE_ID, replyId, "DOWNVOTE"))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
-        assertThat(removeVote(voterSession, message.getId(), reply.getId()))
+        assertThat(removeVote(voterSession, MESSAGE_ID, replyId))
                 .hasStatus(HttpStatus.FORBIDDEN)
                 .hasViewName("error/403");
-        assertThat(replyVoteRepository.findByReplyIdAndVoterUserId(reply.getId(), 2L))
-                .isEmpty();
+        assertThat(voteType(replyId)).isNull();
     }
 
     @Test
     void replyMustBelongToMessageAndUserMustBeAuthenticated() {
-        var ownerSession = session(login("admin@gmail.com", "secret"));
-        var message = createMessage(ownerSession);
-        var otherMessage = createMessage(ownerSession);
-        var reply = createReply(ownerSession, message.getId(), "IDENTIFIED");
+        var replyId = ADMIN_REPLY_ID;
         var voterSession = session(login("siva@gmail.com", "secret"));
 
-        assertThat(vote(voterSession, otherMessage.getId(), reply.getId(), "UPVOTE"))
+        assertThat(vote(voterSession, OTHER_MESSAGE_ID, replyId, "UPVOTE"))
                 .hasStatus(HttpStatus.NOT_FOUND)
                 .hasViewName("error/404");
         assertThat(mvc.post()
-                        .uri("/messages/{m}/replies/{r}/vote", message.getId(), reply.getId())
+                        .uri("/messages/{m}/replies/{r}/vote", MESSAGE_ID, replyId)
                         .param("voteType", "UPVOTE")
                         .with(csrf())
                         .exchange())
                 .hasStatus(HttpStatus.FOUND);
+    }
+
+    private String voteType(long replyId) {
+        return jdbcClient
+                .sql("select vote_type from reply_votes where reply_id = :id and user_id = 2")
+                .param("id", replyId)
+                .query(String.class)
+                .optional()
+                .orElse(null);
     }
 
     private void assertReplyVotes(Long messageId, Long replyId, long upvotes, long downvotes, String currentVote) {
@@ -193,38 +175,6 @@ class VoteOnReplyTests extends BaseIT {
         assertThat(dto.upvoteCount()).isEqualTo(upvotes);
         assertThat(dto.downvoteCount()).isEqualTo(downvotes);
         assertThat(dto.currentUserVote()).isEqualTo(currentVote);
-    }
-
-    private MessageEntity createMessage(MockHttpSession session) {
-        var content = "Vote target " + UUID.randomUUID();
-        mvc.post()
-                .uri("/messages")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("content", content)
-                .param("postingIdentity", "IDENTIFIED")
-                .session(session)
-                .with(csrf())
-                .exchange();
-        return messageRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(m -> m.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private ReplyEntity createReply(MockHttpSession session, Long messageId, String identity) {
-        var content = "Reply vote target " + UUID.randomUUID();
-        mvc.post()
-                .uri("/messages/{id}/replies", messageId)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("content", content)
-                .param("postingIdentity", identity)
-                .session(session)
-                .with(csrf())
-                .exchange();
-        return replyRepository.findAllByMessageIdOrderByCreatedAtAsc(messageId).stream()
-                .filter(r -> r.getContent().equals(content))
-                .findFirst()
-                .orElseThrow();
     }
 
     private MvcTestResult vote(MockHttpSession session, Long messageId, Long replyId, String type) {
