@@ -20,15 +20,15 @@
         <java.version>25</java.version>
         <spring-ai.version>2.0.1</spring-ai.version>
         <spring-modulith.version>2.1.1</spring-modulith.version>
-        <tc-mailpit.version>1.3.1</tc-mailpit.version>
+        <tc-mailpit.version>1.3.2</tc-mailpit.version>
         <font_awesome.version>7.3.0</font_awesome.version>
         <htmx.org.version>4.0.0</htmx.org.version>
-        <htmx-spring-boot-thymeleaf.version>5.2.0</htmx-spring-boot-thymeleaf.version>
-        <bootui.version>1.19.0</bootui.version>
+        <htmx-spring-boot-thymeleaf.version>6.0.0</htmx-spring-boot-thymeleaf.version>
+        <bootui.version>1.20.0</bootui.version>
         <palantir-java-format.version>2.100.0</palantir-java-format.version>
         <spotless.version>3.10.3</spotless.version>
         <archunit.version>1.5.1</archunit.version>
-        <taikai.version>1.67.0</taikai.version>
+        <taikai.version>1.68.0</taikai.version>
         <spring-test-profiler.version>0.3.1</spring-test-profiler.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <properties-maven-plugin.version>1.3.1</properties-maven-plugin.version>
