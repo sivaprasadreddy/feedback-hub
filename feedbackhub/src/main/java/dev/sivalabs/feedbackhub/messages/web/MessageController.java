@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 class MessageController {
+    public static final String SUCCESS_MESSAGE_KEY = "successMessage";
     private final MessageService messageService;
 
     MessageController(MessageService messageService) {
@@ -59,7 +60,7 @@ class MessageController {
         }
         messageService.createMessage(new CreateMessageCmd(
                 form.content().trim(), currentUser.getId(), form.postingIdentity() == PostingIdentity.ANONYMOUS));
-        redirectAttributes.addFlashAttribute("successMessage", "Message posted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Message posted successfully.");
         return "redirect:/";
     }
 
@@ -93,7 +94,7 @@ class MessageController {
                 form.content().trim(),
                 currentUser.getId(),
                 form.postingIdentity() == PostingIdentity.ANONYMOUS));
-        redirectAttributes.addFlashAttribute("successMessage", "Reply posted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Reply posted successfully.");
         return "redirect:/messages/" + messageId;
     }
 
@@ -124,7 +125,7 @@ class MessageController {
         }
         messageService.editReply(
                 messageId, replyId, currentUserId, form.content().trim());
-        redirectAttributes.addFlashAttribute("successMessage", "Reply updated successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Reply updated successfully.");
         return "redirect:/messages/" + messageId;
     }
 
@@ -132,7 +133,7 @@ class MessageController {
     String deleteReply(
             @PathVariable Long messageId, @PathVariable Long replyId, RedirectAttributes redirectAttributes) {
         messageService.deleteReply(messageId, replyId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Reply deleted successfully.");
         return "redirect:/messages/" + messageId;
     }
 
@@ -151,7 +152,7 @@ class MessageController {
             model.addAttribute("returnToHome", returnToHome);
             return "fragments/message-votes :: votes(message=${message}, returnToHome=${returnToHome})";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Vote recorded successfully.");
         return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
 
@@ -169,7 +170,7 @@ class MessageController {
             model.addAttribute("returnToHome", returnToHome);
             return "fragments/message-votes :: votes(message=${message}, returnToHome=${returnToHome})";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Vote removed successfully.");
         return returnToHome ? "redirect:/" : "redirect:/messages/" + messageId;
     }
 
@@ -188,7 +189,7 @@ class MessageController {
             model.addAttribute("reply", findReply(messageId, replyId, currentUserId));
             return "fragments/reply-votes :: votes(messageId=${messageId}, reply=${reply})";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Vote recorded successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Vote recorded successfully.");
         return "redirect:/messages/" + messageId;
     }
 
@@ -206,7 +207,7 @@ class MessageController {
             model.addAttribute("reply", findReply(messageId, replyId, currentUserId));
             return "fragments/reply-votes :: votes(messageId=${messageId}, reply=${reply})";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Vote removed successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Vote removed successfully.");
         return "redirect:/messages/" + messageId;
     }
 
@@ -232,14 +233,14 @@ class MessageController {
         }
         messageService.editMessage(
                 messageId, AuthUtils.getCurrentUserIdOrThrow(), form.content().trim());
-        redirectAttributes.addFlashAttribute("successMessage", "Message updated successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Message updated successfully.");
         return "redirect:/messages/" + messageId;
     }
 
     @PostMapping("/messages/{messageId}/delete")
     String deleteMessage(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
         messageService.deleteMessage(messageId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Message deleted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Message deleted successfully.");
         return "redirect:/messages/" + messageId;
     }
 

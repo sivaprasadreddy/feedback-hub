@@ -42,6 +42,7 @@ public class MessageService {
     private static final Instant LATEST_ANALYSIS_DATE = Instant.parse("9999-12-31T23:59:59Z");
     public static final String DELETED_CONTENT = "This message has been deleted.";
     public static final String DELETED_REPLY_CONTENT = "This reply has been deleted.";
+    public static final String ANONYMOUS = "Anonymous";
     private final MessageRepository messageRepository;
     private final ReplyRepository replyRepository;
     private final MessageVoteRepository messageVoteRepository;
@@ -99,7 +100,7 @@ public class MessageService {
         return PagedResult.from(messages)
                 .map(message -> new AdminMessageDto(
                         message.getId(),
-                        message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
+                        message.isAnonymous() ? ANONYMOUS : getUserName(message.getCreatorUserId(), userNames),
                         message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                         message.getCreatedAt(),
                         message.getStatus() == MessageStatus.DELETED,
@@ -109,12 +110,10 @@ public class MessageService {
 
     @Transactional(readOnly = true)
     public AdminMessageDto findMessageForAdmin(Long messageId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         return new AdminMessageDto(
                 message.getId(),
-                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
+                message.isAnonymous() ? ANONYMOUS : getUserName(message.getCreatorUserId()),
                 message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
                 message.getStatus() == MessageStatus.DELETED,
@@ -131,7 +130,7 @@ public class MessageService {
                 .map(reply -> new AdminReplyDto(
                         reply.getId(),
                         messageId,
-                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
+                        reply.isAnonymous() ? ANONYMOUS : getUserName(reply.getCreatorUserId(), userNames),
                         reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getStatus() == ReplyStatus.DELETED,
@@ -142,9 +141,7 @@ public class MessageService {
 
     @Transactional
     public void analyzeMessage(Long messageId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         if (message.getSentiment() != null) {
             return;
         }
@@ -169,9 +166,7 @@ public class MessageService {
 
     @Transactional
     public void deleteMessageAsAdmin(Long messageId, Long adminId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         if (message.getStatus() == MessageStatus.DELETED) {
             throw new AccessDeniedException("Message has already been deleted");
         }
@@ -188,7 +183,7 @@ public class MessageService {
                 .map(reply -> new AdminReplyDto(
                         reply.getId(),
                         reply.getMessage().getId(),
-                        reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
+                        reply.isAnonymous() ? ANONYMOUS : getUserName(reply.getCreatorUserId(), userNames),
                         reply.getStatus() == ReplyStatus.DELETED ? DELETED_REPLY_CONTENT : reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getStatus() == ReplyStatus.DELETED,
@@ -197,8 +192,7 @@ public class MessageService {
 
     @Transactional
     public void deleteReplyAsAdmin(Long replyId, Long adminId) {
-        var reply =
-                replyRepository.findById(replyId).orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        var reply = getReplyById(replyId);
         if (reply.getStatus() == ReplyStatus.DELETED) {
             throw new AccessDeniedException("Reply has already been deleted");
         }
@@ -219,7 +213,7 @@ public class MessageService {
     private MessageDto toMessageDto(MessageEntity message, Long currentUserId) {
         return new MessageDto(
                 message.getId(),
-                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
+                message.isAnonymous() ? ANONYMOUS : getUserName(message.getCreatorUserId()),
                 message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
                 message.getUpvoteCount(),
@@ -256,7 +250,7 @@ public class MessageService {
             var vote = currentVotes.get(message.getId());
             return new MessageDto(
                     message.getId(),
-                    message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId(), userNames),
+                    message.isAnonymous() ? ANONYMOUS : getUserName(message.getCreatorUserId(), userNames),
                     message.getStatus() == MessageStatus.DELETED ? DELETED_CONTENT : message.getContent(),
                     message.getCreatedAt(),
                     message.getUpvoteCount(),
@@ -297,9 +291,7 @@ public class MessageService {
 
     @Transactional(readOnly = true)
     public MessageDto findMessage(Long messageId, Long currentUserId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         var deleted = message.getStatus() == MessageStatus.DELETED;
         var ownedByCurrentUser = message.getCreatorUserId().equals(currentUserId);
         var currentUserVote = messageVoteRepository
@@ -309,7 +301,7 @@ public class MessageService {
                 .orElse(null);
         return new MessageDto(
                 message.getId(),
-                message.isAnonymous() ? "Anonymous" : getUserName(message.getCreatorUserId()),
+                message.isAnonymous() ? ANONYMOUS : getUserName(message.getCreatorUserId()),
                 deleted ? DELETED_CONTENT : message.getContent(),
                 message.getCreatedAt(),
                 message.getUpvoteCount(),
@@ -343,9 +335,7 @@ public class MessageService {
 
     @Transactional
     public void createReply(CreateReplyCmd cmd) {
-        var message = messageRepository
-                .findById(cmd.messageId())
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(cmd.messageId());
         if (message.getStatus() == MessageStatus.DELETED) {
             throw new AccessDeniedException("Deleted messages cannot be replied to");
         }
@@ -371,7 +361,7 @@ public class MessageService {
                     var deleted = reply.getStatus() == ReplyStatus.DELETED;
                     return new ReplyDto(
                             reply.getId(),
-                            reply.isAnonymous() ? "Anonymous" : getUserName(reply.getCreatorUserId(), userNames),
+                            reply.isAnonymous() ? ANONYMOUS : getUserName(reply.getCreatorUserId(), userNames),
                             deleted ? DELETED_REPLY_CONTENT : reply.getContent(),
                             reply.getCreatedAt(),
                             reply.getUpdatedAt(),
@@ -531,10 +521,7 @@ public class MessageService {
     }
 
     private ReplyEntity getVotableReply(Long messageId, Long replyId, Long currentUserId) {
-        var reply = replyRepository
-                .findById(replyId)
-                .filter(candidate -> candidate.getMessage().getId().equals(messageId))
-                .orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        var reply = getReplyById(messageId, replyId);
         if (reply.getStatus() == ReplyStatus.DELETED) {
             throw new AccessDeniedException("Deleted replies cannot be voted on");
         }
@@ -545,9 +532,7 @@ public class MessageService {
     }
 
     private MessageEntity getVotableMessage(Long messageId, Long currentUserId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         if (message.getStatus() == MessageStatus.DELETED) {
             throw new AccessDeniedException("Deleted messages cannot be voted on");
         }
@@ -558,10 +543,7 @@ public class MessageService {
     }
 
     private ReplyEntity getEditableReply(Long messageId, Long replyId, Long currentUserId) {
-        var reply = replyRepository
-                .findById(replyId)
-                .filter(candidate -> candidate.getMessage().getId().equals(messageId))
-                .orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+        var reply = getReplyById(messageId, replyId);
         if (!reply.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You can only edit your own replies");
         }
@@ -572,9 +554,7 @@ public class MessageService {
     }
 
     private MessageEntity getEditableMessage(Long messageId, Long currentUserId) {
-        var message = messageRepository
-                .findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        var message = getMessageById(messageId);
         if (!message.getCreatorUserId().equals(currentUserId)) {
             throw new AccessDeniedException("You can only edit your own messages");
         }
@@ -582,6 +562,24 @@ public class MessageService {
             throw new AccessDeniedException("Deleted messages cannot be edited");
         }
         return message;
+    }
+
+    private MessageEntity getMessageById(Long messageId) {
+        return messageRepository
+                .findById(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+    }
+
+    private ReplyEntity getReplyById(Long replyId) {
+        return replyRepository.findById(replyId).orElseThrow(() -> new ResourceNotFoundException("Reply not found"));
+    }
+
+    private ReplyEntity getReplyById(Long messageId, Long replyId) {
+        var reply = getReplyById(replyId);
+        if (!reply.getMessage().getId().equals(messageId)) {
+            throw new ResourceNotFoundException("Reply not found");
+        }
+        return reply;
     }
 
     private String getUserName(Long userId) {

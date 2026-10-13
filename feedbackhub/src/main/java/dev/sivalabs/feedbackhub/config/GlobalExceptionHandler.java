@@ -13,41 +13,30 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     ModelAndView handle(BadRequestException e) {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("message", e.getMessage());
-        modelAndView.addObject("exception", e);
-        modelAndView.setStatus(HttpStatus.BAD_REQUEST);
-        modelAndView.setViewName("error/400");
-        return modelAndView;
+        return handleInternal(e, "error/400", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     ModelAndView handle(ResourceNotFoundException e) {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("message", e.getMessage());
-        modelAndView.addObject("exception", e);
-        modelAndView.setStatus(HttpStatus.NOT_FOUND);
-        modelAndView.setViewName("error/404");
-        return modelAndView;
+        return handleInternal(e, "error/404", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     ModelAndView handle(AccessDeniedException e) {
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("message", e.getMessage());
-        modelAndView.addObject("exception", e);
-        modelAndView.setStatus(HttpStatus.FORBIDDEN);
-        modelAndView.setViewName("error/403");
-        return modelAndView;
+        return handleInternal(e, "error/403", HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
     ModelAndView handle(Exception e) {
+        return handleInternal(e, "error/500", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ModelAndView handleInternal(Exception e, String viewName, HttpStatus httpStatus) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("message", e.getMessage());
         modelAndView.addObject("exception", e);
-        modelAndView.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-        modelAndView.setViewName("error/500");
+        modelAndView.setViewName(viewName);
+        modelAndView.setStatus(httpStatus);
         return modelAndView;
     }
 }
