@@ -79,6 +79,16 @@ tasks:
       - task: sleep
       - task: start
 
+  gatling:
+    desc: Run Gatling performance tests
+    cmds:
+      - ./mvnw -pl gatling-tests gatling:test
+
+  playwright:
+    desc: Run Playwright tests
+    cmds:
+      - ./mvnw -pl playwright-tests test -Dplaywright.skip=false
+
   kind_create:
     desc: Create KinD cluster
     cmds:

@@ -10,7 +10,7 @@
                     aria-label="Toggle menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <a th:href="@{/}" class="text-lg font-bold text-white">FeedbackHub</a>
+            <a th:href="@{/}" class="text-lg font-bold text-white" th:text="#{app.name}">FeedbackHub</a>
         </div>
         <div class="ml-auto flex items-center gap-1">
             <button type="button" data-theme-toggle onclick="toggleTheme()"
