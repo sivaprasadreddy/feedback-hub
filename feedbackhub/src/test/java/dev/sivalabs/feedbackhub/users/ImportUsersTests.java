@@ -38,7 +38,7 @@ class ImportUsersTests extends BaseIT {
         var suffix = UUID.randomUUID();
         var userEmail = "csv.user+" + suffix + "@acme.com";
         var adminEmail = "csv.admin+" + suffix + "@acme.com";
-        var csv = "name,email,role\nCSV User,%s,USER\nCSV Admin,%s,ROLE_ADMIN\n".formatted(userEmail, adminEmail);
+        var csv = "name,email,role%nCSV User,%s,USER%nCSV Admin,%s,ROLE_ADMIN%n".formatted(userEmail, adminEmail);
 
         var file = new MockMultipartFile("file", "users.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
         var result = mvc.perform(
@@ -59,7 +59,7 @@ class ImportUsersTests extends BaseIT {
     void invalidRowsAreReportedAndNothingIsImported() throws Exception {
         var session = session(login("admin@gmail.com", "secret"));
         var uniqueEmail = "not-imported+" + UUID.randomUUID() + "@acme.com";
-        var csv = "name,email,role\nValid User,%s,USER\nBad Email,invalid,USER\nMissing Role,missing@example.com,\n"
+        var csv = "name,email,role%nValid User,%s,USER%nBad Email,invalid,USER%nMissing Role,missing@example.com,%n"
                 .formatted(uniqueEmail);
 
         var result = importCsv(session, csv);
@@ -80,14 +80,48 @@ class ImportUsersTests extends BaseIT {
     void wrongHeaderAndDuplicateEmailsAreRejected() throws Exception {
         var session = session(login("admin@gmail.com", "secret"));
 
-        var wrongHeader = importCsv(session, "fullName,email,role\nJane,jane@example.com,USER\n");
+        var wrongHeader = importCsv(session, "fullName,email,role%nJane,jane@example.com,USER%n".formatted());
         assertThat(wrongHeader).bodyText().contains("Header must be: name,email,role");
 
         var duplicate = importCsv(
-                session, "name,email,role\nAdmin Copy,admin@gmail.com,USER\nOther Copy,ADMIN@gmail.com,ADMIN\n");
+                session,
+                "name,email,role%nAdmin Copy,admin@gmail.com,USER%nOther Copy,ADMIN@gmail.com,ADMIN%n".formatted());
         assertThat(duplicate)
                 .bodyText()
                 .contains("Email address is already in use", "Email is duplicated in the CSV file");
+    }
+
+    @Test
+    void quotedFieldsAndWindowsLineEndingsAreSupported() {
+        var email = "quoted+" + UUID.randomUUID() + "@acme.com";
+        var csv = "\uFEFFname,email,role\r\n\"CSV, \"\"User\"\"\r\nSecond line\"," + email + ",USER";
+
+        var result = userService.importUsers(csv);
+
+        assertThat(result.importedCount()).isEqualTo(1);
+        assertThat(result.errors()).isEmpty();
+        assertThat(userService.findByEmail(email))
+                .hasValueSatisfying(user -> assertThat(user.name()).isEqualTo("CSV, \"User\"\r\nSecond line"));
+    }
+
+    @Test
+    void multilineFieldsPreserveErrorRowNumbers() {
+        var result =
+                userService.importUsers("name,email,role\r\n\"First\r\nSecond\",invalid,USER\r\nMissing Columns\r\n");
+
+        assertThat(result.importedCount()).isZero();
+        assertThat(result.errors()).extracting("rowNumber").containsExactly(2, 4);
+        assertThat(result.errors())
+                .extracting("message")
+                .containsExactly("Email address must be valid", "Expected 3 columns");
+    }
+
+    @Test
+    void unclosedQuotedFieldsAreRejected() {
+        var result = userService.importUsers("name,email,role%n\"Unclosed".formatted());
+
+        assertThat(result.importedCount()).isZero();
+        assertThat(result.errors()).extracting("message").containsExactly("CSV contains an unclosed quoted field");
     }
 
     @Test
@@ -96,7 +130,7 @@ class ImportUsersTests extends BaseIT {
         assertThat(mvc.get().uri("/admin/users/import").session(session).exchange())
                 .hasStatus(HttpStatus.FORBIDDEN);
 
-        var result = importCsv(session, "name,email,role\nHacker,hacker@example.com,ADMIN\n");
+        var result = importCsv(session, "name,email,role%nHacker,hacker@example.com,ADMIN%n".formatted());
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
     }
 

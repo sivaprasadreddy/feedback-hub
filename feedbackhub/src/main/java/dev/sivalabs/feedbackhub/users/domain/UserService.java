@@ -78,11 +78,7 @@ public class UserService {
             return new ImportUsersResult(0, List.of(new ImportUserError(1, "CSV file is empty")));
         }
 
-        var header = records.getFirst().values();
-        if (header.size() != 3
-                || !header.get(0).strip().equalsIgnoreCase("name")
-                || !header.get(1).strip().equalsIgnoreCase("email")
-                || !header.get(2).strip().equalsIgnoreCase("role")) {
+        if (!hasValidHeader(records.getFirst().values())) {
             return new ImportUsersResult(0, List.of(new ImportUserError(1, "Header must be: name,email,role")));
         }
 
@@ -90,46 +86,7 @@ public class UserService {
         var errors = new ArrayList<ImportUserError>();
         var emailsInFile = new HashSet<String>();
         for (var record : records.subList(1, records.size())) {
-            if (record.values().stream().allMatch(String::isBlank)) {
-                continue;
-            }
-            if (record.values().size() != 3) {
-                errors.add(new ImportUserError(record.rowNumber(), "Expected 3 columns"));
-                continue;
-            }
-
-            var name = record.values().get(0).strip();
-            var email = record.values().get(1).strip();
-            var roleValue = record.values().get(2).strip().toUpperCase(Locale.ROOT);
-            if (name.isBlank()) {
-                errors.add(new ImportUserError(record.rowNumber(), "Name is required"));
-            }
-            if (email.isBlank()) {
-                errors.add(new ImportUserError(record.rowNumber(), "Email is required"));
-            } else if (!EMAIL_PATTERN.matcher(email).matches()) {
-                errors.add(new ImportUserError(record.rowNumber(), "Email address must be valid"));
-            }
-
-            Role role = null;
-            try {
-                role = Role.valueOf(roleValue.startsWith("ROLE_") ? roleValue : "ROLE_" + roleValue);
-            } catch (IllegalArgumentException ex) {
-                errors.add(new ImportUserError(record.rowNumber(), "Role must be ADMIN or USER"));
-            }
-
-            var normalizedEmail = email.toLowerCase(Locale.ROOT);
-            if (!email.isBlank() && !emailsInFile.add(normalizedEmail)) {
-                errors.add(new ImportUserError(record.rowNumber(), "Email is duplicated in the CSV file"));
-            } else if (!email.isBlank() && userRepository.existsByEmailIgnoreCase(email)) {
-                errors.add(new ImportUserError(record.rowNumber(), "Email address is already in use"));
-            }
-            if (name.isBlank()
-                    || email.isBlank()
-                    || !EMAIL_PATTERN.matcher(email).matches()
-                    || role == null) {
-                continue;
-            }
-            commands.add(new CreateUserCmd(name, email, role));
+            collectImportCommand(record, emailsInFile, commands, errors);
         }
 
         if (records.size() == 1 || (commands.isEmpty() && errors.isEmpty())) {
@@ -152,6 +109,65 @@ public class UserService {
                 .toList();
         userRepository.saveAll(users);
         return new ImportUsersResult(users.size(), List.of());
+    }
+
+    private boolean hasValidHeader(List<String> header) {
+        return header.size() == 3
+                && header.get(0).strip().equalsIgnoreCase("name")
+                && header.get(1).strip().equalsIgnoreCase("email")
+                && header.get(2).strip().equalsIgnoreCase("role");
+    }
+
+    private void collectImportCommand(
+            CsvRecord record, Set<String> emailsInFile, List<CreateUserCmd> commands, List<ImportUserError> errors) {
+        if (record.values().stream().allMatch(String::isBlank)) {
+            return;
+        }
+        if (record.values().size() != 3) {
+            errors.add(new ImportUserError(record.rowNumber(), "Expected 3 columns"));
+            return;
+        }
+        var name = record.values().get(0).strip();
+        var email = record.values().get(1).strip();
+        if (name.isBlank()) {
+            errors.add(new ImportUserError(record.rowNumber(), "Name is required"));
+        }
+        validateImportEmail(email, record.rowNumber(), errors);
+        var role = parseImportRole(record.values().get(2), record.rowNumber(), errors);
+        validateUniqueImportEmail(email, record.rowNumber(), emailsInFile, errors);
+        if (!name.isBlank() && !email.isBlank() && EMAIL_PATTERN.matcher(email).matches() && role != null) {
+            commands.add(new CreateUserCmd(name, email, role));
+        }
+    }
+
+    private void validateImportEmail(String email, int rowNumber, List<ImportUserError> errors) {
+        if (email.isBlank()) {
+            errors.add(new ImportUserError(rowNumber, "Email is required"));
+        } else if (!EMAIL_PATTERN.matcher(email).matches()) {
+            errors.add(new ImportUserError(rowNumber, "Email address must be valid"));
+        }
+    }
+
+    private Role parseImportRole(String value, int rowNumber, List<ImportUserError> errors) {
+        var roleValue = value.strip().toUpperCase(Locale.ROOT);
+        try {
+            return Role.valueOf(roleValue.startsWith("ROLE_") ? roleValue : "ROLE_" + roleValue);
+        } catch (IllegalArgumentException ex) {
+            errors.add(new ImportUserError(rowNumber, "Role must be ADMIN or USER"));
+            return null;
+        }
+    }
+
+    private void validateUniqueImportEmail(
+            String email, int rowNumber, Set<String> emailsInFile, List<ImportUserError> errors) {
+        if (email.isBlank()) {
+            return;
+        }
+        if (!emailsInFile.add(email.toLowerCase(Locale.ROOT))) {
+            errors.add(new ImportUserError(rowNumber, "Email is duplicated in the CSV file"));
+        } else if (userRepository.existsByEmailIgnoreCase(email)) {
+            errors.add(new ImportUserError(rowNumber, "Email address is already in use"));
+        }
     }
 
     @Transactional
@@ -186,49 +202,84 @@ public class UserService {
     private record CsvRecord(int rowNumber, List<String> values) {}
 
     private static final class CsvParser {
+        private final List<CsvRecord> records = new ArrayList<>();
+        private final List<String> values = new ArrayList<>();
+        private final StringBuilder value = new StringBuilder();
+        private boolean quoted;
+        private int rowNumber = 1;
+        private int recordStart = 1;
+
         private CsvParser() {}
 
         static List<CsvRecord> parse(String source) {
             var csv = source.startsWith("\uFEFF") ? source.substring(1) : source;
-            var records = new ArrayList<CsvRecord>();
-            var values = new ArrayList<String>();
-            var value = new StringBuilder();
-            var quoted = false;
-            var rowNumber = 1;
-            var recordStart = 1;
+            var parser = new CsvParser();
             for (int index = 0; index < csv.length(); index++) {
-                char current = csv.charAt(index);
-                if (quoted) {
-                    if (current == '"' && index + 1 < csv.length() && csv.charAt(index + 1) == '"') {
-                        value.append('"');
-                        index++;
-                    } else if (current == '"') {
-                        quoted = false;
-                    } else {
-                        value.append(current);
-                        if (current == '\n') rowNumber++;
-                    }
-                } else if (current == '"' && value.isEmpty()) {
-                    quoted = true;
-                } else if (current == ',') {
-                    values.add(value.toString());
-                    value.setLength(0);
-                } else if (current == '\n' || current == '\r') {
-                    if (current == '\r' && index + 1 < csv.length() && csv.charAt(index + 1) == '\n') index++;
-                    values.add(value.toString());
-                    records.add(new CsvRecord(recordStart, List.copyOf(values)));
-                    values.clear();
-                    value.setLength(0);
+                index = parser.consume(csv, index);
+            }
+            return parser.finish();
+        }
+
+        private int consume(String csv, int index) {
+            char current = csv.charAt(index);
+            if (quoted) {
+                return consumeQuoted(csv, index);
+            }
+            if (current == '"' && value.isEmpty()) {
+                quoted = true;
+            } else if (current == ',') {
+                finishValue();
+            } else if (current == '\n' || current == '\r') {
+                if (current == '\r' && isNext(csv, index, '\n')) {
+                    index++;
+                }
+                finishRecord();
+                rowNumber++;
+                recordStart = rowNumber;
+            } else {
+                value.append(current);
+            }
+            return index;
+        }
+
+        private int consumeQuoted(String csv, int index) {
+            char current = csv.charAt(index);
+            if (current == '"' && isNext(csv, index, '"')) {
+                value.append('"');
+                return index + 1;
+            }
+            if (current == '"') {
+                quoted = false;
+            } else {
+                value.append(current);
+                if (current == '\n') {
                     rowNumber++;
-                    recordStart = rowNumber;
-                } else {
-                    value.append(current);
                 }
             }
-            if (quoted) throw new IllegalArgumentException("CSV contains an unclosed quoted field");
+            return index;
+        }
+
+        private boolean isNext(String csv, int index, char expected) {
+            return index + 1 < csv.length() && csv.charAt(index + 1) == expected;
+        }
+
+        private void finishValue() {
+            values.add(value.toString());
+            value.setLength(0);
+        }
+
+        private void finishRecord() {
+            finishValue();
+            records.add(new CsvRecord(recordStart, List.copyOf(values)));
+            values.clear();
+        }
+
+        private List<CsvRecord> finish() {
+            if (quoted) {
+                throw new IllegalArgumentException("CSV contains an unclosed quoted field");
+            }
             if (!value.isEmpty() || !values.isEmpty()) {
-                values.add(value.toString());
-                records.add(new CsvRecord(recordStart, List.copyOf(values)));
+                finishRecord();
             }
             return records;
         }

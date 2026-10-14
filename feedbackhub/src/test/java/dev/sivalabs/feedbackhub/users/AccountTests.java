@@ -39,7 +39,7 @@ class AccountTests extends BaseIT {
     }
 
     @Test
-    void userCanUploadAndReplaceProfilePicture() throws Exception {
+    void userCanUploadAndReplaceProfilePicture() {
         var session = session(login("siva@gmail.com", "secret"));
         var firstImage = new MockMultipartFile("profilePicture", "avatar.png", "image/png", new byte[] {1, 2, 3});
 
@@ -68,7 +68,7 @@ class AccountTests extends BaseIT {
     }
 
     @Test
-    void profilePictureMustBeSupportedImageWithinOneMegabyte() throws Exception {
+    void profilePictureMustBeSupportedImageWithinOneMegabyte() {
         var session = session(login("siva@gmail.com", "secret"));
         var oversized = new MockMultipartFile(
                 "profilePicture",

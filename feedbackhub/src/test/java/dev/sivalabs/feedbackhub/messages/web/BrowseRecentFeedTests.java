@@ -72,7 +72,7 @@ class BrowseRecentFeedTests extends BaseIT {
     }
 
     @Test
-    void userCanVoteSwitchAndRemoveVoteFromHomePage() throws Exception {
+    void userCanVoteSwitchAndRemoveVoteFromHomePage() {
         var voterSession = session(login("siva@gmail.com", "secret"));
 
         assertThat(voteFromHome(voterSession, HOME_VOTING_ID, "UPVOTE", false))
