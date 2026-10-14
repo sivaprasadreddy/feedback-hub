@@ -56,7 +56,7 @@ class ImportUsersTests extends BaseIT {
     }
 
     @Test
-    void invalidRowsAreReportedAndNothingIsImported() throws Exception {
+    void invalidRowsAreReportedAndNothingIsImported() {
         var session = session(login("admin@gmail.com", "secret"));
         var uniqueEmail = "not-imported+" + UUID.randomUUID() + "@acme.com";
         var csv = "name,email,role%nValid User,%s,USER%nBad Email,invalid,USER%nMissing Role,missing@example.com,%n"
@@ -69,6 +69,7 @@ class ImportUsersTests extends BaseIT {
                 .hasViewName("admin/users-import")
                 .bodyText()
                 .contains("Email address must be valid", "Role must be ADMIN or USER", "No users were imported");
+        assertThat(result.getMvcResult().getModelAndView()).isNotNull();
         assertThat(result.getMvcResult().getModelAndView().getModel().get("errors"))
                 .asInstanceOf(InstanceOfAssertFactories.LIST)
                 .extracting("rowNumber")
@@ -77,7 +78,7 @@ class ImportUsersTests extends BaseIT {
     }
 
     @Test
-    void wrongHeaderAndDuplicateEmailsAreRejected() throws Exception {
+    void wrongHeaderAndDuplicateEmailsAreRejected() {
         var session = session(login("admin@gmail.com", "secret"));
 
         var wrongHeader = importCsv(session, "fullName,email,role%nJane,jane@example.com,USER%n".formatted());

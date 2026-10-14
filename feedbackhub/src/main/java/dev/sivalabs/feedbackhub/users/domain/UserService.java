@@ -214,8 +214,9 @@ public class UserService {
         static List<CsvRecord> parse(String source) {
             var csv = source.startsWith("\uFEFF") ? source.substring(1) : source;
             var parser = new CsvParser();
-            for (int index = 0; index < csv.length(); index++) {
-                index = parser.consume(csv, index);
+            int index = 0;
+            while (index < csv.length()) {
+                index = parser.consume(csv, index) + 1;
             }
             return parser.finish();
         }
