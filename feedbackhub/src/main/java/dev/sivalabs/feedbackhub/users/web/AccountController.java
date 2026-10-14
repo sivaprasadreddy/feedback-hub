@@ -1,5 +1,8 @@
 package dev.sivalabs.feedbackhub.users.web;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.ERROR_MESSAGE_KEY;
+import static dev.sivalabs.feedbackhub.shared.Constants.SUCCESS_MESSAGE_KEY;
+
 import dev.sivalabs.feedbackhub.users.AuthUtils;
 import dev.sivalabs.feedbackhub.users.domain.AccountService;
 import dev.sivalabs.feedbackhub.users.domain.exceptions.InvalidCurrentPasswordException;
@@ -41,11 +44,11 @@ class AccountController {
         try {
             accountService.saveProfilePicture(
                     AuthUtils.getCurrentUserIdOrThrow(), profilePicture.getContentType(), profilePicture.getBytes());
-            redirectAttributes.addFlashAttribute("successMessage", "Profile picture updated successfully.");
+            redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Profile picture updated successfully.");
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_KEY, e.getMessage());
         } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Unable to read the selected image.");
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_KEY, "Unable to read the selected image.");
         }
         return "redirect:/account";
     }
@@ -82,7 +85,7 @@ class AccountController {
             populateAccount(model);
             return "account";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Password changed successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Password changed successfully.");
         return "redirect:/account";
     }
 

@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountService {
-    public static final long MAX_PROFILE_PICTURE_SIZE = 1024 * 1024;
+    public static final long MAX_PROFILE_PICTURE_SIZE = 1024L * 1024L;
     private static final Set<String> SUPPORTED_IMAGE_TYPES =
             Set.of("image/jpeg", "image/png", "image/gif", "image/webp");
 

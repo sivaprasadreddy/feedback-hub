@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.users;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.ERROR_MESSAGE_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -81,7 +82,7 @@ class AccountTests extends BaseIT {
                         .with(csrf())))
                 .hasStatus(HttpStatus.FOUND)
                 .flash()
-                .containsEntry("errorMessage", "Profile picture must not exceed 1 MB");
+                .containsEntry(ERROR_MESSAGE_KEY, "Profile picture must not exceed 1 MB");
         var textFile = new MockMultipartFile("profilePicture", "notes.txt", "text/plain", new byte[] {1});
         assertThat(mvc.perform(multipart("/account/profile-picture")
                         .file(textFile)
@@ -89,7 +90,7 @@ class AccountTests extends BaseIT {
                         .with(csrf())))
                 .hasStatus(HttpStatus.FOUND)
                 .flash()
-                .containsEntry("errorMessage", "Use a JPEG, PNG, GIF, or WebP image");
+                .containsEntry(ERROR_MESSAGE_KEY, "Use a JPEG, PNG, GIF, or WebP image");
     }
 
     @Test

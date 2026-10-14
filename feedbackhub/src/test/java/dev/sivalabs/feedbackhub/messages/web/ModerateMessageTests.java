@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class ModerateMessageTests extends BaseIT {
     private static final long DELETE_ID = 5001L;
-    private static final String DELETE_CONTENT = "Moderation admin-deleted message";
     private static final long ANONYMOUS_ID = 5002L;
     private static final String ANONYMOUS_CONTENT = "Moderation anonymous admin deletion";
     private static final long PROTECTED_ID = 5003L;

@@ -12,7 +12,9 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 class ImportUsersTests extends BaseIT {
 
@@ -31,7 +33,7 @@ class ImportUsersTests extends BaseIT {
     }
 
     @Test
-    void adminCanImportUsersFromCsv() throws Exception {
+    void adminCanImportUsersFromCsv() {
         var session = session(login("admin@gmail.com", "secret"));
         var suffix = UUID.randomUUID();
         var userEmail = "csv.user+" + suffix + "@acme.com";
@@ -89,7 +91,7 @@ class ImportUsersTests extends BaseIT {
     }
 
     @Test
-    void regularUserCannotImportUsers() throws Exception {
+    void regularUserCannotImportUsers() {
         var session = session(login("siva@gmail.com", "secret"));
         assertThat(mvc.get().uri("/admin/users/import").session(session).exchange())
                 .hasStatus(HttpStatus.FORBIDDEN);
@@ -98,8 +100,7 @@ class ImportUsersTests extends BaseIT {
         assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
     }
 
-    private org.springframework.test.web.servlet.assertj.MvcTestResult importCsv(
-            org.springframework.mock.web.MockHttpSession session, String csv) throws Exception {
+    private MvcTestResult importCsv(MockHttpSession session, String csv) {
         var file = new MockMultipartFile("file", "users.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
         return mvc.perform(
                 multipart("/admin/users/import").file(file).session(session).with(csrf()));

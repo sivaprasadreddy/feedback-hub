@@ -1,5 +1,8 @@
 package dev.sivalabs.feedbackhub.users.web;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.ERROR_MESSAGE_KEY;
+import static dev.sivalabs.feedbackhub.shared.Constants.SUCCESS_MESSAGE_KEY;
+
 import dev.sivalabs.feedbackhub.users.*;
 import dev.sivalabs.feedbackhub.users.domain.UserService;
 import dev.sivalabs.feedbackhub.users.domain.exceptions.DuplicateEmailException;
@@ -72,7 +75,7 @@ class AdminUserController {
             return "admin/users-import";
         }
         redirectAttributes.addFlashAttribute(
-                "successMessage", result.importedCount() + " users imported successfully.");
+                SUCCESS_MESSAGE_KEY, result.importedCount() + " users imported successfully.");
         return "redirect:/admin/users";
     }
 
@@ -94,7 +97,7 @@ class AdminUserController {
             model.addAttribute("roles", Role.values());
             return "admin/users-new";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "User created successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "User created successfully.");
         return "redirect:/admin/users";
     }
 
@@ -108,11 +111,11 @@ class AdminUserController {
         try {
             assignedRole = Role.valueOf(role);
         } catch (IllegalArgumentException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Role must be ADMIN or USER.");
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_KEY, "Role must be ADMIN or USER.");
             return "redirect:/admin/users";
         }
         userService.editUser(AuthUtils.getCurrentUserIdOrThrow(), userId, new EditUserCmd(assignedRole, active));
-        redirectAttributes.addFlashAttribute("successMessage", "User updated successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "User updated successfully.");
         return "redirect:/admin/users";
     }
 

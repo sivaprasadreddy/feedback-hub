@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.messages.web;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.SUCCESS_MESSAGE_KEY;
 import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
@@ -28,7 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 class MessageController {
-    public static final String SUCCESS_MESSAGE_KEY = "successMessage";
     private final MessageService messageService;
 
     MessageController(MessageService messageService) {

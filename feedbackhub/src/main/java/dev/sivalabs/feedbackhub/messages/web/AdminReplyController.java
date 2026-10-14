@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.messages.web;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.SUCCESS_MESSAGE_KEY;
 import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 import dev.sivalabs.feedbackhub.messages.domain.MessageService;
@@ -33,7 +34,7 @@ class AdminReplyController {
     @PostMapping("/{replyId}/delete")
     String deleteReply(@PathVariable Long replyId, RedirectAttributes redirectAttributes) {
         messageService.deleteReplyAsAdmin(replyId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Reply deleted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Reply deleted successfully.");
         return "redirect:/admin/replies";
     }
 }

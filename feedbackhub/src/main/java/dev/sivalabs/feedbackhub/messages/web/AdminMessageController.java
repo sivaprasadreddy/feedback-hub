@@ -1,5 +1,7 @@
 package dev.sivalabs.feedbackhub.messages.web;
 
+import static dev.sivalabs.feedbackhub.shared.Constants.ERROR_MESSAGE_KEY;
+import static dev.sivalabs.feedbackhub.shared.Constants.SUCCESS_MESSAGE_KEY;
 import static dev.sivalabs.feedbackhub.shared.PaginationUtils.parsePage;
 
 import dev.sivalabs.feedbackhub.messages.domain.MessagePdfExportService;
@@ -57,7 +59,7 @@ class AdminMessageController {
     @PostMapping("/{messageId}/delete")
     String deleteMessage(@PathVariable Long messageId, RedirectAttributes redirectAttributes) {
         messageService.deleteMessageAsAdmin(messageId, AuthUtils.getCurrentUserIdOrThrow());
-        redirectAttributes.addFlashAttribute("successMessage", "Message deleted successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Message deleted successfully.");
         return "redirect:/admin/messages";
     }
 
@@ -78,14 +80,14 @@ class AdminMessageController {
                 model.addAttribute("analysisError", errorMessage);
                 return "fragments/admin-message :: message(message=${message})";
             }
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE_KEY, errorMessage);
             return "redirect:/admin/messages";
         }
         if (htmxRequest) {
             model.addAttribute("message", messageService.findMessageForAdmin(messageId));
             return "fragments/admin-message :: message(message=${message})";
         }
-        redirectAttributes.addFlashAttribute("successMessage", "Message analyzed successfully.");
+        redirectAttributes.addFlashAttribute(SUCCESS_MESSAGE_KEY, "Message analyzed successfully.");
         return "redirect:/admin/messages";
     }
 }
