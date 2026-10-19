@@ -1,6 +1,6 @@
 ---
 name: prd-to-requirements
-description: Generate or regenerate a requirements.md use-case specification from a product requirements document (prd.md). Use when translating a PRD into implementable use cases, dependencies, statuses, and testable acceptance criteria; do not use for implementation or implementation-status audits.
+description: Generate or regenerate a requirements.md use-case specification from a product requirements document (PRD.md). Use when translating a PRD into implementable use cases, dependencies, statuses, and testable acceptance criteria; do not use for implementation or implementation-status audits.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ Create `requirements.md` from `prd.md`, treating the PRD as the source of truth 
 
 ## Inputs and output
 
-- Honor paths supplied by the user. Otherwise use `docs/prd.md` as input and `docs/requirements.md` as output.
+- Honor paths supplied by the user. Otherwise use `../../../docs/PRD.md` as input and `docs/requirements.md` as output.
 - Before writing, read the entire PRD and, when present, the entire existing `docs/requirements.md` to learn the repository's current format and conventions.
 - Treat the existing requirements document as a structural example, not as authority for product scope. Resolve content against the PRD.
 - Write only the requested requirements file. Do not implement features or modify the PRD.

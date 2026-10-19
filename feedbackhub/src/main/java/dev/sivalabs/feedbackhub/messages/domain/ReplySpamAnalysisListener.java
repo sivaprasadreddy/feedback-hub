@@ -17,7 +17,7 @@ class ReplySpamAnalysisListener {
     }
 
     @ApplicationModuleListener
-    void on(ReplyCreatedEvent event) {
+    public void on(ReplyCreatedEvent event) {
         var analysis = replySpamAnalyzer.analyze(event.content());
         if (analysis == null) {
             throw new IllegalStateException("Reply spam analysis did not return a classification");

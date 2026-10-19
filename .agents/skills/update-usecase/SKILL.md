@@ -11,7 +11,7 @@ Synchronize one use case with the behavior demonstrably present in the current w
 ## Input and boundaries
 
 - Require exactly one use-case ID in `UC-###` form. Match case-insensitively and preserve the document's canonical ID.
-- Honor a user-supplied requirements path; otherwise use `docs/requirements.md`. Use `docs/prd.md` as the default product-intent reference when it exists.
+- Honor a user-supplied requirements path; otherwise use `docs/requirements.md`. Use `../../../docs/PRD.md` as the default product-intent reference when it exists.
 - If the ID is missing or unknown, multiple IDs were supplied, or the summary and detailed section disagree, ask the user to resolve the issue before editing.
 - Update documentation only. Do not change production code, tests, migrations, or configuration under this skill.
 - Do not update other use cases merely because related code was discovered. Report those candidates separately.

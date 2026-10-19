@@ -15,7 +15,7 @@ class MessageAnalysisListener {
     }
 
     @ApplicationModuleListener
-    void on(MessageCreatedEvent event) {
+    public void on(MessageCreatedEvent event) {
         messageService.analyzeMessage(event.messageId());
     }
 }

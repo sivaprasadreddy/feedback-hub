@@ -1,6 +1,6 @@
 # FeedbackHub Requirements
 
-This document translates the requirements in [PRD](prd.md) into implementable use cases. 
+This document translates the requirements in [PRD](PRD.md) into implementable use cases. 
 Features explicitly described as optional or future work are excluded. 
 Statuses reflect the PRD alone and should be updated as implementation progresses.
 
