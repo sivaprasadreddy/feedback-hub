@@ -1,0 +1,113 @@
+[tools]
+java = "temurin-25"
+maven = "3.10.0"
+node = "24"
+
+[settings]
+lockfile = true
+
+[vars]
+K8S_CLUSTER_NAME = "sivalabs-k8s"
+DC_FILE = "docker/compose.yml"
+REGISTRY = "docker.io"
+IMAGE_NAME = "sivaprasadreddy/feedbackhub"
+DOCKER_IMAGE_NAME = "{{vars.REGISTRY}}/{{vars.IMAGE_NAME}}"
+VERSION = "{{exec(command='./mvnw -pl feedbackhub help:evaluate -Dexpression=project.version -q -DforceStdout')}}"
+
+[tasks.default]
+description = "Format code and run all tests"
+depends = ["test"]
+
+[tasks.format]
+description = "Formats code"
+run = "./mvnw spotless:apply"
+
+[tasks.test]
+description = "Format code and run all tests"
+depends = ["format"]
+run = "./mvnw clean verify -Dsurefire.skipAfterFailureCount=1"
+
+[tasks.verify]
+description = "Run verification checks"
+run = "./mvnw -ntp verify"
+
+[tasks.build_image]
+description = "Build Docker Image using Buildpacks"
+run = "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}"
+
+[tasks."build_image:amd64"]
+description = "Build and publish the AMD64 OCI image"
+run = [
+  "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-amd64 -Dspring-boot.build-image.imagePlatform=linux/amd64",
+  "docker push {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-amd64",
+]
+
+[tasks."build_image:arm64"]
+description = "Build and publish the ARM64 OCI image"
+run = [
+  "./mvnw -pl feedbackhub package spring-boot:build-image -DskipTests -DdockerImageName={{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-arm64 -Dspring-boot.build-image.imagePlatform=linux/arm64",
+  "docker push {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-arm64",
+]
+
+[tasks.build_image_multiarch]
+description = "Build and publish the multi-arch OCI image"
+# Keep these builds sequential because both Maven invocations write to the
+# same target directory and Spring Boot repackages the same JAR.
+run = [
+  { task = "build_image:amd64" },
+  { task = "build_image:arm64" },
+  "docker manifest create {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}} --amend {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-amd64 --amend {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}-arm64",
+  "docker manifest push {{vars.DOCKER_IMAGE_NAME}}:{{vars.VERSION}}",
+]
+
+[tasks.start]
+description = "Start the application"
+depends = ["build_image"]
+run = 'docker compose -f "{{vars.DC_FILE}}" up --force-recreate -d'
+
+[tasks.stop]
+description = "Stop the application"
+run = [
+  'docker compose -f "{{vars.DC_FILE}}" stop',
+  'docker compose -f "{{vars.DC_FILE}}" rm -f',
+]
+
+[tasks.restart]
+description = "Restarts the application"
+run = [
+  { task = "stop" },
+  { task = "sleep" },
+  { task = "start" },
+]
+
+[tasks.gatling]
+description = "Run Gatling performance tests"
+run = "./mvnw -pl gatling-tests gatling:test"
+
+[tasks.playwright]
+description = "Run Playwright tests"
+run = "./mvnw -pl playwright-tests test -Dplaywright.skip=false"
+
+[tasks.kind_create]
+description = "Create KinD cluster"
+run = "./k8s/kind/kind-cluster.sh create"
+
+[tasks.kind_destroy]
+description = "Destroy KinD cluster"
+run = "./k8s/kind/kind-cluster.sh destroy"
+
+[tasks.k8s_deploy]
+description = "Deploy application on Kind cluster"
+run = [
+  "kind load docker-image {{vars.DOCKER_IMAGE_NAME}} --name {{vars.K8S_CLUSTER_NAME}}",
+  "kubectl apply -f k8s/manifests/",
+]
+
+[tasks.k8s_undeploy]
+description = "Undeploy application from Kind cluster"
+run = "kubectl delete -f k8s/manifests/"
+
+[tasks.sleep]
+description = "Sleeps for the given number of seconds"
+usage = 'arg "[duration]" default="5" help="Number of seconds to sleep"'
+run = "sleep ${usage_duration}"

@@ -26,20 +26,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Task
-        uses: go-task/setup-task@v2
+      - name: Install mise
+        uses: jdx/mise-action@v5
 
-      - name: Set up JDK
-        uses: actions/setup-java@v6
-        with:
-          java-version-file: .sdkmanrc
-          cache: 'maven'
+#      - name: Install Task
+#        uses: go-task/setup-task@v2
+#
+#      - name: Set up JDK
+#        uses: actions/setup-java@v6
+#        with:
+#          java-version-file: .sdkmanrc
+#          cache: 'maven'
 
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
 
       - name: Build with Maven
-        run: task verify
+        run: mise run verify
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -51,4 +54,4 @@ jobs:
         uses: docker/setup-qemu-action@v4
 
       - name: Build and publish multi-arch OCI image
-        run: task build_image_multiarch
+        run: mise run build_image_multiarch

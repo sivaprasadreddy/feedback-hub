@@ -1,5 +1,6 @@
 package dev.sivalabs.feedbackhub.users.domain;
 
+import dev.sivalabs.feedbackhub.shared.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,7 +8,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "user_profile_pictures")
-class ProfilePictureEntity {
+class ProfilePictureEntity extends BaseEntity {
     @Id
     @Column(name = "user_id")
     private Long userId;
@@ -22,6 +23,11 @@ class ProfilePictureEntity {
 
     ProfilePictureEntity(Long userId, String contentType, byte[] content) {
         this.userId = userId;
+        this.contentType = contentType;
+        this.content = content;
+    }
+
+    void update(String contentType, byte[] content) {
         this.contentType = contentType;
         this.content = content;
     }

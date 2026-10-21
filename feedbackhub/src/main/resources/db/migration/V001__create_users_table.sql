@@ -17,9 +17,12 @@ create table users
 
 create table user_profile_pictures
 (
-    user_id      bigint not null,
-    content_type text   not null,
-    content      bytea  not null,
+    user_id      bigint    not null,
+    content_type text      not null,
+    content      bytea     not null,
+    created_at   timestamp not null default CURRENT_TIMESTAMP,
+    updated_at   timestamp,
+    version      bigint    not null default 0,
     primary key (user_id),
     constraint user_profile_picture_user_fk foreign key (user_id) references users (id) on delete cascade
 );

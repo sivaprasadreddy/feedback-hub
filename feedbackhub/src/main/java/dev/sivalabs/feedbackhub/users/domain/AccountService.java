@@ -42,7 +42,11 @@ public class AccountService {
         if (userService.findById(userId).isEmpty()) {
             throw new ResourceNotFoundException("User not found");
         }
-        profilePictureRepository.save(new ProfilePictureEntity(userId, contentType, content));
+        var profilePicture = profilePictureRepository
+                .findById(userId)
+                .orElseGet(() -> new ProfilePictureEntity(userId, contentType, content));
+        profilePicture.update(contentType, content);
+        profilePictureRepository.save(profilePicture);
     }
 
     @Transactional(readOnly = true)
