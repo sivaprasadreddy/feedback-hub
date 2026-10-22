@@ -1,0 +1,7 @@
+[mcp_servers.sonarqube]
+command = "docker"
+args = ["run","--init","--pull=always","-i","--rm","-e","SONARQUBE_TOKEN","-e","SONARQUBE_ORG","sonarsource/sonarqube-mcp"]
+
+[mcp_servers.sonarqube.env]
+SONARQUBE_TOKEN = "<YourSonarQubeUserToken>"
+SONARQUBE_ORG = "sivaprasadreddy-github"
