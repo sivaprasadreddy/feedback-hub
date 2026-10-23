@@ -156,6 +156,28 @@ Using an environment variable requires no source-file changes. To make another O
 * [`k8s/manifests/config.yaml`](k8s/manifests/config.yaml) for Kubernetes.
 * This README and [`docs/installation.md`](docs/installation.md) to keep the setup instructions current.
 
+## Using SonarQube MCP
+
+The repository includes SonarQube MCP configuration in [`.mcp.json`](.mcp.json) and [`.codex/config.toml`](.codex/config.toml) to run the MCP server with Docker.
+
+1. Copy the example environment file from the project root:
+
+   ```shell
+   cp .env.example .env
+   ```
+
+2. Set the values in `.env`:
+   * `SONARQUBE_TOKEN`: Your SonarQube Cloud access token.
+   * `SONARQUBE_ORG`: Your SonarQube Cloud organization key.
+
+3. Start your AI agent from the project root with Docker running and the SonarQube MCP server enabled. Ask questions or perform tasks related to SonarQube, for example:
+
+   ```text
+   Show the open SonarQube issues for this project.
+   Check the project's quality gate status.
+   Help me fix the SonarQube issues in the modified files.
+   ```
+
 ## Using Agent Skills
 
 This repository includes project-specific Agent Skills in [`.agents/skills`](.agents/skills). 
