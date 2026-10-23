@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
         - name: ollama
-          image: "ollama/ollama:0.34.0"
+          image: "ollama/ollama:0.40.9"
           command: [ "/bin/sh", "-c" ]
           args:
             - |
