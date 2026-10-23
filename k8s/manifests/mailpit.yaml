@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: mailpit
-          image: "axllent/mailpit:v1.31"
+          image: "axllent/mailpit:v1.32"
           ports:
             - name: smtp
               containerPort: 1025

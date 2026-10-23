@@ -14,7 +14,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 public class TestcontainersConfig {
     @Container
-    MailpitContainer mailpit = new MailpitContainer("axllent/mailpit:v1.31");
+    MailpitContainer mailpit = new MailpitContainer("axllent/mailpit:v1.32");
 
     @Bean
     @ServiceConnection
