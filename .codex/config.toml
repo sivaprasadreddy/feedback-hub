@@ -1,6 +1,12 @@
 [mcp_servers.sonarqube]
 command = "docker"
 args = ["run","--init","--pull=always","-i","--rm",
-        "--env-file", ".env",
-        "sonarsource/sonarqube-mcp"
-       ]
+        "--env-file", ".env", "sonarsource/sonarqube-mcp" ]
+
+[mcp_servers.playwright]
+command = 'npx'
+args = ['@playwright/mcp@latest']
+
+[mcp_servers.excalidraw]
+type = "http"
+url = "https://mcp.excalidraw.com"

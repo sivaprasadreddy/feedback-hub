@@ -1,5 +1,15 @@
 {
   "mcpServers": {
+    "excalidraw": {
+      "type": "http",
+      "url": "https://mcp.excalidraw.com/mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
     "sonarqube": {
       "command": "docker",
       "args": [
