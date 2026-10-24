@@ -4,6 +4,8 @@ env:
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 on:
+  pull_request:
+  merge_group:
   push:
     branches: [ "main", "dev", "fix/*", "feat/*" ]
     paths-ignore:
