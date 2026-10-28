@@ -143,7 +143,8 @@ AI Assisted Development Without Compromising on Quality
   - Software Development with AI Coding Agents
   - Models like Opus 5.5, Astra 6.1 are very good
 - **Development Workflow**
-  - Review Fatigue
+  - Vibe Coding
+  - Vibe Engineering
   - Spec Driven Development
 - **Moving towards "Software Factories"**
 
