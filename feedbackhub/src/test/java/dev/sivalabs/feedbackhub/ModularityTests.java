@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
 import org.springframework.modulith.docs.Documenter;
 
-@Order(2)
+@Order(3)
 class ModularityTests {
     private final ApplicationModules modules = ApplicationModules.of(Application.class);
 

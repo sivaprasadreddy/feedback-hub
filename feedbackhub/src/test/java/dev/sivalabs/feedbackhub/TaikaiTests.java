@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-@Order(1)
+@Order(2)
 class TaikaiTests {
     private static final String BASE_PACKAGE = TaikaiTests.class.getPackageName();
 

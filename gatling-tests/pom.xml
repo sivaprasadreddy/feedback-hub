@@ -16,7 +16,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <spotless.version>3.10.4</spotless.version>
-        <palantir-java-format.version>2.102.0</palantir-java-format.version>
+        <palantir-java-format.version>2.103.0</palantir-java-format.version>
         <gatling.version>3.16.0</gatling.version>
         <gatling-maven-plugin.version>4.21.12</gatling-maven-plugin.version>
         <maven.surefire.version>3.6.1</maven.surefire.version>
