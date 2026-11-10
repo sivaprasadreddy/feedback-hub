@@ -29,8 +29,8 @@ From the terminal pull/run the models:
 
 ```shell
 $ ollama help
-$ ollama pull gemma3:270m
-$ ollama run gemma3:270m
+$ ollama pull qwen3:8b
+$ ollama run qwen3:8b
 $ ollama list
 $ ollama ps
 ```

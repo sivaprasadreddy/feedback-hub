@@ -8,5 +8,4 @@ command = 'npx'
 args = ['@playwright/mcp@latest']
 
 [mcp_servers.excalidraw]
-type = "http"
 url = "https://mcp.excalidraw.com"

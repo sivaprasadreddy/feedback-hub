@@ -3,6 +3,7 @@ package dev.sivalabs.feedbackhub.messages.domain;
 import dev.sivalabs.feedbackhub.messages.domain.models.MessageExportData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class MessagePdfExportService {
         }
     }
 
-    private static String formatDate(java.time.Instant instant) {
+    private static String formatDate(Instant instant) {
         return instant == null ? "" : DATE_FORMAT.format(instant);
     }
 

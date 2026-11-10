@@ -7,6 +7,7 @@ import dev.sivalabs.feedbackhub.shared.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.servlet.ModelAndView;
 
 class GlobalExceptionHandlerTests {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
@@ -20,8 +21,7 @@ class GlobalExceptionHandlerTests {
                 handler.handle(new IllegalStateException("unexpected")), HttpStatus.INTERNAL_SERVER_ERROR, "error/500");
     }
 
-    private void assertError(
-            org.springframework.web.servlet.ModelAndView result, HttpStatus expectedStatus, String expectedView) {
+    private void assertError(ModelAndView result, HttpStatus expectedStatus, String expectedView) {
         assertThat(result.getStatus()).isEqualTo(expectedStatus);
         assertThat(result.getViewName()).isEqualTo(expectedView);
     }

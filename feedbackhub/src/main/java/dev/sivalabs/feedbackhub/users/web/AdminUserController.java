@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -59,14 +60,14 @@ class AdminUserController {
     @PostMapping("/import")
     String importUsers(@RequestParam("file") MultipartFile file, Model model, RedirectAttributes redirectAttributes) {
         if (file.isEmpty()) {
-            model.addAttribute("errors", java.util.List.of(new ImportUserError(1, "Select a CSV file to import")));
+            model.addAttribute("errors", List.of(new ImportUserError(1, "Select a CSV file to import")));
             return "admin/users-import";
         }
         final String csv;
         try {
             csv = new String(file.getBytes(), StandardCharsets.UTF_8);
         } catch (IOException ex) {
-            model.addAttribute("errors", java.util.List.of(new ImportUserError(1, "Could not read the CSV file")));
+            model.addAttribute("errors", List.of(new ImportUserError(1, "Could not read the CSV file")));
             return "admin/users-import";
         }
         var result = userService.importUsers(csv);

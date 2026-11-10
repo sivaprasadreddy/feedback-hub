@@ -61,6 +61,7 @@
                 <version>${spotless.version}</version>
                 <configuration>
                     <java>
+                        <shortenFullyQualifiedTypes/>
                         <importOrder/>
                         <removeUnusedImports/>
                         <palantirJavaFormat>

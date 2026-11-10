@@ -11,8 +11,8 @@ done
 
 echo "Ollama is ready."
 
-ollama pull gemma3:270m
+ollama pull qwen3:8b
 
-echo "Model gemma3:270m is ready."
+echo "Model qwen3:8b is ready."
 
 wait $OLLAMA_PID

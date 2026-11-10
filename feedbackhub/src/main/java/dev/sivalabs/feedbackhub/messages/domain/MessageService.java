@@ -23,10 +23,12 @@ import dev.sivalabs.feedbackhub.users.UsersAPI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -152,7 +154,7 @@ public class MessageService {
         var topics = new LinkedHashSet<String>();
         if (analysis.topics() != null) {
             analysis.topics().stream()
-                    .filter(java.util.Objects::nonNull)
+                    .filter(Objects::nonNull)
                     .map(MessageTopic::displayName)
                     .limit(MAX_TOPICS)
                     .forEach(topics::add);
@@ -511,7 +513,7 @@ public class MessageService {
                 .forEach(result -> counts.put(result.getSentiment(), result.getCount()));
         var maximum = counts.values().stream().mapToLong(Long::longValue).max().orElse(0);
 
-        return java.util.Arrays.stream(MessageSentiment.values())
+        return Arrays.stream(MessageSentiment.values())
                 .map(sentiment -> {
                     var count = counts.getOrDefault(sentiment, 0L);
                     var percentage = maximum == 0 ? 0 : (int) Math.round(count * 100.0 / maximum);

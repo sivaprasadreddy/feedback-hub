@@ -34,7 +34,7 @@ A feedback management platform where an organization can provide their employees
 ## Prerequisites
 * JDK 25
 * Docker and Docker Compose
-* [Ollama](https://ollama.com/) with [gemma3:270m](https://ollama.com/library/gemma3) model
+* [Ollama](https://ollama.com/) with [qwen3:8b](https://ollama.com/library/qwen3) model
 * Your favourite IDE (Recommended: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
 
 Follow the [Installation Guide](docs/installation.md) to install the required tools.
@@ -129,7 +129,7 @@ The provider and model can be selected through environment variables when starti
 To use Ollama:
 
 ```shell
-$ AI_PROVIDER=ollama OLLAMA_MODEL=gemma3:270m ./mvnw spring-boot:run
+$ AI_PROVIDER=ollama OLLAMA_MODEL=qwen3:8b ./mvnw spring-boot:run
 ```
 
 To use OpenAI, provide an API key and optionally choose a model:
