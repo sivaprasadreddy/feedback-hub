@@ -1,5 +1,5 @@
 ---
-name: implement-usecase
+name: impl-spec
 description: Implement one documented use case identified by a UC-### ID, including its tests and requirements status transitions. Use when the user asks to implement a specific use case from requirements.md; do not use to draft requirements or implement an unspecified collection of features.
 disable-model-invocation: true
 ---
