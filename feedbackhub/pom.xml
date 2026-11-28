@@ -29,7 +29,7 @@
         <spotless.version>3.12.0</spotless.version>
         <archunit.version>1.5.1</archunit.version>
         <taikai.version>3.0.0</taikai.version>
-        <spring-test-profiler.version>0.5.1</spring-test-profiler.version>
+        <spring-test-profiler.version>0.5.2</spring-test-profiler.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <properties-maven-plugin.version>1.4.0</properties-maven-plugin.version>
         <sonar-maven-plugin.version>5.9.0.7382</sonar-maven-plugin.version>
